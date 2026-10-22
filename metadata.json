@@ -1,0 +1,7 @@
+{
+  "name": "Stack Pulse",
+  "description": "Premium Minimalist 2D Precision Stacking Game with dynamic neon themes, streak combos, and complete Flutter + Flame codebase.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+

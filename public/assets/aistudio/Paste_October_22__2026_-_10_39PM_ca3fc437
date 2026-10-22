@@ -1,0 +1,1159 @@
+# MASTER GAME DEVELOPMENT PROMPT
+## STACK PULSE — Premium Minimalist 2D Stacking Game
+### Flutter + Flame | Full Game Implementation | No Ads
+
+You are a **Senior Flutter Game Developer, Flame Engine Specialist, Game Designer, UI/UX Designer, and Software Quality Engineer** with extensive experience developing professional mobile arcade games.
+
+Your task is to DESIGN, DEVELOP, TEST, and DELIVER a **complete, playable, polished, production-oriented 2D mobile game** called **STACK PULSE**.
+
+The game is inspired by the general mechanics of classic precision block-stacking arcade games, but it must have its own original branding, visual design, animations, and user experience.
+
+**This is not a prototype, mockup, landing page, UI demonstration, or partial implementation. Build the complete actual game.**
+
+---
+
+# 1. NON-NEGOTIABLE REQUIREMENTS
+
+- Programming language: **Dart**
+- Application framework: **Flutter**
+- Game engine: **Flame**
+- Primary platform: Android mobile
+- Orientation: Portrait only
+- Game type: 2D hypercasual precision stacking
+- Internet requirement: None
+- Backend: None
+- Firebase: None
+- Authentication: None
+- Advertisements: **DO NOT IMPLEMENT**
+- In-app purchases: None
+- Third-party analytics: None
+- Artwork: No externally sourced graphics or sprite sheets
+- State persistence: Local device storage
+- Performance target: Smooth gameplay at approximately 60 FPS on capable devices
+- Architecture: Modular, maintainable and testable
+
+Use Flutter for navigation, menus, buttons, overlays, settings, and responsive UI.
+
+Use Flame for the actual gameplay, movement, rendering, camera, particles, and animations.
+
+Use stable, mutually compatible Flutter, Dart, and Flame versions supported by the available development environment. Avoid deprecated APIs.
+
+**Framework constraint:** Never silently substitute React, HTML Canvas, JavaScript, Kotlin, Jetpack Compose, Unity, or another framework for Flutter + Flame. If the current environment cannot execute Flutter, explicitly disclose this limitation and provide complete Flutter source files instead of presenting a different application as the requested deliverable.
+
+---
+
+# 2. GAME VISION
+
+Create an elegant, premium-feeling and satisfying precision stacking game.
+
+The core experience must be:
+
+- Extremely simple to understand.
+- Playable using one finger.
+- Challenging without feeling unfair.
+- Visually clean and aesthetically pleasing.
+- Highly responsive to user input.
+- Suitable for short play sessions.
+- Replayable through high scores and skill improvement.
+- Completely functional without internet.
+
+The player continuously stacks horizontally moving rectangular blocks on top of an increasingly tall tower.
+
+Every placement matters.
+
+Perfect placements maintain the tower width, while inaccurate placements permanently reduce the available width.
+
+The game ends when the player misses the previous block completely.
+
+**Design principle: Simple to play, difficult to master.**
+
+---
+
+# 3. CORE GAMEPLAY MECHANICS
+
+## 3.1 Initial Game State
+
+When the player starts a new game:
+
+1. Initialize a clean gameplay state.
+2. Create a stationary base block in the lower portion of the playfield.
+3. Position the first moving block directly above the base block.
+4. Set the moving block width equal to the base width.
+5. Start the block moving horizontally.
+6. Display the current score, best score and pause control.
+7. Accept tap input only after the game is ready.
+
+Suggested initial design parameters, adjustable through a centralized configuration:
+
+- Logical design width: 360 units.
+- Initial block width: approximately 210–220 units.
+- Block height: approximately 26 units.
+- Initial horizontal speed: approximately 160 logical units per second.
+- Starting score: 0.
+- Initial perfect streak: 0.
+
+Do not scatter gameplay constants across multiple files.
+
+## 3.2 Horizontal Movement
+
+The active block automatically moves left and right above the stack.
+
+Requirements:
+
+- Smooth horizontal movement.
+- Consistent logical speed across devices.
+- Bounce/reverse at horizontal playfield boundaries.
+- Never travel outside the allowed playfield.
+- No unpredictable position jumps.
+- No movement when paused.
+- Frame-rate-independent movement.
+- Maintain correct direction after collisions with movement boundaries.
+
+Use delta time rather than fixed movement per rendered frame.
+
+Suggested formula:
+
+`positionX += horizontalSpeed * direction * deltaTime`
+
+Handle large frame delta values safely, especially when the application resumes after being backgrounded.
+
+The starting direction should alternate between left and right for successive blocks, introducing visual variety without relying on excessive randomness.
+
+## 3.3 Tap-to-Place Mechanic
+
+When the player taps the gameplay area:
+
+1. Immediately capture the active block's current position.
+2. Stop movement.
+3. Lock further placement input.
+4. Calculate overlap against the previous stationary block.
+5. Determine whether placement is perfect, partial, or missed.
+6. Resolve the placement.
+7. Update score and combo when appropriate.
+8. Display a short visual response.
+9. Prepare and spawn the next moving block.
+
+The tap must feel immediate, precise, and deterministic.
+
+Do not introduce noticeable input latency.
+
+Do not allow multiple placements from a single rapid sequence of taps.
+
+## 3.4 Exact Overlap Calculation
+
+Use mathematical horizontal interval intersection rather than a full physics engine.
+
+For two blocks:
+
+- Previous block: `[previousLeft, previousRight]`
+- Moving block: `[movingLeft, movingRight]`
+
+Calculate:
+
+`overlapLeft = max(previousLeft, movingLeft)`
+
+`overlapRight = min(previousRight, movingRight)`
+
+`overlapWidth = max(0, overlapRight - overlapLeft)`
+
+Requirements:
+
+- Correctly handle placement from either direction.
+- Handle fractional coordinates.
+- Prevent negative or invalid widths.
+- Use consistent coordinate systems.
+- Handle edge contact correctly.
+- Prevent floating-point precision errors from creating visible artifacts.
+- Avoid gaps or overlapping pieces in the final tower.
+- Ensure the next block inherits the retained width.
+
+Implement this logic in a standalone, pure, unit-testable utility.
+
+## 3.5 Perfect Placement
+
+Detect perfect placement using a small, configurable horizontal alignment tolerance.
+
+Suggested tolerance:
+
+`clamp(previousBlockWidth * 0.025, 2, 5)` logical units.
+
+When the moving block is within the tolerance:
+
+- Snap the block exactly to the previous block.
+- Retain the complete previous block width.
+- Increase perfect streak by one.
+- Show a subtle glow or outline pulse.
+- Display "PERFECT!" briefly.
+- Trigger a gentle haptic response if enabled.
+- Play a short satisfying sound if sound is enabled and supported.
+- Spawn the next block with the original width retained.
+
+Perfect placement should feel rewarding but should not be so forgiving that the game loses its skill requirement.
+
+## 3.6 Partial Placement
+
+When the block overlaps but falls outside perfect tolerance:
+
+- Retain only the overlapping section.
+- Permanently reduce tower width.
+- Reset consecutive perfect streak to zero.
+- Create detached excess pieces.
+- Animate excess pieces falling away.
+- Keep the main retained section exactly aligned to the overlap interval.
+- Increase the score by one.
+- Spawn the next block with precisely the retained width.
+
+The removed piece must fall from the correct side.
+
+For robustness, support both left-side and right-side excess intervals if either exists.
+
+The visual animation must not affect the mathematical placement outcome.
+
+## 3.7 Failed Placement
+
+When there is no positive overlap:
+
+- Stop gameplay.
+- Do not increment score.
+- Prevent further gameplay taps.
+- Animate the failed block falling away.
+- Transition to the game-over screen after the animation.
+- Save the final score if necessary.
+- Update the best score if the new score is higher.
+
+The player should never lose due to a collision calculation bug.
+
+---
+
+# 4. SCORING SYSTEM
+
+Use a clear scoring model.
+
+**Main score = number of successfully placed blocks.**
+
+Examples:
+
+- 1 successful placement = 1 point.
+- 10 successful placements = 10 points.
+- Perfect placements also count as one successful placement each.
+
+Maintain separate values for:
+
+- Current score.
+- All-time best score.
+- Current perfect streak.
+- Best perfect streak.
+- Total games played.
+- Total blocks successfully placed.
+- Total perfect placements.
+
+Do not mix score bonuses with tower height in a confusing way.
+
+Perfect streak is an additional achievement and feedback mechanism, not a hidden scoring multiplier.
+
+Persist records locally.
+
+---
+
+# 5. DIFFICULTY PROGRESSION
+
+Difficulty must increase gradually and remain fair.
+
+## Speed Progression
+
+Use a centrally configurable speed curve.
+
+Suggested starting formula:
+
+`speed = min(340, 160 + score * 5)`
+
+Fine-tune after testing.
+
+Requirements:
+
+- No sudden speed spikes.
+- Cap maximum speed.
+- Ensure movement remains controllable.
+- Preserve the importance of player timing.
+- Difficulty must not depend on the device's FPS.
+- Avoid random mechanics that make failures feel unfair.
+
+Progression should naturally become harder because:
+
+1. Blocks move faster.
+2. Available stacking width becomes smaller.
+3. Precision requirements become more demanding.
+
+Never randomly reduce block width independently of player placement.
+
+Do not introduce invisible penalties or unpredictable physics.
+
+---
+
+# 6. PERFECT STREAK SYSTEM
+
+Implement a satisfying visual combo system.
+
+Examples:
+
+- 2 perfect placements: show "NICE!"
+- 3 perfect placements: show "GREAT!"
+- 5 perfect placements: show "AMAZING!"
+- 10 perfect placements: show "LEGENDARY!"
+
+Requirements:
+
+- Consecutive perfect placements increase streak.
+- Partial placement resets the streak.
+- Streak indicators animate briefly.
+- Higher streaks receive slightly stronger visual feedback.
+- Avoid excessive screen clutter.
+- Combo effects must never block gameplay input or obscure the incoming block.
+
+Combo effects should primarily be cosmetic.
+
+No complex economy or reward currency is needed.
+
+---
+
+# 7. CAMERA & INFINITE TOWER
+
+The tower continues to grow vertically as the player progresses.
+
+Implement a reliable vertical camera system.
+
+Requirements:
+
+- Use Flame's World and Camera architecture appropriately.
+- Maintain tower objects in stable world coordinates.
+- Smoothly follow the growing top of the stack.
+- Keep the next moving block visible.
+- Keep sufficient clear space above the active block.
+- Avoid abrupt camera jumps.
+- Do not reset the camera unexpectedly after perfect placements.
+- Keep score, best score and pause controls fixed to the screen.
+- Avoid zooming that creates inconsistent gameplay difficulty.
+
+The camera should begin moving only when the growing stack approaches a defined vertical threshold.
+
+Use smooth easing and a stable camera target.
+
+Do not animate the entire tower independently when a camera movement is sufficient.
+
+## Long-Run Stability
+
+Handle towers containing hundreds of successful placements.
+
+Do not endlessly accumulate unnecessary particle objects or completed animation controllers.
+
+Finished transient effects and falling pieces must be removed.
+
+Rendering and memory performance must remain stable across long sessions.
+
+---
+
+# 8. VISUAL IDENTITY & MODERN UI/UX
+
+Create a professionally designed minimalist game.
+
+**Visual direction: Premium Minimal Neon.**
+
+The result should look like a polished commercial mobile arcade game, not a classroom assignment or a default Flutter template.
+
+## Design Palette
+
+Default Midnight Neon theme:
+
+- Background: `#0B1020`
+- Secondary background: `#141C30`
+- Elevated surfaces: `#1D2940`
+- Primary accent: `#55DDFB`
+- Secondary accent: `#A78BFA`
+- Success accent: `#57E5B3`
+- Warning accent: `#F7C76D`
+- Text: `#F7FAFF`
+- Secondary text: `#9CAEC8`
+
+Use controlled gradients, subtle outlines and soft geometric glow effects.
+
+Avoid excessive brightness, overwhelming neon glows or decorative clutter.
+
+## Block Styling
+
+Each stacked block should use:
+
+- Solid or subtle gradient color.
+- Slightly rounded corners.
+- Optional narrow top highlight.
+- Clean separation between adjacent blocks.
+- Subtle shadow or lighting to create depth.
+
+The game remains visually 2D.
+
+Do not implement fake 3D geometry or complex perspective.
+
+Color transitions between blocks should appear cohesive and premium.
+
+## Background
+
+Draw the background programmatically.
+
+Allow:
+
+- Smooth color gradients.
+- Very subtle grid or geometric patterns.
+- Minimal ambient particles.
+- Gentle background transitions.
+
+Do not use downloaded images, textures, spritesheets, AI-generated illustrations or stock artwork.
+
+All primary graphics must be generated using Flutter/Flame drawing primitives.
+
+---
+
+# 9. COMPLETE SCREEN DESIGN
+
+Implement all screens as real functional interfaces.
+
+## 9.1 Home Screen
+
+Design a modern portrait home screen.
+
+Include:
+
+- Original geometric Stack Pulse logo.
+- Game title: STACK PULSE.
+- Subtitle: "One Tap. Perfect Stack."
+- An elegant, continuously animated miniature stack preview.
+- Prominent PLAY button.
+- Current best score.
+- THEMES button.
+- SETTINGS button.
+- HOW TO PLAY button.
+
+Visual quality:
+
+- Attractive typography hierarchy.
+- Responsive spacing.
+- Subtle button animations.
+- Rounded premium buttons.
+- Minimal dark background.
+- Clear tap targets.
+
+Do not use nonfunctional decorative buttons.
+
+## 9.2 Gameplay Screen
+
+The gameplay screen must remain uncluttered.
+
+Top HUD:
+
+- Current score prominently displayed.
+- Best score displayed in smaller typography.
+- Pause button in a safe, accessible position.
+
+Main gameplay area:
+
+- Base platform.
+- Existing tower.
+- Active moving block.
+- Animated falling pieces.
+- Minimal perfect-placement and streak effects.
+
+Avoid covering the active block with HUD elements.
+
+Use Flutter SafeArea and responsive layouts.
+
+## 9.3 Pause Screen
+
+When paused:
+
+- Freeze gameplay movement.
+- Freeze relevant animations.
+- Disable placement input.
+- Present a polished dimmed overlay.
+
+Include:
+
+- RESUME.
+- RESTART.
+- SETTINGS.
+- HOME.
+
+When restarting or returning home from an active game, use a clear confirmation dialog where needed to prevent accidental progress loss.
+
+Resuming must never trigger an unwanted placement.
+
+## 9.4 Game Over Screen
+
+Create an elegant and rewarding results interface.
+
+Include:
+
+- GAME OVER title.
+- Final score.
+- Best score.
+- Best streak achieved during the run.
+- NEW BEST indicator when applicable.
+- RETRY button.
+- HOME button.
+
+When a personal record is achieved:
+
+- Use subtle celebratory particles.
+- Animate the final score.
+- Show an attractive new-record effect.
+
+The RETRY button should immediately create a clean new run.
+
+Do not implement rewarded revival or advertisement-related buttons.
+
+## 9.5 Settings Screen
+
+Include working controls for:
+
+- Sound effects ON/OFF.
+- Haptic feedback ON/OFF.
+- Reduced motion ON/OFF.
+
+Settings must persist locally.
+
+If using native system sounds, handle devices that do not support a particular sound gracefully. Never let audio failure interrupt gameplay.
+
+Reduced motion must disable nonessential screen shakes and decorative animations without changing gameplay rules or timing.
+
+Do not add settings that have no functionality.
+
+## 9.6 How to Play
+
+Show a small interactive or animated tutorial explaining:
+
+1. The block moves automatically.
+2. Tap to stack it.
+3. Perfect alignment keeps the full width.
+4. Inaccurate alignment trims the block.
+5. Missing the tower ends the game.
+
+Use simple shapes, short instructions and a polished interface.
+
+The tutorial must be accessible from the home screen.
+
+For first-time players, provide an unobtrusive introductory hint that can be dismissed without accidentally placing a block.
+
+---
+
+# 10. THEME UNLOCK SYSTEM
+
+Create a small, self-contained visual progression system without coins or microtransactions.
+
+Provide four original themes:
+
+### Theme 1: Midnight Neon
+- Available by default.
+- Dark navy backgrounds.
+- Cyan, purple and teal blocks.
+
+### Theme 2: Aurora
+- Unlock when best score reaches 10.
+- Deep emerald and turquoise palette.
+
+### Theme 3: Sunset Pulse
+- Unlock when best score reaches 25.
+- Warm orange, coral and violet palette.
+
+### Theme 4: Arctic Glow
+- Unlock when best score reaches 50.
+- Deep blue, ice cyan and white accents.
+
+Requirements:
+
+- Theme unlocks depend on the saved best score.
+- Unlocks persist across app restarts.
+- Locked themes display their requirements.
+- The currently selected theme is clearly marked.
+- Theme selection immediately updates the app and gameplay visuals.
+- All themes use the same gameplay mechanics.
+- No external theme images or purchased assets.
+
+Keep this system lightweight, with theme colors defined centrally.
+
+---
+
+# 11. ANIMATION & GAME FEEL
+
+Animation quality is a major priority.
+
+Implement smooth, performant animations including:
+
+### A. Active Block Movement
+- Smooth linear horizontal travel.
+- No frame-based speed inconsistencies.
+- Clean direction reversal at boundaries.
+
+### B. Placement Feedback
+- Very short placement settling animation.
+- Subtle impact response.
+- No large artificial delay before the next block.
+
+### C. Falling Pieces
+- Falling excess block sections.
+- Gentle gravity-like downward motion.
+- Small optional rotation.
+- Fade/remove after leaving the visible area.
+
+### D. Perfect Placement
+- Subtle outline flash.
+- Brief glow pulse.
+- Small original particle burst.
+- Combo text animation.
+
+### E. Camera Motion
+- Smooth vertical easing.
+- No camera shaking during normal placement.
+- Only very subtle optional feedback on strong milestones.
+
+### F. Screen Transitions
+- Professional fade or slide transitions.
+- Smooth game-over overlay appearance.
+- Subtle button-press interactions.
+
+The visual effects must not delay or alter the authoritative game result.
+
+Animations should be interruptible and correctly cleaned up during restart, home navigation and app lifecycle changes.
+
+Prefer built-in Flame effects and lightweight Flutter animations.
+
+---
+
+# 12. GAME STATE MANAGEMENT
+
+Implement a clearly defined finite state machine.
+
+Suggested states:
+
+- HOME
+- INITIALIZING
+- MOVING
+- PLACING
+- RESOLVING
+- PAUSED
+- GAME_OVER
+
+Allowed transitions must be explicit.
+
+Critical requirements:
+
+- Accept placement taps only in MOVING.
+- Lock placement immediately after the first valid tap.
+- Prevent duplicate score increments.
+- Prevent spawning more than one active block.
+- Do not start a new block while previous placement resolution is incomplete.
+- Restart must cancel pending effects and reset relevant game data.
+- Returning home must stop gameplay safely.
+- Pausing must preserve the exact current run.
+- Screen transitions must not accidentally dispatch gameplay taps.
+- Avoid stale callbacks firing after the game is restarted or disposed.
+
+Use an authoritative game-state controller rather than scattered Boolean variables.
+
+Maintain a clear separation between engine state and Flutter overlay state.
+
+---
+
+# 13. DEVICE LIFECYCLE HANDLING
+
+Handle the following:
+
+- App moves to background.
+- User receives an incoming call.
+- Notification interrupts gameplay.
+- Screen is temporarily locked.
+- User opens recent apps.
+- App returns to foreground.
+
+Expected behavior:
+
+- Automatically pause an active game when backgrounded.
+- Do not allow gameplay movement while inactive.
+- Do not count elapsed background time as gameplay movement.
+- Return to a clear paused state, rather than instantly resuming.
+- Require explicit player action to continue.
+- Avoid giant delta-time jumps when the app resumes.
+
+If the operating system terminates the app, permanent records and settings must remain safe. Saving a complete active run across process death is not mandatory for this first release.
+
+---
+
+# 14. RESPONSIVE MOBILE SUPPORT
+
+Target common Android portrait display sizes and aspect ratios.
+
+Requirements:
+
+- Use an internally consistent logical playfield.
+- Respect safe areas and display cutouts.
+- Support tall and narrow screens.
+- Support screens with different pixel densities.
+- Keep buttons comfortably touchable.
+- Maintain consistent block movement behavior.
+- Never render gameplay underneath navigation controls.
+- Never clip overlays outside visible screen bounds.
+- Keep active tower placement visually centered within the intended play area.
+
+Correctly handle coordinate transformations between:
+
+- World coordinates.
+- Camera coordinates.
+- Viewport coordinates.
+- Flutter screen coordinates.
+
+Avoid mixing these coordinate systems in collision calculations.
+
+Lock the preferred orientation to portrait on supported mobile platforms.
+
+---
+
+# 15. LOCAL STORAGE & DATA PERSISTENCE
+
+Use an appropriate lightweight Flutter local storage package, such as shared_preferences, for simple persistent game data.
+
+Persist:
+
+- Best score.
+- Best streak.
+- Total games played.
+- Total successful placements.
+- Total perfect placements.
+- Selected theme.
+- Theme unlocks or derivable best-score state.
+- Sound setting.
+- Haptic setting.
+- Reduced motion setting.
+- Tutorial completion state.
+
+Requirements:
+
+- Load data safely on startup.
+- Use sensible defaults on first launch.
+- Handle missing or malformed stored values.
+- Avoid frequent unnecessary disk writes.
+- Save records at appropriate game events.
+- Preserve existing data during normal updates.
+- Do not reset data during ordinary restart.
+- Avoid blocking the gameplay loop with storage operations.
+
+No cloud storage, internet sync, accounts or backend.
+
+---
+
+# 16. AUDIO & HAPTIC FEEDBACK
+
+Keep audio minimal.
+
+Desired feedback:
+
+- Button click.
+- Normal block placement.
+- Perfect placement.
+- Game-over notification.
+
+Avoid downloading third-party sounds.
+
+Use a lightweight reliable approach, such as supported system sounds or small original programmatically generated effects, without heavy audio infrastructure.
+
+If sound support is limited by the platform, degrade gracefully.
+
+Haptic feedback:
+
+- Light feedback on successful placement.
+- A distinct but gentle response for perfect placement.
+- Optional feedback on game over.
+
+All feedback must respect settings.
+
+No essential gameplay information should depend solely on audio or vibration.
+
+---
+
+# 17. TECHNICAL ARCHITECTURE
+
+Use a clear, modular project structure.
+
+Suggested organization:
+
+lib/
+- main.dart
+- app.dart
+- core/
+  - game_config.dart
+  - game_theme.dart
+  - game_state.dart
+- game/
+  - stack_pulse_game.dart
+  - stack_world.dart
+  - components/
+    - stack_block.dart
+    - moving_block.dart
+    - falling_piece.dart
+    - particle_effect.dart
+  - systems/
+    - placement_engine.dart
+    - difficulty_controller.dart
+    - camera_controller.dart
+    - score_controller.dart
+- models/
+  - game_statistics.dart
+  - game_settings.dart
+- services/
+  - local_storage_service.dart
+  - feedback_service.dart
+- ui/
+  - screens/
+    - home_screen.dart
+    - game_screen.dart
+    - themes_screen.dart
+    - settings_screen.dart
+    - tutorial_screen.dart
+  - overlays/
+    - pause_overlay.dart
+    - game_over_overlay.dart
+  - widgets/
+    - premium_button.dart
+    - score_display.dart
+    - theme_card.dart
+
+This structure is a guideline. You may improve it to match the actual selected Flame version and implementation.
+
+Architecture rules:
+
+- Keep mathematical gameplay logic separate from visual components.
+- Keep core game rules independent of Flutter widgets where practical.
+- Avoid giant single-file implementations.
+- Avoid unnecessary abstractions and complex design patterns.
+- Prefer explicit, readable, well-named classes.
+- Use null safety.
+- Correctly dispose resources and listeners.
+- Make mathematical rules independently unit-testable.
+- Use immutable data objects where helpful.
+- Limit UI rebuilds to meaningful state changes.
+- Do not introduce unnecessary state-management dependencies.
+
+---
+
+# 18. PERFORMANCE & MEMORY OPTIMIZATION
+
+The game must remain lightweight.
+
+Requirements:
+
+- Avoid unnecessary object creation inside each update frame.
+- Do not rebuild entire Flutter screens every game tick.
+- Remove completed temporary Flame components.
+- Dispose abandoned controllers, timers and listeners.
+- Avoid excessive particle systems.
+- Keep the number of active temporary effects bounded.
+- Maintain smooth camera and block movement.
+- Avoid expensive rendering operations.
+- Avoid unnecessary shader effects and large textures.
+- Handle long high-score runs without progressively worsening performance.
+
+Prefer mathematical animation over full rigid-body physics.
+
+The game should not require a powerful device to render simple geometric blocks.
+
+---
+
+# 19. CRITICAL EDGE CASES
+
+Explicitly handle and test:
+
+1. Perfectly centered placement.
+2. Nearly perfect placement within tolerance.
+3. Slightly misaligned placement outside tolerance.
+4. Partial overlap from the left.
+5. Partial overlap from the right.
+6. Moving block completely outside the previous block.
+7. Exact edge contact with zero positive overlap.
+8. Extremely narrow surviving block.
+9. Very small fractional overlap widths.
+10. Fractional floating-point coordinates.
+11. Rapid repeated taps.
+12. Simultaneous UI button tap and gameplay tap.
+13. Tap during block placement animation.
+14. Tap during game-over transition.
+15. Tap while paused.
+16. Restart during an animation.
+17. Return home during an animation.
+18. Pause and resume repeatedly.
+19. App backgrounding during horizontal movement.
+20. App backgrounding during block resolution.
+21. Camera movement while a new block spawns.
+22. Very high tower score.
+23. Device aspect-ratio differences.
+24. Missing or corrupted local preferences.
+25. Theme change followed by restart.
+26. High-score saving and persistence.
+27. Very long frame delta after app resume.
+28. Double increment of score.
+29. Multiple active blocks accidentally existing.
+30. Retained width not matching the actual overlap.
+
+**Every edge case must have a deterministic, reliable outcome.**
+
+Do not rely on arbitrary delays to fix state bugs.
+
+---
+
+# 20. GAME LOGIC INVARIANTS
+
+Enforce the following invariants:
+
+- Exactly one active moving block exists during MOVING state.
+- Every successful placement increases score exactly once.
+- A missed placement never increases score.
+- Successful retained width never exceeds previous block width.
+- Retained width is never negative.
+- A perfect placement retains exactly the previous width.
+- A partial placement retains exactly the positive overlap width.
+- A new block always inherits the latest retained width.
+- A placed block never changes position after final resolution.
+- Only one placement resolution may execute at a time.
+- Game over is triggered at most once per run.
+- Restart creates a fresh run without stale animations or callbacks.
+- Hiding or showing overlays never changes the stored block geometry.
+- Pausing and resuming does not alter the current score or block position.
+- Theme changes never alter collision behavior or gameplay difficulty.
+
+These rules should be reflected in code and automated tests.
+
+---
+
+# 21. TESTING REQUIREMENTS
+
+Include meaningful automated tests.
+
+## Unit Tests
+
+Test:
+
+- Interval overlap calculation.
+- Perfect tolerance calculation.
+- Left and right trimming.
+- Zero-overlap detection.
+- Width propagation.
+- Movement boundary reflection.
+- Difficulty progression and speed cap.
+- Score updates.
+- Perfect streak resets.
+- State transition rules.
+- High-score calculations.
+
+## Widget Tests
+
+Where practical, test:
+
+- Home screen navigation.
+- Settings controls.
+- Theme selection.
+- Pause overlay actions.
+- Game-over button behavior.
+
+## Integration / Manual Test Checklist
+
+Cover:
+
+- New game.
+- Repeated perfect placements.
+- Repeated partial placements.
+- Game over.
+- Retry.
+- Pause/resume.
+- Home navigation.
+- Tutorial.
+- Settings persistence.
+- Theme unlocking.
+- Android lifecycle changes.
+
+Do not claim a test has passed unless it was actually executed.
+
+If Flutter tooling is available, run:
+
+- `flutter pub get`
+- `dart format .`
+- `flutter analyze`
+- `flutter test`
+- `flutter build apk --release`
+
+Fix compilation, analysis and test failures before declaring completion.
+
+If the environment cannot run Flutter or Android tooling, report that honestly and provide exact local commands instead.
+
+---
+
+# 22. RELEASE READINESS
+
+Prepare the application as a real Android Flutter project.
+
+Requirements:
+
+- Correct Flutter project structure.
+- Valid pubspec.yaml.
+- Compatible package dependencies.
+- Working main.dart entry point.
+- Proper Android configuration.
+- Portrait orientation.
+- Meaningful display name: Stack Pulse.
+- Original simple app icon generated from geometric shapes where possible.
+- No unnecessary runtime permissions.
+- No internet requirement.
+- No account requirement.
+- No advertisements.
+- No ad-related SDKs or placeholders.
+- No mock gameplay.
+- No required API keys.
+- No placeholder screens.
+- No broken navigation.
+- No TODO-only implementations.
+
+Do not invent production signing credentials or upload keys.
+
+Document how to build APK and Android App Bundle files using the real Flutter toolchain.
+
+---
+
+# 23. DEVELOPMENT EXECUTION RULES
+
+Follow these rules throughout implementation.
+
+### Rule 1 — Implement the real application
+
+Do not create a static prototype or visual-only demonstration.
+
+All gameplay, screen transitions, buttons and persistent settings must work.
+
+### Rule 2 — Full implementation, not just an explanation
+
+Do not respond only with a development plan.
+
+Create actual project files and complete functional source code.
+
+### Rule 3 — No framework substitution
+
+Do not switch away from Flutter + Flame without explicitly reporting that the environment prevents the requested stack.
+
+### Rule 4 — Prioritize gameplay correctness
+
+Mathematical stacking logic, scoring, input safety and state transitions take precedence over decorative effects.
+
+### Rule 5 — No incomplete placeholders
+
+Avoid:
+
+- Empty function implementations.
+- Dummy menus.
+- Simulated score behavior unrelated to gameplay.
+- Hardcoded fake interactions.
+- Missing class definitions.
+- Unresolved references.
+- Incomplete imports.
+
+### Rule 6 — Maintain clean code
+
+Use sensible abstractions and avoid excessive boilerplate.
+
+### Rule 7 — Do not implement ads
+
+Absolutely no AdMob, banner ads, interstitial ads, rewarded ads or advertisement-related dependencies at this stage.
+
+### Rule 8 — Keep the artwork requirement minimal
+
+Everything visual should primarily be generated from basic drawing primitives.
+
+### Rule 9 — Verify before completion
+
+Run available checks and fix actual errors.
+
+### Rule 10 — Preserve working features
+
+While implementing later systems, never break previously functional gameplay mechanics.
+
+---
+
+# 24. EXPECTED FINAL USER EXPERIENCE
+
+When someone installs and launches the game:
+
+1. A beautifully designed Stack Pulse home screen appears.
+2. The player selects Play.
+3. A colorful rectangular block begins moving horizontally above the starting platform.
+4. The player taps to place it.
+5. Accurate placement feels satisfying and preserves width.
+6. Inaccurate placement visibly trims excess material.
+7. The next moving block appears with the new width.
+8. The tower grows and the camera smoothly follows.
+9. Movement gradually becomes more challenging.
+10. The player attempts to build the tallest possible tower.
+11. Missing the tower triggers an animated game-over transition.
+12. The final score and best score appear.
+13. The player can immediately retry.
+14. Personal records and unlocked themes persist across sessions.
+15. Everything works without internet connectivity.
+
+The game must feel responsive, polished, coherent and rewarding.
+
+---
+
+# 25. DEFINITION OF DONE
+
+Consider development complete only when:
+
+- The Flutter project can compile in a suitable Flutter environment.
+- Flame handles actual gameplay rendering and updates.
+- Stacking and cutting calculations are correct.
+- Touch inputs are reliable.
+- Score and streak behavior are correct.
+- Game over and restart work.
+- Camera movement works.
+- Menus and overlays work.
+- Theme selection works.
+- Settings persist.
+- Saved best score persists.
+- Lifecycle pause/resume behavior is reliable.
+- The main edge cases have been tested.
+- No major visual clipping or state bugs remain.
+- No third-party artwork is required.
+- No advertisements are included.
+- The game is reasonably smooth on actual mobile hardware.
+
+If any item cannot be verified, state that explicitly rather than pretending it is complete.
+
+---
+
+# 26. FINAL DELIVERY
+
+When implementation is complete, provide:
+
+1. Complete Flutter project files.
+2. Directory structure.
+3. pubspec.yaml and dependency information.
+4. Implemented feature summary.
+5. Test and analysis results, with actual pass/fail status.
+6. Remaining limitations, if any.
+7. Commands to run the app.
+8. Commands to create a release APK.
+9. Commands to create a release AAB.
+10. A short README explaining the project architecture.
+
+If you can edit workspace files, create the complete project directly.
+
+If you cannot edit files, provide the complete source files in a structured, reproducible format. Do not omit important code.
+
+Do not claim that the game has been successfully compiled or tested without executing the relevant tooling.
+
+**FINAL INSTRUCTION:**
+
+Build STACK PULSE as a complete, original, modern, minimal-artwork Flutter + Flame mobile game. Prioritize extremely reliable stacking mechanics, polished visuals, smooth animations, fair difficulty, clean architecture, and a premium user experience.
+
+Deliver the real game, not just its description.
+
+**BEGIN IMPLEMENTATION.**

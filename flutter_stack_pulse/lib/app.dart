@@ -1,0 +1,142 @@
+import 'package:flutter/material.dart';
+import 'core/game_theme.dart';
+import 'models/game_settings.dart';
+import 'models/game_statistics.dart';
+import 'services/local_storage_service.dart';
+import 'ui/screens/home_screen.dart';
+import 'ui/screens/game_screen.dart';
+import 'ui/screens/themes_screen.dart';
+import 'ui/screens/settings_screen.dart';
+import 'ui/screens/tutorial_screen.dart';
+
+enum AppView {
+  home,
+  game,
+  themes,
+  settings,
+  tutorial,
+}
+
+class StackPulseApp extends StatefulWidget {
+  const StackPulseApp({super.key});
+
+  @override
+  State<StackPulseApp> createState() => _StackPulseAppState();
+}
+
+class _StackPulseAppState extends State<StackPulseApp> {
+  final LocalStorageService _storage = LocalStorageService();
+  GameSettings _settings = const GameSettings();
+  GameStatistics _statistics = const GameStatistics();
+  AppView _currentView = AppView.home;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadState();
+  }
+
+  Future<void> _loadState() async {
+    final settings = await _storage.loadSettings();
+    final stats = await _storage.loadStatistics();
+    setState(() {
+      _settings = settings;
+      _statistics = stats;
+      _isLoading = false;
+    });
+  }
+
+  GameTheme get _currentTheme {
+    final found = GameTheme.allThemes.firstWhere(
+      (t) => t.type.name == _settings.selectedTheme,
+      orElse: () => GameTheme.midnightNeon,
+    );
+    return found;
+  }
+
+  void _updateSettings(GameSettings updated) {
+    setState(() => _settings = updated);
+    _storage.saveSettings(updated);
+  }
+
+  void _updateStatistics(GameStatistics updated) {
+    setState(() => _statistics = updated);
+    _storage.saveStatistics(updated);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const MaterialApp(
+        debugShowCheckedModeBanner: false,
+        home: Scaffold(
+          backgroundColor: Color(0xFF0B1020),
+          body: Center(child: CircularProgressIndicator(color: Color(0xFF55DDFB))),
+        ),
+      );
+    }
+
+    final theme = _currentTheme;
+
+    return MaterialApp(
+      title: 'Stack Pulse',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        fontFamily: 'Plus Jakarta Sans',
+        scaffoldBackgroundColor: theme.background,
+        colorScheme: ColorScheme.dark(
+          primary: theme.primaryAccent,
+          surface: theme.surface,
+          background: theme.background,
+        ),
+      ),
+      home: _buildCurrentView(theme),
+    );
+  }
+
+  Widget _buildCurrentView(GameTheme theme) {
+    switch (_currentView) {
+      case AppView.game:
+        return GameScreen(
+          theme: theme,
+          settings: _settings,
+          statistics: _statistics,
+          onUpdateStatistics: _updateStatistics,
+          onHome: () => setState(() => _currentView = AppView.home),
+          onOpenSettings: () => setState(() => _currentView = AppView.settings),
+        );
+      case AppView.themes:
+        return ThemesScreen(
+          currentTheme: theme,
+          bestScore: _statistics.bestScore,
+          onSelectTheme: (newTheme) {
+            _updateSettings(_settings.copyWith(selectedTheme: newTheme.type.name));
+          },
+          onDismiss: () => setState(() => _currentView = AppView.home),
+        );
+      case AppView.settings:
+        return SettingsScreen(
+          theme: theme,
+          settings: _settings,
+          onSave: _updateSettings,
+          onDismiss: () => setState(() => _currentView = AppView.home),
+        );
+      case AppView.tutorial:
+        return TutorialScreen(
+          theme: theme,
+          onDismiss: () => setState(() => _currentView = AppView.home),
+        );
+      case AppView.home:
+      default:
+        return HomeScreen(
+          theme: theme,
+          statistics: _statistics,
+          onPlay: () => setState(() => _currentView = AppView.game),
+          onThemes: () => setState(() => _currentView = AppView.themes),
+          onSettings: () => setState(() => _currentView = AppView.settings),
+          onTutorial: () => setState(() => _currentView = AppView.tutorial),
+        );
+    }
+  }
+}
