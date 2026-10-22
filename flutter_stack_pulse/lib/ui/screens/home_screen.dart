@@ -39,7 +39,7 @@ class HomeScreen extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: theme.surface,
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: Colors.white.withOpacity(0.08)),
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -59,7 +59,7 @@ class HomeScreen extends StatelessWidget {
                     ),
                   ),
                   IconButton(
-                    icon: Icon(Icons.settings_outlined, color: theme.text.withOpacity(0.8)),
+                    icon: Icon(Icons.settings_outlined, color: theme.text.withValues(alpha: 0.8)),
                     onPressed: onSettings,
                   ),
                 ],
@@ -77,10 +77,10 @@ class HomeScreen extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: theme.surface,
                         borderRadius: BorderRadius.circular(24),
-                        border: Border.all(color: theme.primaryAccent.withOpacity(0.3), width: 1.5),
+                        border: Border.all(color: theme.primaryAccent.withValues(alpha: 0.3), width: 1.5),
                         boxShadow: [
                           BoxShadow(
-                            color: theme.primaryAccent.withOpacity(0.18),
+                            color: theme.primaryAccent.withValues(alpha: 0.18),
                             blurRadius: 24,
                             offset: const Offset(0, 6),
                           ),

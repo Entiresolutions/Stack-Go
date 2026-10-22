@@ -28,13 +28,13 @@ class ThemeCard extends StatelessWidget {
           border: Border.all(
             color: isSelected
                 ? theme.primaryAccent
-                : Colors.white.withOpacity(isUnlocked ? 0.08 : 0.03),
+                : Colors.white.withValues(alpha: isUnlocked ? 0.08 : 0.03),
             width: isSelected ? 2.0 : 1.0,
           ),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: theme.primaryAccent.withOpacity(0.25),
+                    color: theme.primaryAccent.withValues(alpha: 0.25),
                     blurRadius: 16,
                     offset: const Offset(0, 4),
                   ),
@@ -50,7 +50,7 @@ class ThemeCard extends StatelessWidget {
               decoration: BoxDecoration(
                 color: theme.background,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.white.withOpacity(0.1)),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
               ),
               child: Center(
                 child: Column(
@@ -87,7 +87,7 @@ class ThemeCard extends StatelessWidget {
                       Text(
                         theme.name,
                         style: TextStyle(
-                          color: isUnlocked ? Colors.white : Colors.white.withOpacity(0.4),
+                          color: isUnlocked ? Colors.white : Colors.white.withValues(alpha: 0.4),
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
                         ),
@@ -105,8 +105,8 @@ class ThemeCard extends StatelessWidget {
                         : 'Unlock at Best Score ${theme.unlockScore}',
                     style: TextStyle(
                       color: isUnlocked
-                          ? theme.secondaryText.withOpacity(0.8)
-                          : theme.warningAccent.withOpacity(0.8),
+                          ? theme.secondaryText.withValues(alpha: 0.8)
+                          : theme.warningAccent.withValues(alpha: 0.8),
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
                     ),
@@ -115,7 +115,7 @@ class ThemeCard extends StatelessWidget {
               ),
             ),
             if (!isUnlocked)
-              Icon(Icons.lock_outline, color: Colors.white.withOpacity(0.3), size: 20),
+              Icon(Icons.lock_outline, color: Colors.white.withValues(alpha: 0.3), size: 20),
           ],
         ),
       ),

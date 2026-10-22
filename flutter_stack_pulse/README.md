@@ -1,23 +1,25 @@
-# STACK PULSE — Flutter + Flame Mobile Game
+# STACK PULSE — Flutter + Flame Cross-Platform Game
 
-**Stack Pulse** is a complete, polished, 2D minimalist precision block-stacking arcade mobile game built with **Flutter** and the **Flame Engine**.
+**Stack Pulse** is a complete, polished, 2D minimalist precision block-stacking arcade game built with **Flutter** and the **Flame Engine**. Playable seamlessly across **Android, Windows Desktop, and Web**.
 
 ## Features
-- **Clean 2D Precision Gameplay**: Horizontal interval intersection cutting without physics jitter.
+- **Clean 2D Precision Gameplay**: Frame-rate independent horizontal interval intersection cutting without physics collider jitter.
 - **Snapping & Perfect Combos**: Snaps near-perfect alignments (`tolerance = clamp(width * 0.025, 2, 5)`).
-- **Combo Feedback**: Rewarding visual & auditory combo system: *NICE!*, *GREAT!*, *AMAZING!*, *LEGENDARY!*.
-- **Smooth Easing Camera**: Vertical tracking maintaining headroom above the moving block.
+- **Ascending Procedural Audio**: In-memory procedural WAV synthesis with rising pentatonic scales (C4 to A6) and dedicated combo scale (C5 to C7) with harmonic overtones.
+- **Haptic Feedback**: Three-tiered tactile feedback (light, medium, heavy) on placements and combo milestones.
+- **Dynamic Particle Fireworks**: Burst effects scaling in count and velocity with consecutive perfect streak count.
+- **Smooth Easing Camera & Screen Shake**: Vertical easing tracking keeping the active block centered, with impact shake on game over.
+- **Keyboard & Touch Controls**: Play with single tap, mouse click, or `Space` / `Enter` keyboard keys.
 - **4 Procedural Themes**: Midnight Neon (default), Aurora (Score 10+), Sunset Pulse (Score 25+), Arctic Glow (Score 50+).
-- **Local Persistence**: Stores best score, streaks, and gameplay stats via `shared_preferences`.
+- **Local Offline Persistence**: Stores high scores, combo records, and gameplay statistics via `shared_preferences`.
 - **Zero Ads & Zero Internet Required**: Pure, distraction-free arcade feel.
 
 ---
 
 ## Requirements
-- Flutter SDK `>=3.10.0`
-- Dart SDK `>=3.0.0 <4.0.0`
-- Android Studio or VS Code with Flutter extensions
-- Android device or emulator running API 21+
+- Flutter SDK `>=3.10.0` (Verified on Flutter 3.47+ / Dart 3.13+)
+- Flame Engine `^1.20.0` (Flame 1.38+)
+- Audioplayers `^6.8.1`
 
 ---
 
@@ -27,7 +29,8 @@ flutter_stack_pulse/
 ├── pubspec.yaml
 ├── README.md
 ├── android/
-│   └── app/src/main/AndroidManifest.xml
+├── web/
+├── windows/
 ├── lib/
 │   ├── main.dart
 │   ├── app.dart
@@ -40,7 +43,8 @@ flutter_stack_pulse/
 │   │   └── game_settings.dart
 │   ├── services/
 │   │   ├── local_storage_service.dart
-│   │   └── feedback_service.dart
+│   │   ├── feedback_service.dart
+│   │   └── sound_synthesizer.dart
 │   ├── game/
 │   │   ├── stack_pulse_game.dart
 │   │   ├── stack_world.dart
@@ -69,14 +73,16 @@ flutter_stack_pulse/
 │           ├── score_display.dart
 │           └── theme_card.dart
 └── test/
+    ├── widget_test.dart
     └── unit/
-        ├── placement_engine_test.dart
-        └── difficulty_controller_test.dart
+        ├── audio_test.dart
+        ├── difficulty_controller_test.dart
+        └── placement_engine_test.dart
 ```
 
 ---
 
-## Local Development Commands
+## Commands
 
 ### 1. Install Dependencies
 ```bash
@@ -94,25 +100,26 @@ flutter test
 flutter analyze
 ```
 
-### 4. Run in Debug Mode (Connected Device / Emulator)
+### 4. Run Game
 ```bash
+# Run on Windows Desktop
+flutter run -d windows
+
+# Run on Chrome Web
+flutter run -d chrome
+
+# Run on connected Android device / emulator
 flutter run
 ```
 
----
-
-## Building Production Releases
-
-### Build Release APK
+### 5. Build for Production
 ```bash
+# Web Build
+flutter build web
+
+# Android APK
 flutter build apk --release
-```
-The output file will be generated at:
-`build/app/outputs/flutter-apk/app-release.apk`
 
-### Build Release Android App Bundle (AAB for Google Play)
-```bash
-flutter build appbundle --release
+# Windows Executable
+flutter build windows
 ```
-The output bundle will be generated at:
-`build/app/outputs/bundle/release/app-release.aab`

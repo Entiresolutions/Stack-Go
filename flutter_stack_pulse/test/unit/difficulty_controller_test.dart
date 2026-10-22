@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import '../../lib/core/game_config.dart';
-import '../../lib/game/systems/difficulty_controller.dart';
+import 'package:stack_pulse/core/game_config.dart';
+import 'package:stack_pulse/game/systems/difficulty_controller.dart';
 
 void main() {
   group('DifficultyController Tests', () {

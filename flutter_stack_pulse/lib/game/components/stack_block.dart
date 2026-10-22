@@ -27,7 +27,7 @@ class StackBlockComponent extends PositionComponent {
 
     // Subtle top highlight sheen
     final highlightPaint = Paint()
-      ..color = Colors.white.withOpacity(0.25)
+      ..color = Colors.white.withValues(alpha: 0.28)
       ..style = PaintingStyle.fill;
     final highlightRRect = RRect.fromRectAndRadius(
       Rect.fromLTWH(2, 2, size.x - 4, 3),
@@ -37,7 +37,7 @@ class StackBlockComponent extends PositionComponent {
 
     // Subtle hairline stroke outline
     final outlinePaint = Paint()
-      ..color = Colors.white.withOpacity(0.12)
+      ..color = Colors.white.withValues(alpha: 0.12)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.0;
     canvas.drawRRect(rrect, outlinePaint);

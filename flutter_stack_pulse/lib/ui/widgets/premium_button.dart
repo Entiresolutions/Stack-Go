@@ -20,16 +20,18 @@ class PremiumButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final accent = customAccent ?? (isPrimary ? const Color(0xFF55DDFB) : const Color(0xFF1D2940));
-    final textColor = isPrimary ? const Color(0xFF0B1020) : const Color(0xFFF7FAFF);
+    final accent = customAccent ??
+        (isPrimary ? const Color(0xFF55DDFB) : const Color(0xFF1D2940));
+    final textColor =
+        isPrimary ? const Color(0xFF0B1020) : const Color(0xFFF7FAFF);
 
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(16),
-        splashColor: (isPrimary ? Colors.white : Colors.blue).withOpacity(0.2),
+        splashColor:
+            (isPrimary ? Colors.white : Colors.blue).withValues(alpha: 0.2),
         child: Ink(
           height: height,
           decoration: BoxDecoration(
@@ -37,11 +39,14 @@ class PremiumButton extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
             border: isPrimary
                 ? null
-                : Border.all(color: Colors.white.withOpacity(0.08), width: 1.0),
+                : Border.all(
+                    color: Colors.white.withValues(alpha: 0.08),
+                    width: 1.0,
+                  ),
             boxShadow: isPrimary
                 ? [
                     BoxShadow(
-                      color: accent.withOpacity(0.35),
+                      color: accent.withValues(alpha: 0.35),
                       blurRadius: 18,
                       offset: const Offset(0, 4),
                     ),

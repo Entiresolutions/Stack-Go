@@ -152,7 +152,6 @@ class GameTheme {
       case ThemeType.arcticGlow:
         return arcticGlow;
       case ThemeType.midnightNeon:
-      default:
         return midnightNeon;
     }
   }

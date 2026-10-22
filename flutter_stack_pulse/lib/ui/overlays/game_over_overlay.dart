@@ -25,7 +25,7 @@ class GameOverOverlay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.black.withOpacity(0.8),
+      color: Colors.black.withValues(alpha: 0.8),
       child: Center(
         child: Container(
           width: 320,
@@ -34,7 +34,9 @@ class GameOverOverlay extends StatelessWidget {
             color: theme.surface,
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
-              color: isNewBest ? theme.primaryAccent : Colors.white.withOpacity(0.1),
+              color: isNewBest
+                  ? theme.primaryAccent
+                  : Colors.white.withValues(alpha: 0.1),
               width: isNewBest ? 2.0 : 1.0,
             ),
           ),
@@ -44,7 +46,7 @@ class GameOverOverlay extends StatelessWidget {
               Text(
                 'GAME OVER',
                 style: TextStyle(
-                  color: theme.text.withOpacity(0.8),
+                  color: theme.text.withValues(alpha: 0.8),
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 2.5,
@@ -63,9 +65,10 @@ class GameOverOverlay extends StatelessWidget {
               ),
               if (isNewBest) ...[
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                   decoration: BoxDecoration(
-                    color: theme.primaryAccent.withOpacity(0.18),
+                    color: theme.primaryAccent.withValues(alpha: 0.18),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(color: theme.primaryAccent),
                   ),
@@ -86,7 +89,10 @@ class GameOverOverlay extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   _statItem('ALL-TIME BEST', '$bestScore', theme),
-                  Container(width: 1, height: 32, color: Colors.white.withOpacity(0.1)),
+                  Container(
+                      width: 1,
+                      height: 32,
+                      color: Colors.white.withValues(alpha: 0.1)),
                   _statItem('BEST STREAK', '$bestStreak', theme),
                 ],
               ),

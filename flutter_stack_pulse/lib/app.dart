@@ -72,7 +72,9 @@ class _StackPulseAppState extends State<StackPulseApp> {
         debugShowCheckedModeBanner: false,
         home: Scaffold(
           backgroundColor: Color(0xFF0B1020),
-          body: Center(child: CircularProgressIndicator(color: Color(0xFF55DDFB))),
+          body: Center(
+            child: CircularProgressIndicator(color: Color(0xFF55DDFB)),
+          ),
         ),
       );
     }
@@ -88,7 +90,6 @@ class _StackPulseAppState extends State<StackPulseApp> {
         colorScheme: ColorScheme.dark(
           primary: theme.primaryAccent,
           surface: theme.surface,
-          background: theme.background,
         ),
       ),
       home: _buildCurrentView(theme),
@@ -111,7 +112,8 @@ class _StackPulseAppState extends State<StackPulseApp> {
           currentTheme: theme,
           bestScore: _statistics.bestScore,
           onSelectTheme: (newTheme) {
-            _updateSettings(_settings.copyWith(selectedTheme: newTheme.type.name));
+            _updateSettings(
+                _settings.copyWith(selectedTheme: newTheme.type.name));
           },
           onDismiss: () => setState(() => _currentView = AppView.home),
         );
@@ -128,7 +130,6 @@ class _StackPulseAppState extends State<StackPulseApp> {
           onDismiss: () => setState(() => _currentView = AppView.home),
         );
       case AppView.home:
-      default:
         return HomeScreen(
           theme: theme,
           statistics: _statistics,

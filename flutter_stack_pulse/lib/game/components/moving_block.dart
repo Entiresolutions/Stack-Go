@@ -21,10 +21,8 @@ class MovingBlockComponent extends PositionComponent {
   @override
   void update(double dt) {
     super.update(dt);
-    // Frame-rate independent movement
     position.x += speed * direction * dt;
 
-    // Reverse at bounds
     if (position.x <= minX) {
       position.x = minX;
       direction = 1;
@@ -47,7 +45,7 @@ class MovingBlockComponent extends PositionComponent {
 
     // Top highlight
     final highlightPaint = Paint()
-      ..color = Colors.white.withOpacity(0.3)
+      ..color = Colors.white.withValues(alpha: 0.3)
       ..style = PaintingStyle.fill;
     final highlightRRect = RRect.fromRectAndRadius(
       Rect.fromLTWH(2, 2, size.x - 4, 3),
@@ -57,7 +55,7 @@ class MovingBlockComponent extends PositionComponent {
 
     // Crisp outline
     final outlinePaint = Paint()
-      ..color = Colors.white.withOpacity(0.18)
+      ..color = Colors.white.withValues(alpha: 0.18)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.0;
     canvas.drawRRect(rrect, outlinePaint);

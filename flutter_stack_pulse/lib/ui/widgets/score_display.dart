@@ -34,7 +34,7 @@ class ScoreDisplay extends StatelessWidget {
         Text(
           'BEST $bestScore',
           style: TextStyle(
-            color: textColor.withOpacity(0.55),
+            color: textColor.withValues(alpha: 0.55),
             fontSize: 13,
             fontWeight: FontWeight.w600,
             letterSpacing: 1.2,

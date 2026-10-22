@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import '../../lib/core/game_state.dart';
-import '../../lib/game/systems/placement_engine.dart';
+import 'package:stack_pulse/core/game_state.dart';
+import 'package:stack_pulse/game/systems/placement_engine.dart';
 
 void main() {
   group('PlacementEngine Tests', () {
@@ -22,7 +22,7 @@ void main() {
       final result = PlacementEngine.calculatePlacement(
         previousLeft: 75.0,
         previousWidth: 200.0, // bounds: [75, 275]
-        movingLeft: 95.0,    // bounds: [95, 295], offset = 20 > tolerance
+        movingLeft: 95.0, // bounds: [95, 295], offset = 20 > tolerance
         movingWidth: 200.0,
       );
 
@@ -41,7 +41,7 @@ void main() {
       final result = PlacementEngine.calculatePlacement(
         previousLeft: 100.0,
         previousWidth: 200.0, // bounds: [100, 300]
-        movingLeft: 70.0,     // bounds: [70, 270], offset = 30 > tolerance
+        movingLeft: 70.0, // bounds: [70, 270], offset = 30 > tolerance
         movingWidth: 200.0,
       );
 
@@ -60,7 +60,7 @@ void main() {
       final result = PlacementEngine.calculatePlacement(
         previousLeft: 75.0,
         previousWidth: 100.0, // bounds: [75, 175]
-        movingLeft: 200.0,    // bounds: [200, 300] - completely missed
+        movingLeft: 200.0, // bounds: [200, 300] - completely missed
         movingWidth: 100.0,
       );
 
@@ -73,7 +73,7 @@ void main() {
       final result = PlacementEngine.calculatePlacement(
         previousLeft: 50.0,
         previousWidth: 100.0, // bounds: [50, 150]
-        movingLeft: 150.0,    // bounds: [150, 250], touch point = 150
+        movingLeft: 150.0, // bounds: [150, 250], touch point = 150
         movingWidth: 100.0,
       );
 

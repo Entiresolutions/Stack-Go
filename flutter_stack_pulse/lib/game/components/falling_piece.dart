@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 
 class FallingPieceComponent extends PositionComponent {
   final Color pieceColor;
-  double velocityY = 40.0;
-  final double gravity = 700.0;
+  double velocityY;
+  final double gravity = 800.0;
   double rotationSpeed;
   double opacity = 1.0;
   final double maxY;
@@ -14,6 +14,7 @@ class FallingPieceComponent extends PositionComponent {
     required Vector2 size,
     required this.pieceColor,
     required this.maxY,
+    this.velocityY = 30.0,
     this.rotationSpeed = 1.5,
   }) : super(position: position, size: size, anchor: Anchor.center);
 
@@ -24,8 +25,8 @@ class FallingPieceComponent extends PositionComponent {
     position.y += velocityY * dt;
     angle += rotationSpeed * dt;
 
-    if (position.y > maxY - 150) {
-      opacity = (opacity - dt * 2.0).clamp(0.0, 1.0);
+    if (position.y > maxY - 200) {
+      opacity = (opacity - dt * 2.5).clamp(0.0, 1.0);
     }
 
     if (position.y > maxY || opacity <= 0.0) {
@@ -35,10 +36,14 @@ class FallingPieceComponent extends PositionComponent {
 
   @override
   void render(Canvas canvas) {
-    final rect = Rect.fromCenter(center: Offset.zero, width: size.x, height: size.y);
+    final rect =
+        Rect.fromCenter(center: Offset.zero, width: size.x, height: size.y);
     final paint = Paint()
-      ..color = pieceColor.withOpacity(opacity)
+      ..color = pieceColor.withValues(alpha: opacity)
       ..style = PaintingStyle.fill;
-    canvas.drawRRect(RRect.fromRectAndRadius(rect, const Radius.circular(3)), paint);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(rect, const Radius.circular(3)),
+      paint,
+    );
   }
 }

@@ -33,7 +33,6 @@ class GameScreen extends StatefulWidget {
 class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   late StackPulseGame _game;
   int _currentScore = 0;
-  int _currentStreak = 0;
   String? _streakBadge;
   bool _isPaused = false;
   bool _isGameOver = false;
@@ -55,7 +54,6 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
       onScoreUpdate: (score, streak, badge) {
         setState(() {
           _currentScore = score;
-          _currentStreak = streak;
           _streakBadge = badge;
         });
       },
@@ -63,10 +61,13 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
         final isNew = finalScore > widget.statistics.bestScore;
         final updatedStats = widget.statistics.copyWith(
           bestScore: isNew ? finalScore : widget.statistics.bestScore,
-          bestStreak: bestStreak > widget.statistics.bestStreak ? bestStreak : widget.statistics.bestStreak,
+          bestStreak: bestStreak > widget.statistics.bestStreak
+              ? bestStreak
+              : widget.statistics.bestStreak,
           totalGamesPlayed: widget.statistics.totalGamesPlayed + 1,
           totalBlocksPlaced: widget.statistics.totalBlocksPlaced + finalScore,
-          totalPerfectPlacements: widget.statistics.totalPerfectPlacements + bestStreak,
+          totalPerfectPlacements:
+              widget.statistics.totalPerfectPlacements + bestStreak,
         );
         widget.onUpdateStatistics(updatedStats);
 
@@ -82,7 +83,8 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive) {
       if (!_isGameOver && !_isPaused) {
         _onPause();
       }
@@ -110,7 +112,6 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
       _isPaused = false;
       _isGameOver = false;
       _currentScore = 0;
-      _currentStreak = 0;
       _streakBadge = null;
     });
     _game.initializeGame();
@@ -129,26 +130,32 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
             child: GameWidget(game: _game),
           ),
 
-          // Top Non-occluding HUD
+          // Top Non-occluding Centered HUD
           SafeArea(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Score & Streak
-                  ScoreDisplay(
-                    score: _currentScore,
-                    bestScore: widget.statistics.bestScore,
-                    streakBadge: _streakBadge,
-                    textColor: theme.text,
-                    accentColor: theme.primaryAccent,
+                  const SizedBox(width: 48), // Balances pause icon
+                  Expanded(
+                    child: Center(
+                      child: ScoreDisplay(
+                        score: _currentScore,
+                        bestScore: widget.statistics.bestScore,
+                        streakBadge: _streakBadge,
+                        textColor: theme.text,
+                        accentColor: theme.primaryAccent,
+                      ),
+                    ),
                   ),
-
-                  // Pause button
                   IconButton(
-                    icon: Icon(Icons.pause_rounded, color: theme.text, size: 28),
+                    icon: Icon(
+                      Icons.pause_rounded,
+                      color: theme.text,
+                      size: 28,
+                    ),
                     onPressed: _onPause,
                   ),
                 ],
