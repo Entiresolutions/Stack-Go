@@ -54,7 +54,7 @@ class StackPulseGame extends FlameGame<StackWorld>
         );
 
   @override
-  Color backgroundColor() => theme.background;
+  Color backgroundColor() => Colors.transparent;
 
   @override
   Future<void> onLoad() async {

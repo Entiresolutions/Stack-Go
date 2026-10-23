@@ -101,6 +101,47 @@ class GameTheme {
         ],
       );
 
+  /// Game Over RETRY button signature 4-stop gradient: Cyan -> Blue -> Purple -> Magenta
+  LinearGradient get retryButtonGradient => const LinearGradient(
+        begin: Alignment.centerLeft,
+        end: Alignment.centerRight,
+        colors: [
+          Color(0xFF13D9FF),
+          Color(0xFF347BFF),
+          Color(0xFF9658FF),
+          Color(0xFFF34BEA),
+        ],
+      );
+
+  /// Game Over Title gradient: Neon Magenta to Electric Purple
+  LinearGradient get gameOverHeadingGradient => const LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          Color(0xFFF34BEA),
+          Color(0xFF9658FF),
+        ],
+      );
+
+  /// Pause RESUME button gradient: Electric Cyan to Electric Purple
+  LinearGradient get resumeButtonGradient => const LinearGradient(
+        begin: Alignment.centerLeft,
+        end: Alignment.centerRight,
+        colors: [
+          Color(0xFF20BAFF),
+          Color(0xFF4B79FF),
+          Color(0xFF9B50FF),
+        ],
+      );
+
+  /// Modal and card surfaces for Pause and Game Over
+  Color get pauseModalBackground =>
+      const Color(0xFF0D1B36).withValues(alpha: 0.94);
+  Color get scoreCardBackground =>
+      const Color(0xFF102242).withValues(alpha: 0.92);
+  Color get secondaryPillSurface =>
+      const Color(0xFF152A50).withValues(alpha: 0.90);
+
   /// Vibrant dual-tone accent gradient
   LinearGradient get accentGradient => LinearGradient(
         begin: Alignment.topLeft,
@@ -329,4 +370,33 @@ class GameTheme {
   Color getBlockColor(int index) {
     return blockPalette[index % blockPalette.length];
   }
+
+  /// Path to the dedicated 3D isometric theme preview asset (Phase 5)
+  String get previewAssetPath {
+    switch (type) {
+      case ThemeType.midnightNeon:
+        return 'assets/images/theme_preview_midnight.jpg';
+      case ThemeType.aurora:
+        return 'assets/images/theme_preview_aurora.jpg';
+      case ThemeType.sunsetPulse:
+        return 'assets/images/theme_preview_sunset.jpg';
+      case ThemeType.arcticGlow:
+        return 'assets/images/theme_preview_arctic.jpg';
+    }
+  }
+
+  // ==========================================
+  // PHASE 7: STANDARDIZED UI TOKENS
+  // ==========================================
+  static const double cardBorderRadiusValue = 22.0;
+  static const double modalBorderRadiusValue = 24.0;
+  static const double disabledOpacityValue = 0.45;
+
+  Color get glassSurfaceColor =>
+      const Color(0xFF14284A).withValues(alpha: 0.85);
+  Color get switchTrackInactiveColor => const Color(0xFF152A4A);
+  BorderRadius get cardBorderRadius =>
+      BorderRadius.circular(cardBorderRadiusValue);
+  BorderRadius get modalBorderRadius =>
+      BorderRadius.circular(modalBorderRadiusValue);
 }

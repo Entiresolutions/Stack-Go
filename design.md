@@ -135,6 +135,36 @@ The typography scale utilizes `Plus Jakarta Sans` (with system sans-serif fallba
 
 ---
 
+## 7.5 Splash Screen Specifications (Reference Screen 1 — Phase 2 Implementation)
+
+### 7.5.1 Native Android Startup Alignment
+- **Native Splash Elimination**: Replaced default `@android:color/white` background with custom `@color/splash_color` (`#061225`) in both `launch_background.xml` and `drawable-v21/launch_background.xml`.
+- **Theme Parentage**: Set `LaunchTheme` and `NormalTheme` parent to `@android:style/Theme.Black.NoTitleBar` in `values/styles.xml` and `values-night/styles.xml`, guaranteeing seamless color continuity into Flutter without white flashes on any Android configuration.
+
+### 7.5.2 Visual Architecture & Production Assets
+- **Production Asset (`assets/images/splash_bg.jpg`)**:
+  - High-resolution (9:16 portrait) environment generated via Nano Banana image generation (`splash_bg_1792778384467.jpg`).
+  - Composition: Deep midnight navy void (`#061225`), vertical cyan light streaks, floating 3D isometric glowing crystalline cubes (cyan top-right, purple top-left), and slanted crystalline towers rising from the lower corners.
+  - Unobstructed center with soft radial glow bloom (`Color(0xFF13D9FF)` and `Color(0xFF9658FF)` at 0.20/0.10 opacity) framing the center emblem.
+- **Center Emblem & Typography**:
+  - 3-tier rounded stacked pill emblem (Cyan `#13D9FF`, Blue `#347BFF`, Purple `#9658FF`) with glossy top sheen lines and luminous drop shadows.
+  - Title: Dual-line brand presentation matching Reference Screen 1:
+    - Line 1: `STACK` (bold white uppercase, letter spacing +5.0).
+    - Line 2: `PULSE` (bold electric cyan uppercase, letter spacing +5.0).
+  - Subtitle: `ONE TAP. PERFECT STACK.` (tracked +2.0 in `#A8C4E4`).
+- **Loading Capsule Progress Slider**:
+  - 180×6px pill container (`Color(0xFF14284A)` at 0.65 opacity with hairline white border).
+  - Multi-tone gradient fill (Electric Cyan `#13D9FF` → Neon Blue `#347BFF` → Electric Purple `#9658FF`) with drop glow.
+
+### 7.5.3 Choreographed Animation Sequence
+- **Stage A (0.00 – 0.22, ~0 – 1.5s)**: 3-pill emblem slides upward (+20% offset to zero) with `Curves.easeOutCubic` and fades in while central ambient glow blooms.
+- **Stage B (0.20 – 0.42, ~1.4 – 3.0s)**: Dual-line game title fades in with subtle vertical slide (+15% to zero); subtitle reveals smoothly at 0.38 – 0.58 (~2.6 – 4.0s).
+- **Stage C (0.02 – 1.00, ~0.1 – 7.0s)**: Capsule progress bar fills smoothly across the full 7.0-second cinematic duration with `Curves.easeInOutCubic`.
+- **Smooth Transition**: At 7.0 seconds, on verified animation completion and local storage readiness, smoothly transitions to `AppView.home` via `AnimatedSwitcher` (260ms `Curves.easeOutCubic`).
+- **Resilience & Testing**: Single-navigation latch (`_hasNavigated`) prevents duplicate transitions. Supports `reducedMotion` (bypasses spatial translations). Widget tests automatically bypass long timers via `TestWidgetsFlutterBinding` checks.
+
+---
+
 ## 8. Home Screen Specifications (Reference Screen 2 — Phase 1 Implementation)
 
 ### 8.1 Production Asset Architecture
@@ -174,91 +204,206 @@ The typography scale utilizes `Plus Jakarta Sans` (with system sans-serif fallba
 
 ---
 
-## 9. Gameplay HUD & Block Styling (Reference Screens 3 & 4)
+## 9. Gameplay Screen Specifications (Reference Screens 3 & 4 — Phase 3 Implementation)
 
-- **Top HUD**:
-  - Left: Golden crown BEST score pill.
-  - Center: Large tabular score with glowing `COMBO X` underline badge.
-  - Right: Circular glass pause button (44×44px) with pause bars icon.
-- **Stack Blocks**:
-  - Dimension: Dynamic width × 32px height.
-  - Rendering: 2.5D vertical gradient, top sheen highlight line (1.5px height at 0.45 white opacity), hairline separation border (0.25 opacity), and subtle floor drop shadow.
-- **Active Moving Block**:
-  - Luminous gradient face, distinct outline, and smooth linear traversal.
-- **Background Atmosphere**:
-  - Dark gradient void with faint vertical architectural guidelines and theme-specific silhouetted background elements.
+### 9.1 Absolute Block Protection
+- **Unmodified Gameplay Layer**: Per strict Phase 3 requirements, all Flame block components (`StackBlockComponent`, `MovingBlockComponent`, `FallingPieceComponent`, and physics engine) remain completely unchanged:
+  - Dimensions, speeds, collision tolerances, spawn coordinates, and trimming math are 100% preserved.
+  - Block rendering styles, bevels, and palette assignments remain authoritative and decoupled from HUD/background presentation.
+
+### 9.2 Production Background Asset (`assets/images/gameplay_bg.jpg`)
+- **Asset Architecture**:
+  - High-resolution (9:16 portrait) environment generated via Nano Banana image generation (`gameplay_bg_1792779594243.jpg`).
+  - Composition: Ultra-dark midnight navy void (`#061225`) with sleek architectural cyber skyscraper silhouettes concentrated strictly on the left and right outer margins.
+  - High Visibility Channel: The central 60% vertical column is spacious, dark, and low-contrast, providing maximum contrast and visual readability for the colorful stacking tower and moving block.
+  - Upper & Lower Grounding: The upper 20% area is shaded for HUD legibility, while the lower foundation features subtle cyan volumetric floor mist.
+  - Viewport-Fixed Strategy: Decoded once and displayed via `Image.asset(..., fit: BoxFit.cover)` behind the transparent Flame `GameWidget`, preventing camera-follow jitter and eliminating runtime decode overhead.
+- **Theme Adaptability**:
+  - `Midnight Neon`: Displays the native `gameplay_bg.jpg` cyber arcade artwork.
+  - `Aurora`, `Sunset Pulse`, `Arctic Glow`: Harmonized via a thematic translucent overlay (`theme.background.withValues(alpha: 0.60)`), preserving environmental geometry while shifting the color temperature.
+
+### 9.3 Screen-Fixed HUD Layout
+- **Top-Left (Best Score Pill)**:
+  - Dark elevated container (`#14284A` at 0.85 opacity, radius 18px, hairline border `alpha: 0.12`).
+  - Gold crown icon (`Icons.emoji_events_rounded` in `#FFCB78`, size 15px).
+  - Two-tier text stack: `BEST` (small 8.5px in `#A8C4E4`) and best score numeral in bold white tabular figures.
+- **Top-Center (Current Score & Combo Badge)**:
+  - Primary focal numeral: 48px bold w900 tabular figures with subtle cyan drop glow.
+  - Pulse physics: Scale bounce (1.0 → 1.12 → 1.0 in 160ms) on score increment (bypassed when `reducedMotion` is enabled).
+  - Combo badge: `COMBO ${streak}` pill badge with dual-tone gradient fill (`primaryAccent` to `secondaryAccent`), hairline border, and a glowing tapered horizontal accent line directly beneath. Fixed height container guarantees zero vertical layout shifting.
+- **Top-Right (Circular Pause Button)**:
+  - 44×44px circular glass button (`#14284A` at 0.85 opacity, hairline border `alpha: 0.12`).
+  - Tactile spring physics: Scales to `0.92` on touch down with spring rebound on release.
+  - Accessible touch target placed securely in the top-right `SafeArea`.
+
+### 9.4 Combo & Perfect Streak Feedback (`PerfectComboBanner`)
+- **Placement**: Screen-fixed in upper region (`top: 22%` of screen height), positioned safely above the active block traversal line to prevent occlusion.
+- **Styling**: `PERFECT!` in bold electric cyan (`#13D9FF`, tracking +3.5) with multi-layered neon glow shadows, plus multiplier `x${streak}` in `#55E7FF`.
+- **Arcade Sparkles**: Ambient diamond sparkle stars (`#13D9FF`, `#9658FF`, `#FFCB78`, `#14E4C5`) frame the banner.
+- **Lifecycle & Motion**: 650ms automatic dismiss cycle; respects `reducedMotion` by using pure fade transitions without elastic scale spring.
+
 
 ---
 
-## 10. Pause & Game-Over Layouts (Reference Screens 5 & 6)
+## 10. Pause & Game-Over Layouts (Reference Screens 5 & 6 — Phase 4 Implementation)
 
 ### 10.1 Pause Overlay
-- Full-screen blurred backdrop (`sigmaX: 10, sigmaY: 10`) with `0xCC061225` dark tint.
-- Floating modal container (`#14284A`) with subtle border and rounded corners (`26px`).
-- Top-right `X` close icon button.
-- Header: `PAUSED` in bold uppercase, accompanied by `Your tower is waiting.` subtitle.
-- Action Stack: Vertical pill buttons for `RESUME` (Primary gradient), `RESTART`, `SETTINGS`, and `HOME`.
+- **Live Gameplay Frosted Backdrop**: The active paused tower scene remains directly visible through `BackdropFilter(filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12))` combined with a dark translucent navy gradient (`#061225` at 0.85 opacity to `#08162E` at 0.88 opacity) and soft ambient cyan/purple glow spots.
+- **Touch Barrier**: Full-screen opaque gesture detector absorbs all touch events, guaranteeing zero accidental block drops while paused.
+- **Top-Right Close Controls**: Tactile circular glass `X` button in `SafeArea` plus an integrated corner `X` in the modal header—both trigger safe, clean `onResume`.
+- **Floating Glass Modal**:
+  - Dimensions: Compact 314px width container centered on screen with 24px border radius.
+  - Surface: Translucent glassmorphic navy gradient (`#162D53` to `#0C1B35` at 0.95–0.97 opacity).
+  - Border: Subtle illuminated cyan/blue outline (`#265A96` at 0.55 opacity, 1.2px width) with deep ambient shadow (`blurRadius: 36`).
+  - Header: `PAUSED` in bold uppercase (22px, tracking +2.4) with centered `Your tower is waiting.` subtitle (13px in `#A8C4E4`).
+- **Four Vertically Stacked Pill Buttons** (10px spacing, consistent heights):
+  1. `RESUME`: Prominent cyan-to-violet gradient (`#20BAFF` → `#4B79FF` → `#9B50FF`), white play icon, 50px pill height, dual-color glow shadow.
+  2. `RESTART`: Dark navy elevated surface (`#1B325A` to `#112240`), white refresh icon, 46px pill height, hairline border.
+  3. `SETTINGS`: Dark navy elevated surface, white settings gear icon, 46px pill height. Opens settings as a modal route on top of the live game, preserving the exact paused tower run on dismissal.
+  4. `HOME`: Dark navy elevated surface, white home icon, 46px pill height.
+- **State Protection**: Transition debouncing prevents rapid-click race conditions.
 
 ### 10.2 Game Over Overlay
-- Magenta-accented ambient backdrop.
-- Title: `GAME OVER` in bold gradient text.
-- Score Card: Elevated container with `SCORE` label and giant tabular score numeral (56px).
-- `NEW BEST` badge: Golden pill with star icon when personal record is broken.
-- Stats Grid: Two-column layout displaying `BEST SCORE` and `BEST STREAK`.
-- Action Stack: Prominent `RETRY` gradient pill button and secondary `HOME` dark pill button.
+- **Live Gameplay Frosted Backdrop**: Full-screen frosted blur (`sigmaX: 14, sigmaY: 14`) over the completed tower run, bathed in soft ambient magenta (`#F34BEA`) and purple (`#9658FF`) glow spots with dark translucent navy grounding. Tap barrier absorbs touch events.
+- **Title**: Large, bold `GAME OVER` (34px, w900, tracking +2.8) rendered with vibrant Neon Magenta-to-Purple gradient (`#F34BEA` to `#9658FF`) and dual-layer neon bloom shadow.
+- **Score Card**:
+  - Proportions: Max 340px width container, 24px border radius, `#102242` surface at 0.92 opacity, hairline border (`alpha: 0.12`).
+  - Header: Small `SCORE` label in `#A8C4E4` (12px, w800, tracking +1.6).
+  - Score Numeral: 64px bold w900 white tabular numeral with smooth count-up animation (`IntTween` from 0 to final score).
+  - `NEW BEST` Badge: Golden amber gradient pill (`#FFE082` → `#FFB300` → `#FFA000`) with custom notched crown silhouette and dark bold typography (`NEW` / `BEST`), displayed *only* on personal records (`isNewBest == true`).
+  - Thin Divider: 1px separation line (`white.withValues(alpha: 0.08)`).
+  - Two-Column Stats: Balanced bottom row with `BEST SCORE` and `BEST STREAK` labels over 22px bold white tabular figures, separated by a thin 32px vertical divider.
+- **Action Buttons**:
+  1. `RETRY`: Signature 4-stop gradient pill (`#13D9FF` → `#347BFF` → `#9658FF` → `#F34BEA`), white play icon, 56px height, vibrant dual-glow drop shadow (`#13D9FF` and `#F34BEA`).
+  2. `HOME`: Dark navy glass pill (`#1A3056` to `#0F1E38`), white home icon, 50px height, hairline border.
+- **Animation**: Smooth scale (0.90 → 1.0) and fade entrance transitions; test-safe execution bypasses delays during automated tests.
 
 ---
 
-## 11. Theme Gallery Specifications (Reference Screen 7)
+## 11. Theme Gallery Specifications (Reference Screen 7 — Phase 5 Implementation)
 
-- **Header**: Back arrow icon button, `CHOOSE YOUR VIBE` title, and `Make every stack your own.` subtitle.
-- **Grid Layout**: 2-column responsive card grid (`GridView`).
-- **Theme Card**:
-  - Dark elevated container with active/inactive border.
-  - Real 3D miniature stacked tower preview rendered on a miniature pedestal using the theme's actual block colors.
-  - Active State: Cyan circular checkmark badge (`Icons.check`) on top-right, glowing active border, and theme name.
-  - Locked State: Top-right lock icon, semi-translucent overlay, and `Unlock at Best Score X` indicator.
-  - Tap interaction: Selects unlocked themes immediately and updates game settings.
+### 11.1 Header & Navigation
+- **Back Navigation**: Tactile circular glass button (`#14284A` at 0.85 opacity, 42×42px, hairline border `alpha: 0.12`) with white `Icons.arrow_back_rounded`.
+- **Typography**:
+  - Title: `CHOOSE YOUR VIBE` in bold uppercase white (19px, w900, tracking +2.0).
+  - Subtitle: `Make every stack your own.` in soft muted cyan/blue (`#A8C4E4`, 12.5px, w500).
+- **Layout Alignment**: Centered title block balanced symmetrically with a matching spacer opposite the back button.
+
+### 11.2 Theme Card Architecture (`ThemeCard`)
+- **Proportions**: 2-column responsive layout with 16px horizontal and vertical spacing. Dynamic aspect ratio clamping (0.78 to 0.90) adapts gracefully across diverse portrait phone heights.
+- **Card Container**:
+  - Radius: Smooth 24px rounded corners.
+  - Surface: Elevated cyber gradient (`theme.surfaceElevated` to `theme.surface`).
+  - Active State (Selected):
+    - Border: Bright illuminated electric cyan (`#13D9FF`, 2.0px width).
+    - Shadow: Dual drop glow (`#13D9FF` at 0.45 opacity, blur 20px + ambient black shadow).
+    - Badge: Circular electric blue pill badge (`#347BFF`, 24×24px, drop glow) with bold white checkmark (`Icons.check_rounded`, size 16) positioned securely at top-right (`10, 10`).
+  - Unlocked State:
+    - Border: Theme-tinted accent outline (`theme.primaryAccent` at 0.40 opacity, 1.2px width).
+    - Ambient shadow: Soft dark drop shadow (`alpha: 0.35`, blur 12px).
+    - No badge.
+  - Locked State:
+    - Border: Low-contrast border (`white.withValues(alpha: 0.08)`).
+    - Surface: Dimmed cyber surface (`alpha: 0.45` to `0.30`).
+    - Badge: Circular translucent lock badge (26×26px, `white.withValues(alpha: 0.08)`) with `Icons.lock_rounded` in `alpha: 0.55`.
+    - Artwork: Dimmed with 0.50 opacity and desaturated grayscale matrix.
+    - Requirement Text: `Unlock at Best Score X` in `#A8C4E4` (11px, w500).
+
+### 11.3 Dedicated 3D Isometric Preview Assets
+- **Asset Suite**:
+  1. `assets/images/theme_preview_midnight.jpg` — Electric cyan, blue, and violet stacked blocks on an illuminated glowing cyan pedestal with dark midnight navy cyber fog.
+  2. `assets/images/theme_preview_aurora.jpg` — Mint, turquoise, emerald, and violet stacked blocks on an illuminated mint pedestal with polar green aurora borealis atmosphere.
+  3. `assets/images/theme_preview_sunset.jpg` — Sunset orange, coral, vivid pink, and warm amber stacked blocks on an illuminated coral pedestal with velvet violet sunset glow.
+  4. `assets/images/theme_preview_arctic.jpg` — Glacial white, ice cyan, polar blue, and oceanic sapphire stacked blocks on an illuminated glacial ice pedestal with crystalline frost atmosphere.
+- **Integration**: Loaded via `Image.asset(theme.previewAssetPath, fit: BoxFit.contain)` with automatic fallback to programmatic geometric block towers if assets cannot load.
+
+### 11.4 Interaction & Persistence
+- **Touch Physics**: Spring scale animation (1.0 → 0.95 → 1.0) on press down/up; respects `GameSettings.reducedMotion`.
+- **Immediate Persistence**: Theme selection writes directly to `SharedPreferences` via `_updateSettings` and synchronizes UI and Flame components simultaneously. Locked themes reject tap interactions without mutation.
 
 ---
 
-## 12. Settings & Tutorial Layout (Reference Screens 8 & 9)
+## 12. Settings & Tutorial Layout (Reference Screens 8 & 9 — Phase 6 Implementation)
 
 ### 12.1 Settings Screen
-- Back navigation header with `SETTINGS` title.
-- Elevated surface container grouping three interactive toggle rows:
-  - **Sound Effects**: Speaker icon, readable label, cyan switch toggle.
-  - **Haptic Feedback**: Vibration phone icon, readable label, cyan switch toggle.
-  - **Reduced Motion**: Moon/calm icon, readable label, cyan switch toggle.
-- Theme Selection Card: Displays mini 3-pill logo, `Current Theme` label, current theme name, and navigation chevron pointing to Themes screen.
+- **Header**: Circular glass back button (42×42px, hairline border `alpha: 0.12`), centered bold white `SETTINGS` title (19px, w900, tracking +2.2), and symmetrical 42px right spacer.
+- **Setting Cards**:
+  - Individual elevated dark cyber cards (`#14284A` at 0.85 opacity, radius 22px, hairline border `alpha: 0.12`, drop shadow blur 14px).
+  - Consistent layout: Circular icon container (38×38px, `white.withValues(alpha: 0.08)`), crisp bold white title (15.5px, w700), and custom electric cyan neon pill switch.
+  - Three distinct controls:
+    1. **Sound Effects**: Speaker icon (`Icons.volume_up_rounded`) + custom neon switch; synchronizes sound effects and background music.
+    2. **Haptic Feedback**: Vibration phone icon (`Icons.vibration_rounded`) + custom neon switch; controls tactile feedback.
+    3. **Reduced Motion**: Crescent moon icon (`Icons.nightlight_round`) + custom neon switch; disables nonessential animations without altering gameplay mechanics.
+- **Custom Neon Pill Switch (`_NeonPillSwitch`)**:
+  - Track: 50×28px pill; when active, emits bright cyan-to-blue gradient (`#13D9FF` to `#347BFF`) with neon bloom drop shadow (`#13D9FF` at 0.45 opacity); when inactive, deep navy (`#152A4A`).
+  - Thumb: 22px pure white circle with smooth slide animation (200ms `Curves.easeOutCubic`) and tactile drop shadow.
+- **Theme Shortcut Card**:
+  - Upper section label: `THEME` (small bold uppercase `#A8C4E4`, tracking +1.6).
+  - Card container: 46×46px mini theme thumbnail previewing active theme asset, `Current Theme` label in `#A8C4E4`, active theme name in bold white (16px, w800), and navigation chevron arrow (`Icons.chevron_right_rounded`).
+  - Seamless navigation to `ThemesScreen`.
+- **State & Persistence**:
+  - Immediate persistence to `SharedPreferences` on toggle.
+  - Fully functional when opened as a modal from Pause Menu; dismissing preserves paused tower session without auto-resuming.
 
 ### 12.2 How to Play Screen
-- Back navigation header with `HOW TO PLAY` title.
-- 5 vertical instructional step rows:
-  1. `Block moves automatically` (with sliding block and directional arrows).
-  2. `Tap to stack it` (with stacked blocks and tapping hand pointer).
-  3. `Perfect alignment keeps the width` (with glowing perfect block and sparkle badge).
-  4. `Inaccurate alignment trims the block` (with trimmed slice falling away).
-  5. `Miss the tower and it's game over` (with missed block falling past tower foundation).
+- **Header**: Circular glass back button (42×42px), centered `HOW TO PLAY` title (19px, w900, tracking +2.0), and `Master the perfect stack.` subtitle (`#A8C4E4`, 12.5px).
+- **Five Interactive Step Cards**:
+  - Container: Elevated dark cyber card (`#14284A` at 0.85 opacity, radius 22px, hairline border `alpha: 0.12`, drop shadow blur 12px).
+  - Structure:
+    - Number Badge: 28×28px circular blue gradient pill (`#2B85FF` to `#1B63D8`) with bold white number (`1`–`5`).
+    - Instruction Text: Crisp bold white instructional sentence (13.5px, w700, height 1.3).
+    - Illustrated Diagram: Dedicated 82×52px interactive educational illustration with looping micro-animations.
+  - Five Illustrated Steps:
+    1. **Block moves automatically**: Gliding rectangular block with ping-pong horizontal oscillation and cyan directional motion arrows.
+    2. **Tap to stack it**: Stationary base block with placed block, tapping hand pointer icon, and expanding radiant cyan touch ripple ring.
+    3. **Perfect alignment keeps the width**: Two perfectly aligned stacked blocks with radiant electric cyan bloom pulse and ambient diamond sparkles.
+    4. **Inaccurate alignment trims the block**: Base block and overlapping top block with falling trimmed slice piece dropping and rotating with gravity.
+    5. **Miss the tower and it's game over**: Foundation stack on left with tumbling missed block tumbling diagonally at 45° downward into the dark void.
+- **Completion CTA**:
+  - Bottom `LET'S PLAY` primary pill button (52px height, cyan-to-purple gradient, play icon) dismissing tutorial cleanly back to previous view.
+- **Accessibility**: Looping animations automatically freeze into static diagrams when `reducedMotion` is active.
 
 ---
 
-## 13. Animation Guidelines
+## 13. Screen Transitions & Animation Guidelines (Phase 7 Final Polish)
 
-- **Screen Transitions**: `AnimatedSwitcher` using `Curves.easeOutCubic` (240ms duration).
-- **Button Press Physics**: 100ms scale to `0.955` on press, 140ms bounce return with `Curves.easeOutBack`.
-- **Modal Entrances**: 260ms scale and fade with `Curves.easeOutBack`.
-- **Hero Tower Motion**: Sinusoidal floating block animation on Home screen (3200ms cycle). Test-safe: automatically bypasses infinite loops during automated widget testing to prevent `pumpAndSettle` timeout.
-- **Particle System**: Flame-managed rotating diamond prisms and glowing spark bursts on perfect placement.
-- **Reduced Motion Support**: Completely disables particle bursts and camera shake when enabled by the user.
+- **Coordinated Screen Transitions**:
+  - Global navigation utilizes `AnimatedSwitcher` with 240ms duration (`Curves.easeOutCubic`).
+  - Coordinated transition architecture combines `FadeTransition` (0.0 → 1.0) with subtle `ScaleTransition` (0.98 → 1.0), eliminating abrupt jumps, white flashes, and black frames.
+  - Modal overlay routes (e.g. Pause Menu Settings, Game Screen modal pushes) utilize `PageRouteBuilder` with `FadeTransition` and `ScaleTransition` (0.96 → 1.0), preserving the paused Flame world beneath without auto-resuming.
+  - Multi-Tap Debounce Guard: All screen view transitions in `StackPulseApp` feature a 250ms latch (`_switchView`), and all buttons feature a 300ms touch debounce to permanently prevent rapid-tap duplicate transitions.
+- **Button Press Physics & Microinteractions**:
+  - `PremiumButton`: 100ms scale to `0.955` on touch down (`Curves.easeInOutCubic`), 140ms bounce return (`Curves.easeOutBack`) on release.
+  - `HomeActionTile`: 100ms scale to `0.94` on touch down, 140ms bounce return on release.
+  - `GlassIconButton`: Standardized circular glass button with 90ms scale to `0.92` on touch down, 140ms bounce return on release, and 300ms debounce protection.
+  - `ThemeCard`: Active selection border and glow transitions (`240ms` `Curves.easeOutCubic`); locked-state tap feedback features an immediate 240ms horizontal shake/wiggle animation (`-3.5px` to `+3.5px`) providing clear tactile feedback.
+  - `_NeonPillSwitch`: 200ms smooth thumb slide (`Curves.easeOutCubic`) with electric cyan track bloom when active. Entire setting card row is tappable.
+- **Modal Entrances**:
+  - Pause Menu: 260ms scale (0.90 → 1.0) and fade with `Curves.easeOutBack`.
+  - Game Over: 650ms choreographed sequence with scale (0.90 → 1.0), fade entrance, and tabular score count-up (`IntTween`).
+- **Reduced Motion Support**:
+  - Completely disables nonessential scaling bounces, floating oscillations, particle bursts, screen shake, and transition delays when enabled.
+  - Transitions switch to instantaneous or pure linear fades.
+  - Educational diagrams in TutorialScreen freeze into crisp static illustrations.
 
 ---
 
-## 14. Responsive Design Guidelines
+## 14. Responsive Design Architecture (Phase 7 Audit & Validation)
 
-- **Orientation**: Strictly locked to portrait mode (`DeviceOrientation.portraitUp`, `DeviceOrientation.portraitDown`).
-- **SafeArea Compliance**: All headers, HUD elements, and bottom action rows are wrapped within `SafeArea`.
-- **Adaptive Layout**: Uses `LayoutBuilder`, `SingleChildScrollView`, and flex ratios so layouts gracefully adapt from small phones (600px height) to modern tall displays (900px+ height) without clipping or overflow.
+- **Certified Portrait Viewports**:
+  - Formally validated against standard target portrait mobile viewports:
+    - **360 × 800** (Compact Android)
+    - **390 × 844** (Standard Modern iOS / Android)
+    - **412 × 915** (Tall Android Flagship)
+- **SafeArea Compliance**:
+  - All headers, floating HUD pills, action bars, and modal controls are securely enclosed within `SafeArea`.
+- **Dynamic Adaptive Constraints**:
+  - `HomeScreen`: Dynamically scales hero stacking tower height via `(height * 0.25).clamp(120.0, 210.0)`, wrapped with `SingleChildScrollView` and `ConstrainedBox(minHeight: height)` to eliminate `RenderFlex` overflow on any viewport height.
+  - `ThemesScreen`: 2x2 grid computes dynamic card aspect ratio `(itemWidth / targetItemHeight).clamp(0.78, 0.90)` to maintain balanced visual proportions.
+  - `ScoreDisplay`: HUD score numeral and `COMBO` pill badge use fixed container height (28px) with `FittedBox(fit: BoxFit.scaleDown)` and `height: 1.0` text metric, eliminating subpixel text overflow.
+  - `GameOverOverlay`: Final score numeral and gold `NEW BEST` crown badge are wrapped with `FittedBox(fit: BoxFit.scaleDown)` to accommodate arbitrarily high scores (e.g. 99,999) without horizontal layout clipping.
+  - `ThemeCard`: Locked unlock requirement text (`Unlock at Best Score X`) is wrapped with `FittedBox(fit: BoxFit.scaleDown)` to prevent text clipping on narrow 360px portrait screens.
+  - `PauseOverlay` & `GameOverOverlay`: Modals are enclosed inside `SingleChildScrollView(physics: BouncingScrollPhysics())` to guarantee accessibility on short screens or when virtual keyboards/accessibility zooms are active.
 
 ---
 
@@ -266,17 +411,25 @@ The typography scale utilizes `Plus Jakarta Sans` (with system sans-serif fallba
 
 - **Contrast Ratios**: Primary white text (`#FFFFFF`) against `#061225` navy achieves > 16:1 contrast, exceeding WCAG AAA standards.
 - **Tabular Figures**: Numeric score displays use `FontFeature.tabularFigures()` to prevent jitter during fast score incrementing.
-- **Tactile Feedback**: Haptic pulses accompany block placement, combos, button presses, and game-over events.
-- **Reduced Motion**: Dedicated user setting for players sensitive to screen shake or intense particle bursts.
+- **Tactile Feedback**: Haptic pulses accompany block placement, combos, button presses, and game-over events (controlled via Settings).
+- **Disabled State Polish**:
+  - Buttons and cards in disabled/locked states feature standardized `0.45` opacity (`GameTheme.disabledOpacityValue`), suppressed drop shadows, muted borders (`white.withValues(alpha: 0.08)`), and touch rejection without unintended visual glitches.
+- **Reduced Motion**: Dedicated user setting for players sensitive to screen shake, intense particle bursts, or rapid spatial translations.
 
 ---
 
-## 16. Instructions for Maintaining Consistency
+## 16. Centralized Design Token Authority & Consistency Rules
 
 1. **Always Use `GameTheme`**: Never introduce ad-hoc color codes in new widgets or Flame components. Retrieve colors from `GameTheme.fromType(...)` or `game.theme`.
-2. **Button Consistency**: Always use `PremiumButton` for primary/secondary actions to retain consistent pill geometry, press feedback, and drop shadows.
+   - `GameTheme.cardBorderRadiusValue` (22.0px) for standard surface cards.
+   - `GameTheme.modalBorderRadiusValue` (24.0px) for floating overlays.
+   - `GameTheme.disabledOpacityValue` (0.45) for inactive and locked components.
+   - `GameTheme.glassSurfaceColor` (`#14284A` at 0.85 opacity) for circular buttons and badges.
+   - `GameTheme.switchTrackInactiveColor` (`#152A4A`) for toggles.
+2. **Button Consistency**: Always use `PremiumButton` for primary/secondary pill actions and `GlassIconButton` for circular glass controls to retain consistent geometry, press feedback, and drop shadows.
 3. **Adding New Themes**:
    - Add a new enum value to `ThemeType`.
    - Define a `const GameTheme` instance in `lib/core/game_theme.dart` with its 6-color block palette, background colors, and unlock requirement.
    - Add to `allThemes` and update `fromType`.
-4. **Preserve Authority**: Never modify gameplay math (overlap logic, tolerance, falling piece physics) inside visual UI components. Keep rendering and game logic cleanly decoupled.
+4. **Preserve Authority & Absolute Block Protection**: Never modify gameplay math (overlap logic, tolerance, falling piece physics) inside visual UI components. Keep rendering and game logic cleanly decoupled.
+

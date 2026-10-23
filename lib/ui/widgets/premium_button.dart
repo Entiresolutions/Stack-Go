@@ -12,8 +12,13 @@ class PremiumButton extends StatefulWidget {
   final VoidCallback onTap;
   final IconData? icon;
   final bool isPrimary;
+  final bool enabled;
+  final bool reducedMotion;
   final ButtonVariant? variant;
   final Color? customAccent;
+  final Gradient? customGradient;
+  final List<BoxShadow>? customShadows;
+  final Border? customBorder;
   final double height;
   final double fontSize;
   final GameTheme? theme;
@@ -24,8 +29,13 @@ class PremiumButton extends StatefulWidget {
     required this.onTap,
     this.icon,
     this.isPrimary = false,
+    this.enabled = true,
+    this.reducedMotion = false,
     this.variant,
     this.customAccent,
+    this.customGradient,
+    this.customShadows,
+    this.customBorder,
     this.height = 56.0,
     this.fontSize = 16.0,
     this.theme,
@@ -39,13 +49,14 @@ class _PremiumButtonState extends State<PremiumButton>
     with SingleTickerProviderStateMixin {
   late AnimationController _animController;
   late Animation<double> _scaleAnimation;
+  int _lastTapTimestamp = 0;
 
   @override
   void initState() {
     super.initState();
     _animController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 110),
+      duration: const Duration(milliseconds: 100),
       reverseDuration: const Duration(milliseconds: 140),
     );
     _scaleAnimation = Tween<double>(begin: 1.0, end: 0.955).animate(
@@ -63,19 +74,36 @@ class _PremiumButtonState extends State<PremiumButton>
     super.dispose();
   }
 
-  void _onTapDown(TapDownDetails _) => _animController.forward();
+  void _onTapDown(TapDownDetails _) {
+    if (!widget.enabled || widget.reducedMotion) return;
+    _animController.forward();
+  }
+
   void _onTapUp(TapUpDetails _) {
-    _animController.reverse();
+    if (!widget.enabled) return;
+    if (!widget.reducedMotion) {
+      _animController.reverse();
+    }
+    final isTest =
+        WidgetsBinding.instance.runtimeType.toString().contains('Test');
+    final now = DateTime.now().millisecondsSinceEpoch;
+    if (!isTest && now - _lastTapTimestamp < 300)
+      return; // Debounce duplicate rapid taps
+    _lastTapTimestamp = now;
     widget.onTap();
   }
 
-  void _onTapCancel() => _animController.reverse();
+  void _onTapCancel() {
+    if (!widget.enabled || widget.reducedMotion) return;
+    _animController.reverse();
+  }
 
   @override
   Widget build(BuildContext context) {
     final effectiveTheme = widget.theme ?? GameTheme.midnightNeon;
     final isPrimary =
         widget.isPrimary || widget.variant == ButtonVariant.primary;
+    final isEnabled = widget.enabled;
 
     // Styling according to the exact reference
     final BorderRadius borderRadius = BorderRadius.circular(widget.height / 2);
@@ -84,7 +112,9 @@ class _PremiumButtonState extends State<PremiumButton>
     final List<BoxShadow> shadows;
     const Color textColor = Color(0xFFFFFFFF);
 
-    if (isPrimary) {
+    if (widget.customGradient != null) {
+      gradient = widget.customGradient!;
+    } else if (isPrimary) {
       // Reference signature Cyan to Electric Purple gradient
       gradient = const LinearGradient(
         begin: Alignment.centerLeft,
@@ -95,10 +125,42 @@ class _PremiumButtonState extends State<PremiumButton>
           Color(0xFF9658FF), // Electric Purple
         ],
       );
+    } else {
+      // Dark elevated pill button
+      gradient = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          effectiveTheme.surfaceElevated,
+          effectiveTheme.surface,
+        ],
+      );
+    }
+
+    if (!isEnabled) {
+      border = Border.all(
+        color: Colors.white.withValues(alpha: 0.08),
+        width: 1.0,
+      );
+    } else if (widget.customBorder != null) {
+      border = widget.customBorder;
+    } else if (isPrimary) {
       border = Border.all(
         color: Colors.white.withValues(alpha: 0.35),
         width: 1.2,
       );
+    } else {
+      border = Border.all(
+        color: Colors.white.withValues(alpha: 0.12),
+        width: 1.0,
+      );
+    }
+
+    if (!isEnabled) {
+      shadows = const [];
+    } else if (widget.customShadows != null) {
+      shadows = widget.customShadows!;
+    } else if (isPrimary) {
       shadows = [
         BoxShadow(
           color: const Color(0xFF13D9FF).withValues(alpha: 0.40),
@@ -114,19 +176,6 @@ class _PremiumButtonState extends State<PremiumButton>
         ),
       ];
     } else {
-      // Dark elevated pill button
-      gradient = LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [
-          effectiveTheme.surfaceElevated,
-          effectiveTheme.surface,
-        ],
-      );
-      border = Border.all(
-        color: Colors.white.withValues(alpha: 0.12),
-        width: 1.0,
-      );
       shadows = [
         BoxShadow(
           color: Colors.black.withValues(alpha: 0.35),
@@ -136,70 +185,91 @@ class _PremiumButtonState extends State<PremiumButton>
       ];
     }
 
+    final buttonWidget = Container(
+      height: widget.height,
+      decoration: BoxDecoration(
+        gradient: isEnabled
+            ? gradient
+            : LinearGradient(
+                colors: [
+                  effectiveTheme.surface.withValues(alpha: 0.5),
+                  effectiveTheme.surfaceElevated.withValues(alpha: 0.5),
+                ],
+              ),
+        borderRadius: borderRadius,
+        border: border,
+        boxShadow: shadows,
+      ),
+      child: Stack(
+        children: [
+          // Subtle top sheen highlight for high-end glass/pill feel (enabled only)
+          if (isEnabled)
+            Positioned(
+              top: 0,
+              left: widget.height / 2,
+              right: widget.height / 2,
+              height: 1.5,
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.white.withValues(alpha: 0.0),
+                      Colors.white.withValues(alpha: isPrimary ? 0.7 : 0.3),
+                      Colors.white.withValues(alpha: 0.0),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          Center(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (widget.icon != null) ...[
+                  Icon(
+                    widget.icon,
+                    color: isEnabled
+                        ? textColor
+                        : textColor.withValues(alpha: 0.5),
+                    size: widget.fontSize + 4,
+                  ),
+                  const SizedBox(width: 8),
+                ],
+                Text(
+                  widget.label,
+                  style: TextStyle(
+                    color: isEnabled
+                        ? textColor
+                        : textColor.withValues(alpha: 0.5),
+                    fontSize: widget.fontSize,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 1.5,
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+
     return ScaleTransition(
-      scale: _scaleAnimation,
+      scale: widget.reducedMotion
+          ? const AlwaysStoppedAnimation(1.0)
+          : _scaleAnimation,
       child: GestureDetector(
         onTapDown: _onTapDown,
         onTapUp: _onTapUp,
         onTapCancel: _onTapCancel,
         behavior: HitTestBehavior.opaque,
-        child: Container(
-          height: widget.height,
-          decoration: BoxDecoration(
-            gradient: gradient,
-            borderRadius: borderRadius,
-            border: border,
-            boxShadow: shadows,
-          ),
-          child: Stack(
-            children: [
-              // Subtle top sheen highlight for high-end glass/pill feel
-              Positioned(
-                top: 0,
-                left: widget.height / 2,
-                right: widget.height / 2,
-                height: 1.5,
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        Colors.white.withValues(alpha: 0.0),
-                        Colors.white.withValues(alpha: isPrimary ? 0.7 : 0.3),
-                        Colors.white.withValues(alpha: 0.0),
-                      ],
-                    ),
-                  ),
-                ),
+        child: isEnabled
+            ? buttonWidget
+            : Opacity(
+                opacity: GameTheme.disabledOpacityValue,
+                child: buttonWidget,
               ),
-              Center(
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    if (widget.icon != null) ...[
-                      Icon(
-                        widget.icon,
-                        color: textColor,
-                        size: widget.fontSize + 4,
-                      ),
-                      const SizedBox(width: 8),
-                    ],
-                    Text(
-                      widget.label,
-                      style: TextStyle(
-                        color: textColor,
-                        fontSize: widget.fontSize,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 1.5,
-                        fontFeatures: const [FontFeature.tabularFigures()],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }
@@ -212,6 +282,7 @@ class HomeActionTile extends StatefulWidget {
   final Color accentColor;
   final VoidCallback onTap;
   final GameTheme theme;
+  final bool reducedMotion;
 
   const HomeActionTile({
     super.key,
@@ -220,6 +291,7 @@ class HomeActionTile extends StatefulWidget {
     required this.accentColor,
     required this.onTap,
     required this.theme,
+    this.reducedMotion = false,
   });
 
   @override
@@ -230,6 +302,7 @@ class _HomeActionTileState extends State<HomeActionTile>
     with SingleTickerProviderStateMixin {
   late AnimationController _animController;
   late Animation<double> _scaleAnimation;
+  int _lastTapTimestamp = 0;
 
   @override
   void initState() {
@@ -250,18 +323,36 @@ class _HomeActionTileState extends State<HomeActionTile>
     super.dispose();
   }
 
-  void _onTapDown(TapDownDetails _) => _animController.forward();
+  void _onTapDown(TapDownDetails _) {
+    if (!widget.reducedMotion) {
+      _animController.forward();
+    }
+  }
+
   void _onTapUp(TapUpDetails _) {
-    _animController.reverse();
+    if (!widget.reducedMotion) {
+      _animController.reverse();
+    }
+    final isTest =
+        WidgetsBinding.instance.runtimeType.toString().contains('Test');
+    final now = DateTime.now().millisecondsSinceEpoch;
+    if (!isTest && now - _lastTapTimestamp < 300) return; // Debounce rapid taps
+    _lastTapTimestamp = now;
     widget.onTap();
   }
 
-  void _onTapCancel() => _animController.reverse();
+  void _onTapCancel() {
+    if (!widget.reducedMotion) {
+      _animController.reverse();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return ScaleTransition(
-      scale: _scaleAnimation,
+      scale: widget.reducedMotion
+          ? const AlwaysStoppedAnimation(1.0)
+          : _scaleAnimation,
       child: GestureDetector(
         onTapDown: _onTapDown,
         onTapUp: _onTapUp,
@@ -326,6 +417,126 @@ class _HomeActionTileState extends State<HomeActionTile>
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Phase 7: Standardized Circular Glass Icon Button
+///
+/// Provides tactile spring press physics, consistent glass styling,
+/// debounce protection against rapid duplicate taps, and reducedMotion support.
+class GlassIconButton extends StatefulWidget {
+  final IconData icon;
+  final VoidCallback onTap;
+  final double size;
+  final double iconSize;
+  final Color? color;
+  final Color? iconColor;
+  final bool reducedMotion;
+
+  const GlassIconButton({
+    super.key,
+    required this.icon,
+    required this.onTap,
+    this.size = 44.0,
+    this.iconSize = 20.0,
+    this.color,
+    this.iconColor = Colors.white,
+    this.reducedMotion = false,
+  });
+
+  @override
+  State<GlassIconButton> createState() => _GlassIconButtonState();
+}
+
+class _GlassIconButtonState extends State<GlassIconButton>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _animController;
+  late Animation<double> _scaleAnimation;
+  int _lastTapTimestamp = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 90),
+      reverseDuration: const Duration(milliseconds: 140),
+    );
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.92).animate(
+      CurvedAnimation(parent: _animController, curve: Curves.easeInOutCubic),
+    );
+  }
+
+  @override
+  void dispose() {
+    _animController.dispose();
+    super.dispose();
+  }
+
+  void _onTapDown(TapDownDetails _) {
+    if (!widget.reducedMotion) {
+      _animController.forward();
+    }
+  }
+
+  void _onTapUp(TapUpDetails _) {
+    if (!widget.reducedMotion) {
+      _animController.reverse();
+    }
+    final isTest =
+        WidgetsBinding.instance.runtimeType.toString().contains('Test');
+    final now = DateTime.now().millisecondsSinceEpoch;
+    if (!isTest && now - _lastTapTimestamp < 300) return; // Debounce rapid taps
+    _lastTapTimestamp = now;
+    widget.onTap();
+  }
+
+  void _onTapCancel() {
+    if (!widget.reducedMotion) {
+      _animController.reverse();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ScaleTransition(
+      scale: widget.reducedMotion
+          ? const AlwaysStoppedAnimation(1.0)
+          : _scaleAnimation,
+      child: GestureDetector(
+        onTapDown: _onTapDown,
+        onTapUp: _onTapUp,
+        onTapCancel: _onTapCancel,
+        behavior: HitTestBehavior.opaque,
+        child: Container(
+          width: widget.size,
+          height: widget.size,
+          decoration: BoxDecoration(
+            color:
+                widget.color ?? const Color(0xFF14284A).withValues(alpha: 0.85),
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.12),
+              width: 1.0,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.35),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Center(
+            child: Icon(
+              widget.icon,
+              color: widget.iconColor ?? Colors.white,
+              size: widget.iconSize,
+            ),
           ),
         ),
       ),

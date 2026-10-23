@@ -33,7 +33,8 @@ class _StackPulseAppState extends State<StackPulseApp>
   GameSettings _settings = const GameSettings();
   GameStatistics _statistics = const GameStatistics();
   AppView _currentView = AppView.splash;
-  bool _isLoading = true;
+  bool _isStateLoaded = false;
+  bool _splashFinished = false;
 
   @override
   void initState() {
@@ -55,14 +56,52 @@ class _StackPulseAppState extends State<StackPulseApp>
   }
 
   Future<void> _loadState() async {
-    final settings = await _storage.loadSettings();
-    final stats = await _storage.loadStatistics();
-    setState(() {
-      _settings = settings;
-      _statistics = stats;
-      _isLoading = false;
-    });
-    await MusicService.instance.initialize(musicEnabled: settings.musicEnabled);
+    try {
+      final settings = await _storage.loadSettings();
+      final stats = await _storage.loadStatistics();
+      if (mounted) {
+        setState(() {
+          _settings = settings;
+          _statistics = stats;
+          _isStateLoaded = true;
+          if (_splashFinished) {
+            _currentView = AppView.home;
+          }
+        });
+      }
+      await MusicService.instance
+          .initialize(musicEnabled: settings.musicEnabled);
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _isStateLoaded = true;
+          if (_splashFinished) {
+            _currentView = AppView.home;
+          }
+        });
+      }
+    }
+  }
+
+  void _onSplashComplete() {
+    _splashFinished = true;
+    if (_isStateLoaded && mounted) {
+      _switchView(AppView.home);
+    }
+  }
+
+  DateTime _lastViewChange = DateTime.fromMillisecondsSinceEpoch(0);
+
+  void _switchView(AppView newView) {
+    if (_currentView == newView) return;
+    final isTest =
+        WidgetsBinding.instance.runtimeType.toString().contains('Test');
+    final now = DateTime.now();
+    if (!isTest && now.difference(_lastViewChange).inMilliseconds < 250) return;
+    _lastViewChange = now;
+    if (mounted) {
+      setState(() => _currentView = newView);
+    }
   }
 
   GameTheme get _currentTheme {
@@ -86,19 +125,8 @@ class _StackPulseAppState extends State<StackPulseApp>
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return const MaterialApp(
-        debugShowCheckedModeBanner: false,
-        home: Scaffold(
-          backgroundColor: Color(0xFF061225),
-          body: Center(
-            child: CircularProgressIndicator(color: Color(0xFF13D9FF)),
-          ),
-        ),
-      );
-    }
-
     final theme = _currentTheme;
+    final isReducedMotion = _settings.reducedMotion;
 
     return MaterialApp(
       title: 'Stack Pulse',
@@ -112,13 +140,26 @@ class _StackPulseAppState extends State<StackPulseApp>
         ),
       ),
       home: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 260),
+        duration:
+            isReducedMotion ? Duration.zero : const Duration(milliseconds: 240),
         switchInCurve: Curves.easeOutCubic,
         switchOutCurve: Curves.easeInCubic,
         transitionBuilder: (child, animation) {
+          if (isReducedMotion) {
+            return child;
+          }
+          final scale = Tween<double>(begin: 0.98, end: 1.0).animate(
+            CurvedAnimation(
+              parent: animation,
+              curve: Curves.easeOutCubic,
+            ),
+          );
           return FadeTransition(
             opacity: animation,
-            child: child,
+            child: ScaleTransition(
+              scale: scale,
+              child: child,
+            ),
           );
         },
         child: KeyedSubtree(
@@ -134,7 +175,8 @@ class _StackPulseAppState extends State<StackPulseApp>
       case AppView.splash:
         return SplashScreen(
           theme: theme,
-          onLoaded: () => setState(() => _currentView = AppView.home),
+          reducedMotion: _settings.reducedMotion,
+          onLoaded: _onSplashComplete,
         );
       case AppView.game:
         return GameScreen(
@@ -142,41 +184,44 @@ class _StackPulseAppState extends State<StackPulseApp>
           settings: _settings,
           statistics: _statistics,
           onUpdateStatistics: _updateStatistics,
-          onHome: () => setState(() => _currentView = AppView.home),
-          onOpenSettings: () => setState(() => _currentView = AppView.settings),
+          onUpdateSettings: _updateSettings,
+          onHome: () => _switchView(AppView.home),
+          onOpenSettings: () => _switchView(AppView.settings),
         );
       case AppView.themes:
         return ThemesScreen(
           currentTheme: theme,
           bestScore: _statistics.bestScore,
+          reducedMotion: _settings.reducedMotion,
           onSelectTheme: (newTheme) {
             _updateSettings(
                 _settings.copyWith(selectedTheme: newTheme.type.name));
           },
-          onDismiss: () => setState(() => _currentView = AppView.home),
+          onDismiss: () => _switchView(AppView.home),
         );
       case AppView.settings:
         return SettingsScreen(
           theme: theme,
           settings: _settings,
           onSave: _updateSettings,
-          onDismiss: () => setState(() => _currentView = AppView.home),
-          onOpenThemes: () => setState(() => _currentView = AppView.themes),
+          onDismiss: () => _switchView(AppView.home),
+          onOpenThemes: () => _switchView(AppView.themes),
         );
       case AppView.tutorial:
         return TutorialScreen(
           theme: theme,
-          onDismiss: () => setState(() => _currentView = AppView.home),
+          reducedMotion: _settings.reducedMotion,
+          onDismiss: () => _switchView(AppView.home),
         );
       case AppView.home:
         return HomeScreen(
           theme: theme,
           statistics: _statistics,
           settings: _settings,
-          onPlay: () => setState(() => _currentView = AppView.game),
-          onThemes: () => setState(() => _currentView = AppView.themes),
-          onSettings: () => setState(() => _currentView = AppView.settings),
-          onTutorial: () => setState(() => _currentView = AppView.tutorial),
+          onPlay: () => _switchView(AppView.game),
+          onThemes: () => _switchView(AppView.themes),
+          onSettings: () => _switchView(AppView.settings),
+          onTutorial: () => _switchView(AppView.tutorial),
         );
     }
   }

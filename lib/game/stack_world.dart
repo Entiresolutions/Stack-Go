@@ -112,34 +112,7 @@ class StackWorld extends World {
 
   void _renderMidnightNeonAtmosphere(
       Canvas canvas, double width, double height) {
-    final buildingPaint = Paint()
-      ..color = const Color(0xFF0C1F40).withValues(alpha: 0.50)
-      ..style = PaintingStyle.fill;
-
-    // Distant cyber skyline silhouettes
-    canvas.drawRect(const Rect.fromLTWH(18, -2000, 36, 7000), buildingPaint);
-    canvas.drawRect(const Rect.fromLTWH(64, -2000, 24, 7000), buildingPaint);
-    canvas.drawRect(Rect.fromLTWH(width - 92, -2000, 28, 7000), buildingPaint);
-    canvas.drawRect(Rect.fromLTWH(width - 54, -2000, 40, 7000), buildingPaint);
-
-    // Vertical neon light pillars
-    final cyanBeam = Paint()
-      ..shader = LinearGradient(
-        colors: [
-          const Color(0xFF13D9FF).withValues(alpha: 0.16),
-          Colors.transparent,
-        ],
-      ).createShader(const Rect.fromLTWH(32, -3000, 10, 8000));
-    canvas.drawRect(const Rect.fromLTWH(32, -3000, 10, 8000), cyanBeam);
-
-    final purpleBeam = Paint()
-      ..shader = LinearGradient(
-        colors: [
-          const Color(0xFF9658FF).withValues(alpha: 0.16),
-          Colors.transparent,
-        ],
-      ).createShader(Rect.fromLTWH(width - 42, -3000, 12, 8000));
-    canvas.drawRect(Rect.fromLTWH(width - 42, -3000, 12, 8000), purpleBeam);
+    // Background is rendered by high-fidelity production asset gameplay_bg.jpg
   }
 
   void _renderAuroraAtmosphere(Canvas canvas, double width, double height) {

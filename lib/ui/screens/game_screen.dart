@@ -7,12 +7,15 @@ import '../../game/stack_pulse_game.dart';
 import '../overlays/pause_overlay.dart';
 import '../overlays/game_over_overlay.dart';
 import '../widgets/score_display.dart';
+import 'settings_screen.dart';
+import 'themes_screen.dart';
 
 class GameScreen extends StatefulWidget {
   final GameTheme theme;
   final GameSettings settings;
   final GameStatistics statistics;
   final Function(GameStatistics) onUpdateStatistics;
+  final Function(GameSettings)? onUpdateSettings;
   final VoidCallback onHome;
   final VoidCallback onOpenSettings;
 
@@ -22,6 +25,7 @@ class GameScreen extends StatefulWidget {
     required this.settings,
     required this.statistics,
     required this.onUpdateStatistics,
+    this.onUpdateSettings,
     required this.onHome,
     required this.onOpenSettings,
   });
@@ -125,20 +129,129 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     _game.initializeGame();
   }
 
+  /// Opens Settings as a modal route on top of the live GameScreen,
+  /// guaranteeing that when dismissed, the paused game state and current
+  /// tower run are completely preserved.
+  void _openSettings() {
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        opaque: false,
+        barrierDismissible: true,
+        barrierColor: Colors.black.withValues(alpha: 0.70),
+        pageBuilder: (context, animation, secondaryAnimation) {
+          final isReduced = widget.settings.reducedMotion;
+          final content = SettingsScreen(
+            theme: widget.theme,
+            settings: widget.settings,
+            onSave: (updated) {
+              if (widget.onUpdateSettings != null) {
+                widget.onUpdateSettings!(updated);
+              }
+            },
+            onDismiss: () {
+              Navigator.of(context).pop();
+            },
+            onOpenThemes: () {
+              // Allows modal theme browsing directly from pause menu without breaking session
+              Navigator.of(context).push(
+                PageRouteBuilder(
+                  opaque: false,
+                  pageBuilder: (ctx, anim, secAnim) {
+                    return FadeTransition(
+                      opacity: anim,
+                      child: ThemesScreen(
+                        currentTheme: widget.theme,
+                        bestScore: widget.statistics.bestScore,
+                        reducedMotion: widget.settings.reducedMotion,
+                        onSelectTheme: (newTheme) {
+                          if (widget.onUpdateSettings != null) {
+                            widget.onUpdateSettings!(
+                              widget.settings.copyWith(
+                                selectedTheme: newTheme.type.name,
+                              ),
+                            );
+                          }
+                        },
+                        onDismiss: () => Navigator.of(ctx).pop(),
+                      ),
+                    );
+                  },
+                ),
+              );
+            },
+          );
+
+          if (isReduced) {
+            return content;
+          }
+          final scale = Tween<double>(begin: 0.96, end: 1.0).animate(
+            CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
+          );
+          return FadeTransition(
+            opacity: animation,
+            child: ScaleTransition(
+              scale: scale,
+              child: content,
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = widget.theme;
 
     return Scaffold(
-      backgroundColor: theme.background,
+      backgroundColor: const Color(0xFF061225),
       body: Stack(
+        fit: StackFit.expand,
         children: [
-          // 1. The Flame Game Viewport
+          // 1. NANO BANANA GENERATED GAMEPLAY BACKGROUND (Asset)
+          Image.asset(
+            'assets/images/gameplay_bg.jpg',
+            fit: BoxFit.cover,
+            width: double.infinity,
+            height: double.infinity,
+            errorBuilder: (context, error, stackTrace) {
+              return Container(
+                decoration: BoxDecoration(
+                  gradient: theme.backgroundGradient,
+                ),
+              );
+            },
+          ),
+
+          // 2. Theme Tint Overlay for Non-Default Themes (Aurora, Sunset, Arctic)
+          if (theme.type != ThemeType.midnightNeon)
+            Container(
+              color: theme.background.withValues(alpha: 0.60),
+            ),
+
+          // 3. Subtle Dark Gradient Overlay for Ambient Contrast & Grounding
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  const Color(0xFF061225).withValues(alpha: 0.45),
+                  Colors.transparent,
+                  Colors.transparent,
+                  const Color(0xFF061225).withValues(alpha: 0.45),
+                ],
+                stops: const [0.0, 0.18, 0.82, 1.0],
+              ),
+            ),
+          ),
+
+          // 4. The Flame Game Viewport (Blocks & Pedestal)
           Positioned.fill(
             child: GameWidget(game: _game),
           ),
 
-          // 2. Top Non-occluding Centered HUD matching Reference Screen 3
+          // 5. Screen-Fixed Top HUD matching Reference Screen 3
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
@@ -212,47 +325,19 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                         streakBadge: _streakBadge,
                         textColor: Colors.white,
                         accentColor: theme.primaryAccent,
+                        reducedMotion: widget.settings.reducedMotion,
                       ),
                     ),
                   ),
 
-                  // Top-Right: Circular Glass Pause Button matching Reference Screen 3
-                  GestureDetector(
-                    onTap: _onPause,
-                    behavior: HitTestBehavior.opaque,
-                    child: Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF14284A).withValues(alpha: 0.85),
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.12),
-                          width: 1.0,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.3),
-                            blurRadius: 8,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      child: const Center(
-                        child: Icon(
-                          Icons.pause_rounded,
-                          color: Colors.white,
-                          size: 22,
-                        ),
-                      ),
-                    ),
-                  ),
+                  // Top-Right: Circular Glass Pause Button with Press Spring Feedback
+                  _PauseButton(onTap: _onPause),
                 ],
               ),
             ),
           ),
 
-          // 3. Floating PERFECT! xN Banner matching Reference Screen 4
+          // 6. Floating PERFECT! xN Banner matching Reference Screen 4
           if (_showPerfectBanner)
             Positioned(
               top: MediaQuery.of(context).size.height * 0.22,
@@ -262,6 +347,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                 child: PerfectComboBanner(
                   key: ValueKey('streak_$_currentScore$_currentStreak'),
                   streak: _currentStreak,
+                  reducedMotion: widget.settings.reducedMotion,
                   onDismissed: () {
                     if (mounted) {
                       setState(() => _showPerfectBanner = false);
@@ -271,20 +357,22 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
               ),
             ),
 
-          // 4. Pause Overlay matching Reference Screen 6
+          // 7. Pause Overlay matching Reference Screen 6
           if (_isPaused)
             PauseOverlay(
               theme: theme,
+              reducedMotion: widget.settings.reducedMotion,
               onResume: _onResume,
               onRestart: _onRestart,
-              onSettings: widget.onOpenSettings,
+              onSettings: _openSettings,
               onHome: widget.onHome,
             ),
 
-          // 5. Game Over Overlay matching Reference Screen 5
+          // 8. Game Over Overlay matching Reference Screen 5
           if (_isGameOver)
             GameOverOverlay(
               theme: theme,
+              reducedMotion: widget.settings.reducedMotion,
               finalScore: _finalScore,
               bestScore: widget.statistics.bestScore,
               bestStreak: _bestStreakInRun,
@@ -293,6 +381,82 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
               onHome: widget.onHome,
             ),
         ],
+      ),
+    );
+  }
+}
+
+/// Circular Glass Pause Button with Interactive Spring Feedback
+class _PauseButton extends StatefulWidget {
+  final VoidCallback onTap;
+  const _PauseButton({required this.onTap});
+
+  @override
+  State<_PauseButton> createState() => _PauseButtonState();
+}
+
+class _PauseButtonState extends State<_PauseButton>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scale;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 90),
+      reverseDuration: const Duration(milliseconds: 140),
+    );
+    _scale = Tween<double>(begin: 1.0, end: 0.92).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOutCubic),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ScaleTransition(
+      scale: _scale,
+      child: GestureDetector(
+        onTapDown: (_) => _controller.forward(),
+        onTapUp: (_) {
+          _controller.reverse();
+          widget.onTap();
+        },
+        onTapCancel: () => _controller.reverse(),
+        behavior: HitTestBehavior.opaque,
+        child: Container(
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(
+            color: const Color(0xFF14284A).withValues(alpha: 0.85),
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.12),
+              width: 1.0,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.35),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: const Center(
+            child: Icon(
+              Icons.pause_rounded,
+              color: Colors.white,
+              size: 22,
+            ),
+          ),
+        ),
       ),
     );
   }
