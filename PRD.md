@@ -85,14 +85,22 @@
 
 ## 4. Feature Specifications
 
-### 4.1 Precision Slicing & Perfect Snapping Engine
+### 4.1 Precision Slicing & 3D Isometric Rendering Engine
+* **3D Isometric Slabs**:
+  * Blocks and sliced overhangs are rendered as 3D isometric slabs with 3 distinct visible faces:
+    * **Top Face**: Illuminated diamond surface with soft directional gradient lighting.
+    * **Left Face**: Darker shaded shadow face providing realistic depth.
+    * **Right Face**: Medium half-tone shade capturing diffuse ambient light.
+  * **Material & Texture**: Subtle surface sheen and planar specular highlights with crisp, sharp edge bevels and front vertical ridge highlights.
+  * **Color Palette**: Vibrant multi-color spectrum (Electric Cyan, Royal Blue, Purple, Magenta, Coral Pink, Sunset Orange, Gold, Emerald Green, Turquoise, Cerulean Blue, Deep Indigo, Rose Pink) cycling dynamically as blocks stack higher.
+  * **Unified Isometric World**: Base foundation pedestal rendered as a wide 3D isometric slab harmonizing with the stack.
 * **Interval Intersection**: Cutting logic uses exact 1D horizontal coordinate math rather than rigid body physics colliders, eliminating clipping glitches or physics instability.
 * **Smart Tolerance Snapping**:
   * Near-perfect hits snap to 100% alignment: `tolerance = clamp(previousWidth * 0.025, 2.0, 5.0)` pixels.
   * Preserves full block width and awards a combo streak.
 * **Overhang Detachment**:
-  * Blocks placed outside tolerance are sliced cleanly.
-  * Overhanging excess block is spawned as a falling rigid entity that rotates and plunges past the bottom of the screen.
+  * Blocks placed outside tolerance are sliced cleanly into retained and excess 3D isometric slabs.
+  * Overhanging excess block is spawned as a falling rigid 3D slab that rotates and plunges past the bottom of the screen.
 
 ### 4.2 Streak & Combo Escalation System
 * Consecutive perfect placements trigger cascading audiovisual rewards:
@@ -151,6 +159,18 @@ Using `shared_preferences`, the application records and updates:
 * **Ergonomic Controls**:
   * Mobile: Single finger touch anywhere on screen.
   * Desktop: Mouse left-click, `Spacebar`, or `Enter` keys.
+
+### 4.8 Google Mobile Ads (AdMob) Integration
+* **App ID**: `ca-app-pub-3794659976212193~9107617603`
+* **Interstitials / App Open Ad Unit ID**: `ca-app-pub-3794659976212193/3368291483`
+* **Rewarded Ad Unit ID (Watch & Get a Chance)**: `ca-app-pub-3794659976212193/9929744688`
+* **Monetization & Engagement Flows**:
+  * **Play-to-Ad**: Tapping 'PLAY' on the Home screen displays an ad before the run starts.
+  * **Home-to-Ad**: Tapping 'HOME' on the Game Over screen plays an ad before transitioning back to the Home screen.
+  * **Watch & Get a Chance (Revive)**: Located directly below the 'HOME' button on the Game Over screen. Tapping 'WATCH AND GET A CHANCE' launches a Rewarded Ad (`ca-app-pub-3794659976212193/9929744688`). Upon completion, the player's current run is revived—clearing missed debris, maintaining their existing score, and spawning a new block on top of their stack.
+* **Intelligent Preloading**: Both interstitial and rewarded ads are preloaded in the background on app launch and upon entering the Game Over state for instant playback without loading lags.
+* **Background Music Coordination**: Background audio is paused while the ad plays and automatically resumed upon returning to gameplay.
+* **Strict Reward Policy & Availability Notifications**: If the device is offline, internet is lost, or an ad cannot be loaded, NO revive chance is granted under any circumstances. The player is immediately informed via a clean UI alert and floating notification in proper English: *"Ad not available. Please check your internet connection and try again."* A chance is awarded strictly and only when the rewarded ad has been fully watched.
 
 ---
 

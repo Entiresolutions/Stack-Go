@@ -11,6 +11,7 @@ class GameOverOverlay extends StatefulWidget {
   final bool isNewBest;
   final VoidCallback onRetry;
   final VoidCallback onHome;
+  final Future<String?> Function() onWatchChance;
 
   const GameOverOverlay({
     super.key,
@@ -21,6 +22,7 @@ class GameOverOverlay extends StatefulWidget {
     required this.isNewBest,
     required this.onRetry,
     required this.onHome,
+    required this.onWatchChance,
   });
 
   @override
@@ -33,6 +35,63 @@ class _GameOverOverlayState extends State<GameOverOverlay>
   late Animation<double> _scaleAnimation;
   late Animation<double> _fadeAnimation;
   late Animation<int> _scoreCountAnimation;
+  bool _isHomePressed = false;
+  bool _isLoadingAd = false;
+  String? _adErrorMessage;
+
+  Future<void> _handleWatchChance() async {
+    if (_isLoadingAd) return;
+    setState(() {
+      _isLoadingAd = true;
+      _adErrorMessage = null;
+    });
+
+    final String? error = await widget.onWatchChance();
+
+    if (mounted) {
+      setState(() {
+        _isLoadingAd = false;
+        _adErrorMessage = error;
+      });
+
+      if (error != null) {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(
+                  Icons.wifi_off_rounded,
+                  color: Color(0xFFFF5252),
+                  size: 20,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    error,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: const Color(0xFF1E293B),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: BorderSide(
+                color: const Color(0xFFFF5252).withValues(alpha: 0.35),
+              ),
+            ),
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+    }
+  }
 
   @override
   void initState() {
@@ -98,15 +157,18 @@ class _GameOverOverlayState extends State<GameOverOverlay>
 
         // Animated Modal Content
         Center(
-          child: FadeTransition(
-            opacity: _fadeAnimation,
-            child: ScaleTransition(
-              scale: _scaleAnimation,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 26),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.symmetric(vertical: 24),
+            child: FadeTransition(
+              opacity: _fadeAnimation,
+              child: ScaleTransition(
+                scale: _scaleAnimation,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 26),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
                     // Heading: GAME OVER matching Reference Screen 5
                     ShaderMask(
                       shaderCallback: (bounds) => const LinearGradient(
@@ -347,15 +409,79 @@ class _GameOverOverlayState extends State<GameOverOverlay>
                       theme: theme,
                       height: 50,
                       fontSize: 15,
-                      onTap: widget.onHome,
+                      onTap: () {
+                        if (_isHomePressed) return;
+                        setState(() => _isHomePressed = true);
+                        widget.onHome();
+                      },
                     ),
+                    const SizedBox(height: 12),
+
+                    // Bonus Reward Action: ▶ WATCH AND GET A CHANCE
+                    PremiumButton(
+                      label: _isLoadingAd
+                          ? 'LOADING AD...'
+                          : 'WATCH AND GET A CHANCE',
+                      icon: _isLoadingAd
+                          ? Icons.hourglass_top_rounded
+                          : Icons.play_circle_filled_rounded,
+                      customAccent: _isLoadingAd
+                          ? const Color(0xFFA8C4E4)
+                          : const Color(0xFFFFB300),
+                      theme: theme,
+                      height: 50,
+                      fontSize: 13,
+                      onTap: _handleWatchChance,
+                    ),
+                    if (_adErrorMessage != null) ...[
+                      const SizedBox(height: 10),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 9,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE53935).withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color:
+                                const Color(0xFFE53935).withValues(alpha: 0.45),
+                            width: 1.0,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Icons.error_outline_rounded,
+                              color: Color(0xFFFF5252),
+                              size: 16,
+                            ),
+                            const SizedBox(width: 8),
+                            Flexible(
+                              child: Text(
+                                _adErrorMessage!,
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  color: Color(0xFFFF8A80),
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
             ),
           ),
         ),
-      ],
-    );
+      ),
+    ],
+  );
   }
 }

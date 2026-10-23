@@ -90,6 +90,7 @@ class StackPulseGame extends FlameGame<StackWorld>
       position: Vector2(lastPlacedLeft, topStackY),
       size: Vector2(lastPlacedWidth, GameConfig.blockHeight),
       blockColor: theme.getBlockColor(0),
+      blockIndex: 0,
       isBase: true,
     );
     world.add(baseBlock);
@@ -117,6 +118,7 @@ class StackPulseGame extends FlameGame<StackWorld>
       position: Vector2(initialX, spawnY),
       size: Vector2(lastPlacedWidth, GameConfig.blockHeight),
       blockColor: theme.getBlockColor(blockCount),
+      blockIndex: blockCount,
       speed: speed,
       direction: direction,
       minX: GameConfig.boundaryPadding,
@@ -194,6 +196,7 @@ class StackPulseGame extends FlameGame<StackWorld>
       position: Vector2(lastPlacedLeft, topStackY),
       size: Vector2(lastPlacedWidth, GameConfig.blockHeight),
       blockColor: color,
+      blockIndex: blockCount,
     );
     world.add(placedBlock);
 
@@ -209,6 +212,7 @@ class StackPulseGame extends FlameGame<StackWorld>
         ),
         size: Vector2(result.excessWidth!, GameConfig.blockHeight),
         pieceColor: color.withValues(alpha: 0.85),
+        pieceIndex: blockCount,
         maxY: topStackY + GameConfig.logicalHeight + 200,
         rotationSpeed: result.isExcessOnRight ? 2.5 : -2.5,
       );
@@ -278,6 +282,7 @@ class StackPulseGame extends FlameGame<StackWorld>
       position: Vector2(x + w / 2, y + GameConfig.blockHeight / 2),
       size: Vector2(w, GameConfig.blockHeight),
       pieceColor: color,
+      pieceIndex: blockCount,
       maxY: topStackY + GameConfig.logicalHeight + 300,
       rotationSpeed: 3.5,
     );
@@ -296,6 +301,23 @@ class StackPulseGame extends FlameGame<StackWorld>
     if (state == GamePlayState.paused) {
       state = GamePlayState.moving;
     }
+  }
+
+  /// Revives the current game session when player earns a chance from rewarded ad
+  void reviveGame() {
+    world.children
+        .whereType<FallingPieceComponent>()
+        .toList()
+        .forEach((piece) => piece.removeFromParent());
+
+    currentMovingBlock?.removeFromParent();
+    currentMovingBlock = null;
+
+    cameraController.shakeIntensity = 0.0;
+    cameraController.updateTarget(topStackY);
+
+    spawnMovingBlock();
+    state = GamePlayState.moving;
   }
 
   @override

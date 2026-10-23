@@ -188,6 +188,17 @@ To prevent sample clipping and audio queue bottlenecks when the user taps rapidl
   - `AppLifecycleState.resumed`: Automatically calls `_player.resume()` if `musicEnabled == true`.
 - **User Settings Toggle**: State persisted via `GameSettings.musicEnabled` and directly switchable from the in-game Settings screen.
 
+### 3.5 Monetization & AdMob Integration (`AdService`)
+- **SDK**: `google_mobile_ads: ^9.2.0`.
+- **Application ID**: `ca-app-pub-3794659976212193~9107617603` (configured in `AndroidManifest.xml`).
+- **Interstitial / App Open Ad Unit ID**: `ca-app-pub-3794659976212193/3368291483`.
+- **Rewarded Ad Unit ID**: `ca-app-pub-3794659976212193/9929744688`.
+- **Preloading & Lifecycle Coordination**:
+  - Automatically preloads both interstitial and rewarded ads on app launch and upon entering Game Over state.
+  - When user presses 'PLAY' on Home Screen or 'HOME' on Game Over Screen, triggers `AdService.instance.showAd(...)` with background audio muting.
+  - When user presses 'WATCH AND GET A CHANCE', triggers `AdService.instance.showRewardedAd(...)`. Upon watching the rewarded ad, `StackPulseGame.reviveGame()` clears miss fragments and resumes the stack run without losing score.
+  - Strict verification: If the ad fails to load, device has no internet, or is dismissed early, no revive is awarded. A notification is surfaced to the player: *"Ad not available. Please check your internet connection and try again."*
+
 ---
 
 ## 4. Entity Lifecycle & Performance Optimization
@@ -209,6 +220,20 @@ StackPulseGame (FlameGame)
 2. **Falling Piece Pruning**: `FallingPieceComponent` tracks global height and self-disposes via `removeFromParent()` immediately once $Y > \text{topStackY} + 840.0$, preventing unbounded memory consumption.
 3. **Particle Recycling**: `ParticleEffectComponent` pre-allocates particle vectors and auto-removes itself when its internal timer reaches $0.65\text{s}$.
 4. **Input Locking**: When `handlePlacementTap()` triggers, `currentMovingBlock.removeFromParent()` is invoked synchronously prior to spawning pieces. This eliminates race conditions from multi-finger touch spamming.
+
+### 4.3 3D Isometric Slab Geometry & Material System (`IsometricSlabRenderer`)
+- **Isometric Vertex Projection**:
+  - Isometric tilt slope ($\text{tiltSlope} = 0.28 \approx 15.6^\circ$) ensures authentic 3D isometric projection across all widths $W \in [0, 210]$.
+  - Front vertical ridge $V_{\text{front}} \to V_{\text{front\_bot}}$ separates Left and Right faces.
+  - Sits seamlessly on top of preceding blocks and the base isometric pedestal: $\Delta Y_{\text{step}} = H = 26.0\text{ px}$.
+- **3-Face Lighting Model**:
+  - **Top Face**: Specular directional highlight ($L \approx 85\%$) from top-left with linear gradient fill and soft planar diagonal sheen.
+  - **Right Face**: Medium diffuse half-tone shade ($L \approx 65\%$).
+  - **Left Face**: Deep ambient shadow face ($L \approx 48\%$) with vertical ambient occlusion gradient.
+- **Vibrant Multi-Color Palette**:
+  - 12-stage rich, vibrant spectrum (Cyan, Royal Blue, Purple, Magenta, Coral Pink, Sunset Orange, Gold, Emerald, Mint Turquoise, Cerulean, Indigo, Rose Pink) cycling dynamically per block level.
+- **Top Center HUD Anchoring**:
+  - Dedicated `Positioned(top: 0, left: 0, right: 0)` container anchoring the score at the top center, preventing overlap with the active stacking area.
 
 ---
 

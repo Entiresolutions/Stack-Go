@@ -199,12 +199,18 @@ class GameTheme {
     secondaryText: Color(0xFFA8C4E4),
     mutedText: Color(0xFF6B8DB5),
     blockPalette: [
-      Color(0xFF13D9FF), // Electric Cyan
-      Color(0xFF347BFF), // Neon Blue
-      Color(0xFF9658FF), // Electric Purple
-      Color(0xFFF34BEA), // Neon Magenta
-      Color(0xFFFF995B), // Sunset Orange
-      Color(0xFF14E4C5), // Mint
+      Color(0xFF00E5FF), // 0: Vibrant Electric Cyan
+      Color(0xFF2979FF), // 1: Electric Royal Blue
+      Color(0xFF7C4DFF), // 2: Vivid Purple
+      Color(0xFFE040FB), // 3: Bright Neon Magenta
+      Color(0xFFFF1744), // 4: Hot Coral Pink
+      Color(0xFFFF6D00), // 5: Sunset Orange
+      Color(0xFFFFD600), // 6: Radiant Gold
+      Color(0xFF00E676), // 7: Bright Emerald Green
+      Color(0xFF1DE9B6), // 8: Mint Turquoise
+      Color(0xFF00B0FF), // 9: Bright Cerulean Blue
+      Color(0xFF651FFF), // 10: Deep Indigo
+      Color(0xFFFF4081), // 11: Vivid Rose Pink
     ],
   );
 

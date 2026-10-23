@@ -2,6 +2,7 @@ import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 import '../core/game_config.dart';
 import '../core/game_theme.dart';
+import 'components/isometric_slab_renderer.dart';
 
 class StackWorld extends World {
   GameTheme theme;
@@ -30,51 +31,20 @@ class StackWorld extends World {
     // 1. Theme-Specific Atmospheric Background (Matching Reference Screen 10)
     _renderThemeAtmosphere(canvas);
 
-    // 2. Base Pedestal below the starting block
-    const pedestalRect = Rect.fromLTWH(
-      GameConfig.boundaryPadding,
-      GameConfig.basePositionY + GameConfig.blockHeight + 3,
-      GameConfig.logicalWidth - GameConfig.boundaryPadding * 2,
-      10,
-    );
-    final pedestalRRect = RRect.fromRectAndRadius(
-      pedestalRect,
-      const Radius.circular(5.0),
-    );
+    // 2. Base 3D Isometric Pedestal supporting the starting block
+    const pedestalW = GameConfig.baseBlockWidth + 40.0;
+    const pedestalX = (GameConfig.logicalWidth - pedestalW) / 2;
+    const pedestalY = GameConfig.basePositionY + GameConfig.blockHeight;
 
-    // Pedestal surface gradient
-    final pedestalGradient = LinearGradient(
-      begin: Alignment.topCenter,
-      end: Alignment.bottomCenter,
-      colors: [
-        theme.surfaceElevated,
-        theme.surface,
-      ],
+    IsometricSlabRenderer.renderSlab(
+      canvas: canvas,
+      width: pedestalW,
+      height: 18.0,
+      baseColor: const Color(0xFF14223A),
+      blockIndex: 0,
+      offsetX: pedestalX,
+      offsetY: pedestalY,
     );
-    final pedestalPaint = Paint()
-      ..shader = pedestalGradient.createShader(pedestalRect)
-      ..style = PaintingStyle.fill;
-    canvas.drawRRect(pedestalRRect, pedestalPaint);
-
-    // Pedestal top accent line
-    final pedestalTopAccent = Paint()
-      ..color = theme.pedestalBorderColor
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.5;
-    canvas.drawLine(
-      const Offset(GameConfig.boundaryPadding + 3,
-          GameConfig.basePositionY + GameConfig.blockHeight + 3.5),
-      const Offset(GameConfig.logicalWidth - GameConfig.boundaryPadding - 3,
-          GameConfig.basePositionY + GameConfig.blockHeight + 3.5),
-      pedestalTopAccent,
-    );
-
-    // Pedestal border
-    final pedestalBorder = Paint()
-      ..color = theme.surfaceBorder
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.0;
-    canvas.drawRRect(pedestalRRect, pedestalBorder);
 
     super.render(canvas);
 

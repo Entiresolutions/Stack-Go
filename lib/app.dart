@@ -4,6 +4,7 @@ import 'models/game_settings.dart';
 import 'models/game_statistics.dart';
 import 'services/local_storage_service.dart';
 import 'services/music_service.dart';
+import 'services/ad_service.dart';
 import 'ui/screens/splash_screen.dart';
 import 'ui/screens/home_screen.dart';
 import 'ui/screens/game_screen.dart';
@@ -84,6 +85,26 @@ class _StackPulseAppState extends State<StackPulseApp>
     _storage.saveStatistics(updated);
   }
 
+  void _handleStartGame() {
+    AdService.instance.showPlayAd(
+      onComplete: () {
+        if (mounted) {
+          setState(() => _currentView = AppView.game);
+        }
+      },
+    );
+  }
+
+  void _handleGoHome() {
+    AdService.instance.showAd(
+      onComplete: () {
+        if (mounted) {
+          setState(() => _currentView = AppView.home);
+        }
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -142,7 +163,7 @@ class _StackPulseAppState extends State<StackPulseApp>
           settings: _settings,
           statistics: _statistics,
           onUpdateStatistics: _updateStatistics,
-          onHome: () => setState(() => _currentView = AppView.home),
+          onHome: _handleGoHome,
           onOpenSettings: () => setState(() => _currentView = AppView.settings),
         );
       case AppView.themes:
@@ -173,7 +194,7 @@ class _StackPulseAppState extends State<StackPulseApp>
           theme: theme,
           statistics: _statistics,
           settings: _settings,
-          onPlay: () => setState(() => _currentView = AppView.game),
+          onPlay: _handleStartGame,
           onThemes: () => setState(() => _currentView = AppView.themes),
           onSettings: () => setState(() => _currentView = AppView.settings),
           onTutorial: () => setState(() => _currentView = AppView.tutorial),

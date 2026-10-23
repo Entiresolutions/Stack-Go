@@ -82,7 +82,7 @@ class _PremiumButtonState extends State<PremiumButton>
     final Gradient gradient;
     final Border? border;
     final List<BoxShadow> shadows;
-    const Color textColor = Color(0xFFFFFFFF);
+    final Color textColor = widget.customAccent ?? const Color(0xFFFFFFFF);
 
     if (isPrimary) {
       // Reference signature Cyan to Electric Purple gradient
@@ -114,22 +114,33 @@ class _PremiumButtonState extends State<PremiumButton>
         ),
       ];
     } else {
-      // Dark elevated pill button
+      // Dark elevated pill button (or accented if customAccent provided)
+      final Color bgTop = widget.customAccent != null
+          ? widget.customAccent!.withValues(alpha: 0.16)
+          : effectiveTheme.surfaceElevated;
+      final Color bgBottom = widget.customAccent != null
+          ? widget.customAccent!.withValues(alpha: 0.08)
+          : effectiveTheme.surface;
+
       gradient = LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
         colors: [
-          effectiveTheme.surfaceElevated,
-          effectiveTheme.surface,
+          bgTop,
+          bgBottom,
         ],
       );
       border = Border.all(
-        color: Colors.white.withValues(alpha: 0.12),
-        width: 1.0,
+        color: widget.customAccent != null
+            ? widget.customAccent!.withValues(alpha: 0.45)
+            : Colors.white.withValues(alpha: 0.12),
+        width: widget.customAccent != null ? 1.2 : 1.0,
       );
       shadows = [
         BoxShadow(
-          color: Colors.black.withValues(alpha: 0.35),
+          color: widget.customAccent != null
+              ? widget.customAccent!.withValues(alpha: 0.20)
+              : Colors.black.withValues(alpha: 0.35),
           blurRadius: 12,
           offset: const Offset(0, 4),
         ),

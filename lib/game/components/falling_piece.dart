@@ -1,8 +1,10 @@
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
+import 'isometric_slab_renderer.dart';
 
 class FallingPieceComponent extends PositionComponent {
   final Color pieceColor;
+  final int pieceIndex;
   double velocityY;
   final double gravity = 800.0;
   double rotationSpeed;
@@ -14,6 +16,7 @@ class FallingPieceComponent extends PositionComponent {
     required Vector2 size,
     required this.pieceColor,
     required this.maxY,
+    this.pieceIndex = 0,
     this.velocityY = 30.0,
     this.rotationSpeed = 1.5,
   }) : super(position: position, size: size, anchor: Anchor.center);
@@ -36,30 +39,14 @@ class FallingPieceComponent extends PositionComponent {
 
   @override
   void render(Canvas canvas) {
-    final rect =
-        Rect.fromCenter(center: Offset.zero, width: size.x, height: size.y);
-    final rrect = RRect.fromRectAndRadius(rect, const Radius.circular(3.0));
-
-    // Vertical gradient
-    final gradient = LinearGradient(
-      begin: Alignment.topCenter,
-      end: Alignment.bottomCenter,
-      colors: [
-        Color.lerp(pieceColor, Colors.white, 0.2)!.withValues(alpha: opacity),
-        pieceColor.withValues(alpha: opacity * 0.9),
-      ],
+    IsometricSlabRenderer.renderSlab(
+      canvas: canvas,
+      width: size.x,
+      height: size.y,
+      baseColor: pieceColor,
+      blockIndex: pieceIndex,
+      opacity: opacity,
+      isCentered: true,
     );
-
-    final paint = Paint()
-      ..shader = gradient.createShader(rect)
-      ..style = PaintingStyle.fill;
-    canvas.drawRRect(rrect, paint);
-
-    // Subtle outline
-    final outlinePaint = Paint()
-      ..color = Colors.white.withValues(alpha: opacity * 0.25)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.0;
-    canvas.drawRRect(rrect, outlinePaint);
   }
 }

@@ -7,6 +7,7 @@ import '../../game/stack_pulse_game.dart';
 import '../overlays/pause_overlay.dart';
 import '../overlays/game_over_overlay.dart';
 import '../widgets/score_display.dart';
+import '../../services/ad_service.dart';
 
 class GameScreen extends StatefulWidget {
   final GameTheme theme;
@@ -77,6 +78,10 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
         );
         widget.onUpdateStatistics(updatedStats);
 
+        // Preload ads while user views Game Over screen so they are ready instantly
+        AdService.instance.preloadAd();
+        AdService.instance.preloadRewardedAd();
+
         setState(() {
           _isGameOver = true;
           _finalScore = finalScore;
@@ -125,6 +130,29 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     _game.initializeGame();
   }
 
+  Future<String?> _onRevive() async {
+    String? failureReason;
+    final bool rewarded = await AdService.instance.showRewardedAd(
+      onRewardEarned: () {
+        if (!mounted) return;
+        setState(() {
+          _isGameOver = false;
+          _isPaused = false;
+        });
+        _game.reviveGame();
+      },
+      onAdUnavailable: (reason) {
+        failureReason = reason;
+      },
+    );
+
+    if (rewarded) {
+      return null;
+    }
+    return failureReason ??
+        "Ad not available. Please check your internet connection and try again.";
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = widget.theme;
@@ -138,74 +166,22 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
             child: GameWidget(game: _game),
           ),
 
-          // 2. Top Non-occluding Centered HUD matching Reference Screen 3
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Top-Left: Crown Best Score Pill matching Reference Screen 3
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF14284A).withValues(alpha: 0.85),
-                      borderRadius: BorderRadius.circular(18),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.12),
-                        width: 1.0,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.3),
-                          blurRadius: 8,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.emoji_events_rounded,
-                          color: Color(0xFFFFCB78),
-                          size: 15,
-                        ),
-                        const SizedBox(width: 6),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Text(
-                              'BEST',
-                              style: TextStyle(
-                                color: Color(0xFFA8C4E4),
-                                fontSize: 8.5,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: 0.6,
-                              ),
-                            ),
-                            Text(
-                              '${widget.statistics.bestScore}',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: 0.5,
-                                fontFeatures: [FontFeature.tabularFigures()],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // Center: Large Score & COMBO Underline Badge
-                  Expanded(
-                    child: Center(
+          // 2. Top HUD (Positioned at Top Center)
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: SafeArea(
+              bottom: false,
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                child: Stack(
+                  alignment: Alignment.topCenter,
+                  children: [
+                    // Center: Large Score & COMBO Underline Badge (Top Center!)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 2),
                       child: ScoreDisplay(
                         score: _currentScore,
                         streak: _currentStreak,
@@ -214,40 +190,104 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                         accentColor: theme.primaryAccent,
                       ),
                     ),
-                  ),
 
-                  // Top-Right: Circular Glass Pause Button matching Reference Screen 3
-                  GestureDetector(
-                    onTap: _onPause,
-                    behavior: HitTestBehavior.opaque,
-                    child: Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF14284A).withValues(alpha: 0.85),
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.12),
-                          width: 1.0,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.3),
-                            blurRadius: 8,
-                            offset: const Offset(0, 3),
+                    // Top-Left: Crown Best Score Pill
+                    Align(
+                      alignment: Alignment.topLeft,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF14284A).withValues(alpha: 0.85),
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.12),
+                            width: 1.0,
                           ),
-                        ],
-                      ),
-                      child: const Center(
-                        child: Icon(
-                          Icons.pause_rounded,
-                          color: Colors.white,
-                          size: 22,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.3),
+                              blurRadius: 8,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.emoji_events_rounded,
+                              color: Color(0xFFFFCB78),
+                              size: 15,
+                            ),
+                            const SizedBox(width: 6),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Text(
+                                  'BEST',
+                                  style: TextStyle(
+                                    color: Color(0xFFA8C4E4),
+                                    fontSize: 8.5,
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: 0.6,
+                                  ),
+                                ),
+                                Text(
+                                  '${widget.statistics.bestScore}',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: 0.5,
+                                    fontFeatures: [FontFeature.tabularFigures()],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
                       ),
                     ),
-                  ),
-                ],
+
+                    // Top-Right: Circular Glass Pause Button
+                    Align(
+                      alignment: Alignment.topRight,
+                      child: GestureDetector(
+                        onTap: _onPause,
+                        behavior: HitTestBehavior.opaque,
+                        child: Container(
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            color:
+                                const Color(0xFF14284A).withValues(alpha: 0.85),
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.12),
+                              width: 1.0,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.3),
+                                blurRadius: 8,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
+                          ),
+                          child: const Center(
+                            child: Icon(
+                              Icons.pause_rounded,
+                              color: Colors.white,
+                              size: 22,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -291,6 +331,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
               isNewBest: _isNewBest,
               onRetry: _onRestart,
               onHome: widget.onHome,
+              onWatchChance: _onRevive,
             ),
         ],
       ),
