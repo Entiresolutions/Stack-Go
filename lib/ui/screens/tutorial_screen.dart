@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../core/game_theme.dart';
-import '../widgets/premium_button.dart';
 
 class TutorialScreen extends StatelessWidget {
   final GameTheme theme;
@@ -16,157 +15,326 @@ class TutorialScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: theme.background,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'HOW TO PLAY',
-                    style: TextStyle(
-                      color: theme.text,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 1.5,
-                    ),
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.close, color: theme.text),
-                    onPressed: onDismiss,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-              Expanded(
-                child: ListView(
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: theme.backgroundGradient,
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            child: Column(
+              children: [
+                // Top Header Bar matching Reference Screen 9
+                Row(
                   children: [
-                    _stepCard(
-                      step: '01',
-                      title: 'Automatic Movement',
-                      desc: 'A block slides horizontally back and forth across the screen with increasing speed as you climb.',
-                      icon: Icons.swap_horiz_rounded,
-                      theme: theme,
+                    // Back Arrow
+                    GestureDetector(
+                      onTap: onDismiss,
+                      behavior: HitTestBehavior.opaque,
+                      child: Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF14284A).withValues(alpha: 0.8),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.10),
+                            width: 1.0,
+                          ),
+                        ),
+                        child: const Center(
+                          child: Icon(
+                            Icons.arrow_back_rounded,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                        ),
+                      ),
                     ),
-                    const SizedBox(height: 16),
-                    _stepCard(
-                      step: '02',
-                      title: 'Single Tap Timing',
-                      desc: 'Tap anywhere on the screen to place the active block right above the previous platform.',
-                      icon: Icons.touch_app_rounded,
-                      theme: theme,
+                    const Expanded(
+                      child: Text(
+                        'HOW TO PLAY',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 2.0,
+                        ),
+                      ),
                     ),
-                    const SizedBox(height: 16),
-                    _stepCard(
-                      step: '03',
-                      title: 'Precision Snapping & Pitch Combos',
-                      desc: 'Line up closely within precision tolerance to snap cleanly, preserve full width, and elevate musical chimes higher with every consecutive perfect stack!',
-                      icon: Icons.stars_rounded,
-                      theme: theme,
-                    ),
-                    const SizedBox(height: 16),
-                    _stepCard(
-                      step: '04',
-                      title: 'Precision Trimming',
-                      desc: 'Any misaligned section is sliced off and falls away permanently. Narrower blocks require sharper timing.',
-                      icon: Icons.content_cut_rounded,
-                      theme: theme,
-                    ),
-                    const SizedBox(height: 16),
-                    _stepCard(
-                      step: '05',
-                      title: 'Total Miss Ends Run',
-                      desc: 'If the block misses the tower with zero overlap, your run concludes and your high score is recorded.',
-                      icon: Icons.flag_rounded,
-                      theme: theme,
-                    ),
+                    const SizedBox(width: 40), // Balances back arrow
                   ],
                 ),
-              ),
-              const SizedBox(height: 16),
-              PremiumButton(
-                label: 'GOT IT, LET\'S STACK',
-                isPrimary: true,
-                customAccent: theme.primaryAccent,
-                onTap: onDismiss,
-              ),
-            ],
+                const SizedBox(height: 20),
+
+                // 5 Instructional Step Rows matching Reference Screen 9
+                Expanded(
+                  child: ListView(
+                    physics: const BouncingScrollPhysics(),
+                    children: [
+                      _buildStepRow(
+                        step: '1',
+                        instruction: 'Block moves automatically',
+                        diagram: _buildMovingBlockDiagram(),
+                      ),
+                      const SizedBox(height: 12),
+                      _buildStepRow(
+                        step: '2',
+                        instruction: 'Tap to stack it',
+                        diagram: _buildTapDiagram(),
+                      ),
+                      const SizedBox(height: 12),
+                      _buildStepRow(
+                        step: '3',
+                        instruction: 'Perfect alignment keeps the width',
+                        diagram: _buildPerfectAlignmentDiagram(),
+                      ),
+                      const SizedBox(height: 12),
+                      _buildStepRow(
+                        step: '4',
+                        instruction: 'Inaccurate alignment trims the block',
+                        diagram: _buildTrimmingDiagram(),
+                      ),
+                      const SizedBox(height: 12),
+                      _buildStepRow(
+                        step: '5',
+                        instruction: 'Miss the tower and it\'s game over',
+                        diagram: _buildMissDiagram(),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _stepCard({
+  Widget _buildStepRow({
     required String step,
-    required String title,
-    required String desc,
-    required IconData icon,
-    required GameTheme theme,
+    required String instruction,
+    required Widget diagram,
   }) {
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
-        color: theme.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+        color: const Color(0xFF14284A).withValues(alpha: 0.85),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.10),
+          width: 1.0,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.25),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Blue Circular Number Badge matching Reference Screen 9
           Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: theme.primaryAccent.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(12),
+            width: 28,
+            height: 28,
+            decoration: const BoxDecoration(
+              color: Color(0xFF347BFF),
+              shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: theme.primaryAccent, size: 22),
+            child: Center(
+              child: Text(
+                step,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ),
           ),
           const SizedBox(width: 14),
+
+          // Short Instruction
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      title,
-                      style: TextStyle(
-                        color: theme.text,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    Text(
-                      step,
-                      style: TextStyle(
-                        color: theme.primaryAccent,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 1.0,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  desc,
-                  style: TextStyle(
-                    color: theme.secondaryText,
-                    fontSize: 13,
-                    height: 1.4,
-                  ),
+            child: Text(
+              instruction,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 13.5,
+                fontWeight: FontWeight.w700,
+                height: 1.3,
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+
+          // Geometric Illustrated Diagram
+          SizedBox(
+            width: 72,
+            height: 48,
+            child: Center(child: diagram),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Diagram 1: Block with horizontal motion trail
+  Widget _buildMovingBlockDiagram() {
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        // Motion trail
+        Positioned(
+          left: 4,
+          child: Container(
+            width: 32,
+            height: 12,
+            decoration: BoxDecoration(
+              color: const Color(0xFF9658FF).withValues(alpha: 0.25),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+        ),
+        // Active moving block
+        Positioned(
+          right: 4,
+          child: Container(
+            width: 44,
+            height: 13,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF13D9FF), Color(0xFF9658FF)],
+              ),
+              borderRadius: BorderRadius.circular(3),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF13D9FF).withValues(alpha: 0.5),
+                  blurRadius: 8,
                 ),
               ],
             ),
           ),
-        ],
-      ),
+        ),
+      ],
+    );
+  }
+
+  // Diagram 2: Block with hand finger pointer
+  Widget _buildTapDiagram() {
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        Container(
+          width: 50,
+          height: 13,
+          decoration: BoxDecoration(
+            color: const Color(0xFF13D9FF),
+            borderRadius: BorderRadius.circular(3),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF13D9FF).withValues(alpha: 0.4),
+                blurRadius: 6,
+              ),
+            ],
+          ),
+        ),
+        const Positioned(
+          right: 2,
+          bottom: 2,
+          child: Icon(
+            Icons.touch_app_rounded,
+            color: Colors.white,
+            size: 22,
+          ),
+        ),
+      ],
+    );
+  }
+
+  // Diagram 3: Block aligned cleanly with dashed alignment guide
+  Widget _buildPerfectAlignmentDiagram() {
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        Container(
+          width: 52,
+          height: 14,
+          decoration: BoxDecoration(
+            color: const Color(0xFF14E4C5),
+            borderRadius: BorderRadius.circular(3),
+            border: Border.all(color: Colors.white, width: 1.0),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF14E4C5).withValues(alpha: 0.5),
+                blurRadius: 8,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  // Diagram 4: Sliced block with falling orange piece
+  Widget _buildTrimmingDiagram() {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 38,
+          height: 13,
+          decoration: BoxDecoration(
+            color: const Color(0xFF347BFF),
+            borderRadius: BorderRadius.circular(2.5),
+          ),
+        ),
+        const SizedBox(width: 4),
+        Transform.rotate(
+          angle: 0.35,
+          child: Container(
+            width: 14,
+            height: 13,
+            decoration: BoxDecoration(
+              color: const Color(0xFFFF995B),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // Diagram 5: Missed block falling into void
+  Widget _buildMissDiagram() {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 32,
+          height: 11,
+          decoration: BoxDecoration(
+            color: const Color(0xFF1C3A70),
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Transform.rotate(
+          angle: 0.5,
+          child: Container(
+            width: 24,
+            height: 11,
+            decoration: BoxDecoration(
+              color: const Color(0xFF13D9FF).withValues(alpha: 0.6),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

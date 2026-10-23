@@ -30,18 +30,18 @@ class GameSettings {
   }
 
   Map<String, dynamic> toJson() => {
-    'soundEnabled': soundEnabled,
-    'hapticsEnabled': hapticsEnabled,
-    'reducedMotion': reducedMotion,
-    'tutorialCompleted': tutorialCompleted,
-    'selectedTheme': selectedTheme,
-  };
+        'soundEnabled': soundEnabled,
+        'hapticsEnabled': hapticsEnabled,
+        'reducedMotion': reducedMotion,
+        'tutorialCompleted': tutorialCompleted,
+        'selectedTheme': selectedTheme,
+      };
 
   factory GameSettings.fromJson(Map<String, dynamic> json) => GameSettings(
-    soundEnabled: json['soundEnabled'] as bool? ?? true,
-    hapticsEnabled: json['hapticsEnabled'] as bool? ?? true,
-    reducedMotion: json['reducedMotion'] as bool? ?? false,
-    tutorialCompleted: json['tutorialCompleted'] as bool? ?? false,
-    selectedTheme: json['selectedTheme'] as String? ?? 'midnightNeon',
-  );
+        soundEnabled: json['soundEnabled'] as bool? ?? true,
+        hapticsEnabled: json['hapticsEnabled'] as bool? ?? true,
+        reducedMotion: json['reducedMotion'] as bool? ?? false,
+        tutorialCompleted: json['tutorialCompleted'] as bool? ?? false,
+        selectedTheme: json['selectedTheme'] as String? ?? 'midnightNeon',
+      );
 }

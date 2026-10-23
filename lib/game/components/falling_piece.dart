@@ -38,12 +38,28 @@ class FallingPieceComponent extends PositionComponent {
   void render(Canvas canvas) {
     final rect =
         Rect.fromCenter(center: Offset.zero, width: size.x, height: size.y);
-    final paint = Paint()
-      ..color = pieceColor.withValues(alpha: opacity)
-      ..style = PaintingStyle.fill;
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(rect, const Radius.circular(3)),
-      paint,
+    final rrect = RRect.fromRectAndRadius(rect, const Radius.circular(3.0));
+
+    // Vertical gradient
+    final gradient = LinearGradient(
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      colors: [
+        Color.lerp(pieceColor, Colors.white, 0.2)!.withValues(alpha: opacity),
+        pieceColor.withValues(alpha: opacity * 0.9),
+      ],
     );
+
+    final paint = Paint()
+      ..shader = gradient.createShader(rect)
+      ..style = PaintingStyle.fill;
+    canvas.drawRRect(rrect, paint);
+
+    // Subtle outline
+    final outlinePaint = Paint()
+      ..color = Colors.white.withValues(alpha: opacity * 0.25)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.0;
+    canvas.drawRRect(rrect, outlinePaint);
   }
 }

@@ -25,23 +25,24 @@ class GameStatistics {
       bestStreak: bestStreak ?? this.bestStreak,
       totalGamesPlayed: totalGamesPlayed ?? this.totalGamesPlayed,
       totalBlocksPlaced: totalBlocksPlaced ?? this.totalBlocksPlaced,
-      totalPerfectPlacements: totalPerfectPlacements ?? this.totalPerfectPlacements,
+      totalPerfectPlacements:
+          totalPerfectPlacements ?? this.totalPerfectPlacements,
     );
   }
 
   Map<String, dynamic> toJson() => {
-    'bestScore': bestScore,
-    'bestStreak': bestStreak,
-    'totalGamesPlayed': totalGamesPlayed,
-    'totalBlocksPlaced': totalBlocksPlaced,
-    'totalPerfectPlacements': totalPerfectPlacements,
-  };
+        'bestScore': bestScore,
+        'bestStreak': bestStreak,
+        'totalGamesPlayed': totalGamesPlayed,
+        'totalBlocksPlaced': totalBlocksPlaced,
+        'totalPerfectPlacements': totalPerfectPlacements,
+      };
 
   factory GameStatistics.fromJson(Map<String, dynamic> json) => GameStatistics(
-    bestScore: json['bestScore'] as int? ?? 0,
-    bestStreak: json['bestStreak'] as int? ?? 0,
-    totalGamesPlayed: json['totalGamesPlayed'] as int? ?? 0,
-    totalBlocksPlaced: json['totalBlocksPlaced'] as int? ?? 0,
-    totalPerfectPlacements: json['totalPerfectPlacements'] as int? ?? 0,
-  );
+        bestScore: json['bestScore'] as int? ?? 0,
+        bestStreak: json['bestStreak'] as int? ?? 0,
+        totalGamesPlayed: json['totalGamesPlayed'] as int? ?? 0,
+        totalBlocksPlaced: json['totalBlocksPlaced'] as int? ?? 0,
+        totalPerfectPlacements: json['totalPerfectPlacements'] as int? ?? 0,
+      );
 }

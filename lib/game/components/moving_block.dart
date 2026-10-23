@@ -35,27 +35,38 @@ class MovingBlockComponent extends PositionComponent {
   @override
   void render(Canvas canvas) {
     final rect = Rect.fromLTWH(0, 0, size.x, size.y);
-    final rrect = RRect.fromRectAndRadius(rect, const Radius.circular(4));
+    final rrect = RRect.fromRectAndRadius(rect, const Radius.circular(3.5));
 
-    // Fill
+    // 1. Refined vertical gradient fill
+    final gradient = LinearGradient(
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      colors: [
+        Color.lerp(blockColor, Colors.white, 0.22)!,
+        blockColor,
+        Color.lerp(blockColor, Colors.black, 0.10)!,
+      ],
+      stops: const [0.0, 0.45, 1.0],
+    );
+
     final paint = Paint()
-      ..color = blockColor
+      ..shader = gradient.createShader(rect)
       ..style = PaintingStyle.fill;
     canvas.drawRRect(rrect, paint);
 
-    // Top highlight
+    // 2. Controlled luminous top highlight sheen
     final highlightPaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.3)
+      ..color = Colors.white.withValues(alpha: 0.50)
       ..style = PaintingStyle.fill;
     final highlightRRect = RRect.fromRectAndRadius(
-      Rect.fromLTWH(2, 2, size.x - 4, 3),
-      const Radius.circular(2),
+      Rect.fromLTWH(2, 1.5, size.x - 4, 2.5),
+      const Radius.circular(1.5),
     );
     canvas.drawRRect(highlightRRect, highlightPaint);
 
-    // Crisp outline
+    // 3. Crisp geometric hairline perimeter outline
     final outlinePaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.18)
+      ..color = Colors.white.withValues(alpha: 0.28)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.0;
     canvas.drawRRect(rrect, outlinePaint);

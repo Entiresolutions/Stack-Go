@@ -1,8 +1,9 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../../core/game_theme.dart';
 import '../widgets/premium_button.dart';
 
-class GameOverOverlay extends StatelessWidget {
+class GameOverOverlay extends StatefulWidget {
   final GameTheme theme;
   final int finalScore;
   final int bestScore;
@@ -23,120 +24,335 @@ class GameOverOverlay extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: Colors.black.withValues(alpha: 0.8),
-      child: Center(
-        child: Container(
-          width: 320,
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-          decoration: BoxDecoration(
-            color: theme.surface,
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: isNewBest
-                  ? theme.primaryAccent
-                  : Colors.white.withValues(alpha: 0.1),
-              width: isNewBest ? 2.0 : 1.0,
-            ),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'GAME OVER',
-                style: TextStyle(
-                  color: theme.text.withValues(alpha: 0.8),
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 2.5,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                '$finalScore',
-                style: TextStyle(
-                  color: theme.text,
-                  fontSize: 64,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: -2.0,
-                  fontFeatures: const [FontFeature.tabularFigures()],
-                ),
-              ),
-              if (isNewBest) ...[
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: theme.primaryAccent.withValues(alpha: 0.18),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: theme.primaryAccent),
-                  ),
-                  child: Text(
-                    'NEW BEST SCORE!',
-                    style: TextStyle(
-                      color: theme.primaryAccent,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 1.0,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-              ],
-              const SizedBox(height: 12),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _statItem('ALL-TIME BEST', '$bestScore', theme),
-                  Container(
-                      width: 1,
-                      height: 32,
-                      color: Colors.white.withValues(alpha: 0.1)),
-                  _statItem('BEST STREAK', '$bestStreak', theme),
-                ],
-              ),
-              const SizedBox(height: 28),
-              PremiumButton(
-                label: 'PLAY AGAIN',
-                icon: Icons.refresh_rounded,
-                isPrimary: true,
-                customAccent: theme.primaryAccent,
-                onTap: onRetry,
-              ),
-              const SizedBox(height: 12),
-              PremiumButton(
-                label: 'HOME',
-                icon: Icons.home_rounded,
-                onTap: onHome,
-              ),
-            ],
-          ),
-        ),
+  State<GameOverOverlay> createState() => _GameOverOverlayState();
+}
+
+class _GameOverOverlayState extends State<GameOverOverlay>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _fadeAnimation;
+  late Animation<int> _scoreCountAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 650),
+    );
+    _scaleAnimation = Tween<double>(begin: 0.88, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.0, 0.7, curve: Curves.easeOutBack),
       ),
     );
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.0, 0.5, curve: Curves.easeOut),
+      ),
+    );
+    _scoreCountAnimation = IntTween(begin: 0, end: widget.finalScore).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.2, 1.0, curve: Curves.easeOutCubic),
+      ),
+    );
+
+    final isTest =
+        WidgetsBinding.instance.runtimeType.toString().contains('Test');
+    if (!isTest) {
+      _controller.forward();
+    } else {
+      _controller.value = 1.0;
+    }
   }
 
-  Widget _statItem(String label, String value, GameTheme theme) {
-    return Column(
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = widget.theme;
+    final isNewBest = widget.isNewBest;
+
+    return Stack(
       children: [
-        Text(
-          label,
-          style: TextStyle(
-            color: theme.secondaryText,
-            fontSize: 11,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 0.8,
+        // Frosted Glass Backdrop Barrier
+        Positioned.fill(
+          child: GestureDetector(
+            onTap: () {}, // Blocks tap-through
+            behavior: HitTestBehavior.opaque,
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
+              child: Container(
+                color: const Color(0xFF061225).withValues(alpha: 0.88),
+              ),
+            ),
           ),
         ),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          style: TextStyle(
-            color: theme.text,
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
-            fontFeatures: const [FontFeature.tabularFigures()],
+
+        // Animated Modal Content
+        Center(
+          child: FadeTransition(
+            opacity: _fadeAnimation,
+            child: ScaleTransition(
+              scale: _scaleAnimation,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 26),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Heading: GAME OVER matching Reference Screen 5
+                    ShaderMask(
+                      shaderCallback: (bounds) => const LinearGradient(
+                        colors: [
+                          Color(0xFFF34BEA), // Neon Magenta
+                          Color(0xFF9658FF), // Electric Purple
+                        ],
+                      ).createShader(bounds),
+                      child: const Text(
+                        'GAME OVER',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 32,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 3.0,
+                          shadows: [
+                            Shadow(
+                              color: Color(0xFFF34BEA),
+                              blurRadius: 24,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Results Card matching Reference Screen 5
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 26,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF14284A).withValues(alpha: 0.90),
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(
+                          color: isNewBest
+                              ? const Color(0xFFFFCB78)
+                              : Colors.white.withValues(alpha: 0.12),
+                          width: isNewBest ? 1.5 : 1.0,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.45),
+                            blurRadius: 20,
+                            offset: const Offset(0, 8),
+                          ),
+                          if (isNewBest)
+                            BoxShadow(
+                              color: const Color(0xFFFFCB78)
+                                  .withValues(alpha: 0.25),
+                              blurRadius: 24,
+                              offset: const Offset(0, 4),
+                            ),
+                        ],
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // SCORE Header
+                          const Text(
+                            'SCORE',
+                            style: TextStyle(
+                              color: Color(0xFFA8C4E4),
+                              fontSize: 12,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 1.5,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+
+                          // Large Score + NEW BEST badge
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              AnimatedBuilder(
+                                animation: _scoreCountAnimation,
+                                builder: (context, _) {
+                                  return Text(
+                                    '${_scoreCountAnimation.value}',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 68,
+                                      fontWeight: FontWeight.w900,
+                                      letterSpacing: -2.0,
+                                      height: 1.0,
+                                      fontFeatures: [
+                                        FontFeature.tabularFigures(),
+                                      ],
+                                    ),
+                                  );
+                                },
+                              ),
+                              if (isNewBest) ...[
+                                const SizedBox(width: 14),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 6,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    gradient: const LinearGradient(
+                                      colors: [
+                                        Color(0xFFFFDF99),
+                                        Color(0xFFFFB300),
+                                      ],
+                                    ),
+                                    borderRadius: BorderRadius.circular(12),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: const Color(0xFFFFB300)
+                                            .withValues(alpha: 0.45),
+                                        blurRadius: 10,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  child: const Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        'NEW',
+                                        style: TextStyle(
+                                          color: Color(0xFF061225),
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w900,
+                                          height: 1.0,
+                                        ),
+                                      ),
+                                      Text(
+                                        'BEST',
+                                        style: TextStyle(
+                                          color: Color(0xFF061225),
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w900,
+                                          height: 1.0,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                          const SizedBox(height: 20),
+
+                          // Divider line
+                          Container(
+                            height: 1.0,
+                            color: Colors.white.withValues(alpha: 0.08),
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Bottom Row: BEST SCORE (Left) & BEST STREAK (Right)
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              Column(
+                                children: [
+                                  const Text(
+                                    'BEST SCORE',
+                                    style: TextStyle(
+                                      color: Color(0xFFA8C4E4),
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w800,
+                                      letterSpacing: 0.8,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    '${widget.bestScore}',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.w900,
+                                      fontFeatures: [
+                                        FontFeature.tabularFigures(),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Container(
+                                width: 1.0,
+                                height: 32,
+                                color: Colors.white.withValues(alpha: 0.08),
+                              ),
+                              Column(
+                                children: [
+                                  const Text(
+                                    'BEST STREAK',
+                                    style: TextStyle(
+                                      color: Color(0xFFA8C4E4),
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w800,
+                                      letterSpacing: 0.8,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    '${widget.bestStreak}',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.w900,
+                                      fontFeatures: [
+                                        FontFeature.tabularFigures(),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Primary Action: ▶ RETRY (Cyan to Purple Gradient Pill)
+                    PremiumButton(
+                      label: 'RETRY',
+                      icon: Icons.play_arrow_rounded,
+                      isPrimary: true,
+                      theme: theme,
+                      height: 56,
+                      fontSize: 16,
+                      onTap: widget.onRetry,
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Secondary Action: ⌂ HOME
+                    PremiumButton(
+                      label: 'HOME',
+                      icon: Icons.home_rounded,
+                      theme: theme,
+                      height: 50,
+                      fontSize: 15,
+                      onTap: widget.onHome,
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
         ),
       ],

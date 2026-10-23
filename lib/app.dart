@@ -3,6 +3,7 @@ import 'core/game_theme.dart';
 import 'models/game_settings.dart';
 import 'models/game_statistics.dart';
 import 'services/local_storage_service.dart';
+import 'ui/screens/splash_screen.dart';
 import 'ui/screens/home_screen.dart';
 import 'ui/screens/game_screen.dart';
 import 'ui/screens/themes_screen.dart';
@@ -10,6 +11,7 @@ import 'ui/screens/settings_screen.dart';
 import 'ui/screens/tutorial_screen.dart';
 
 enum AppView {
+  splash,
   home,
   game,
   themes,
@@ -28,7 +30,7 @@ class _StackPulseAppState extends State<StackPulseApp> {
   final LocalStorageService _storage = LocalStorageService();
   GameSettings _settings = const GameSettings();
   GameStatistics _statistics = const GameStatistics();
-  AppView _currentView = AppView.home;
+  AppView _currentView = AppView.splash;
   bool _isLoading = true;
 
   @override
@@ -71,9 +73,9 @@ class _StackPulseAppState extends State<StackPulseApp> {
       return const MaterialApp(
         debugShowCheckedModeBanner: false,
         home: Scaffold(
-          backgroundColor: Color(0xFF0B1020),
+          backgroundColor: Color(0xFF061225),
           body: Center(
-            child: CircularProgressIndicator(color: Color(0xFF55DDFB)),
+            child: CircularProgressIndicator(color: Color(0xFF13D9FF)),
           ),
         ),
       );
@@ -92,12 +94,31 @@ class _StackPulseAppState extends State<StackPulseApp> {
           surface: theme.surface,
         ),
       ),
-      home: _buildCurrentView(theme),
+      home: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 260),
+        switchInCurve: Curves.easeOutCubic,
+        switchOutCurve: Curves.easeInCubic,
+        transitionBuilder: (child, animation) {
+          return FadeTransition(
+            opacity: animation,
+            child: child,
+          );
+        },
+        child: KeyedSubtree(
+          key: ValueKey(_currentView),
+          child: _buildCurrentView(theme),
+        ),
+      ),
     );
   }
 
   Widget _buildCurrentView(GameTheme theme) {
     switch (_currentView) {
+      case AppView.splash:
+        return SplashScreen(
+          theme: theme,
+          onLoaded: () => setState(() => _currentView = AppView.home),
+        );
       case AppView.game:
         return GameScreen(
           theme: theme,
@@ -123,6 +144,7 @@ class _StackPulseAppState extends State<StackPulseApp> {
           settings: _settings,
           onSave: _updateSettings,
           onDismiss: () => setState(() => _currentView = AppView.home),
+          onOpenThemes: () => setState(() => _currentView = AppView.themes),
         );
       case AppView.tutorial:
         return TutorialScreen(

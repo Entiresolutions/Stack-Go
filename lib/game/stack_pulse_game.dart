@@ -218,8 +218,7 @@ class StackPulseGame extends FlameGame<StackWorld>
     // Perfect placement visual flash, particles, and audio-tactile feedback
     String? streakBadge;
     if (isPerfect) {
-      world.triggerFlash(
-          min(1.0, 0.7 + scoreController.currentStreak * 0.05));
+      world.triggerFlash(min(1.0, 0.7 + scoreController.currentStreak * 0.05));
 
       if (!settings.reducedMotion) {
         final particleCount =

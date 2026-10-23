@@ -9,7 +9,8 @@ void main() {
     SharedPreferences.setMockInitialValues({});
   });
 
-  testWidgets('StackPulseApp smoke test renders Home screen', (WidgetTester tester) async {
+  testWidgets('StackPulseApp smoke test renders Home screen',
+      (WidgetTester tester) async {
     await tester.pumpWidget(const StackPulseApp());
     await tester.pumpAndSettle();
 

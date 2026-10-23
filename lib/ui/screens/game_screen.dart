@@ -33,7 +33,9 @@ class GameScreen extends StatefulWidget {
 class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   late StackPulseGame _game;
   int _currentScore = 0;
+  int _currentStreak = 0;
   String? _streakBadge;
+  bool _showPerfectBanner = false;
   bool _isPaused = false;
   bool _isGameOver = false;
   bool _isNewBest = false;
@@ -54,7 +56,11 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
       onScoreUpdate: (score, streak, badge) {
         setState(() {
           _currentScore = score;
+          _currentStreak = streak;
           _streakBadge = badge;
+          if (streak > 0 && badge != null) {
+            _showPerfectBanner = true;
+          }
         });
       },
       onGameOver: (finalScore, bestStreak) {
@@ -112,7 +118,9 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
       _isPaused = false;
       _isGameOver = false;
       _currentScore = 0;
+      _currentStreak = 0;
       _streakBadge = null;
+      _showPerfectBanner = false;
     });
     _game.initializeGame();
   }
@@ -125,45 +133,145 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
       backgroundColor: theme.background,
       body: Stack(
         children: [
-          // The Flame Game Viewport
+          // 1. The Flame Game Viewport
           Positioned.fill(
             child: GameWidget(game: _game),
           ),
 
-          // Top Non-occluding Centered HUD
+          // 2. Top Non-occluding Centered HUD matching Reference Screen 3
           SafeArea(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(width: 48), // Balances pause icon
+                  // Top-Left: Crown Best Score Pill matching Reference Screen 3
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF14284A).withValues(alpha: 0.85),
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.12),
+                        width: 1.0,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.emoji_events_rounded,
+                          color: Color(0xFFFFCB78),
+                          size: 15,
+                        ),
+                        const SizedBox(width: 6),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text(
+                              'BEST',
+                              style: TextStyle(
+                                color: Color(0xFFA8C4E4),
+                                fontSize: 8.5,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 0.6,
+                              ),
+                            ),
+                            Text(
+                              '${widget.statistics.bestScore}',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 0.5,
+                                fontFeatures: [FontFeature.tabularFigures()],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Center: Large Score & COMBO Underline Badge
                   Expanded(
                     child: Center(
                       child: ScoreDisplay(
                         score: _currentScore,
-                        bestScore: widget.statistics.bestScore,
+                        streak: _currentStreak,
                         streakBadge: _streakBadge,
-                        textColor: theme.text,
+                        textColor: Colors.white,
                         accentColor: theme.primaryAccent,
                       ),
                     ),
                   ),
-                  IconButton(
-                    icon: Icon(
-                      Icons.pause_rounded,
-                      color: theme.text,
-                      size: 28,
+
+                  // Top-Right: Circular Glass Pause Button matching Reference Screen 3
+                  GestureDetector(
+                    onTap: _onPause,
+                    behavior: HitTestBehavior.opaque,
+                    child: Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF14284A).withValues(alpha: 0.85),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.12),
+                          width: 1.0,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: const Center(
+                        child: Icon(
+                          Icons.pause_rounded,
+                          color: Colors.white,
+                          size: 22,
+                        ),
+                      ),
                     ),
-                    onPressed: _onPause,
                   ),
                 ],
               ),
             ),
           ),
 
-          // Pause Overlay
+          // 3. Floating PERFECT! xN Banner matching Reference Screen 4
+          if (_showPerfectBanner)
+            Positioned(
+              top: MediaQuery.of(context).size.height * 0.22,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: PerfectComboBanner(
+                  key: ValueKey('streak_$_currentScore$_currentStreak'),
+                  streak: _currentStreak,
+                  onDismissed: () {
+                    if (mounted) {
+                      setState(() => _showPerfectBanner = false);
+                    }
+                  },
+                ),
+              ),
+            ),
+
+          // 4. Pause Overlay matching Reference Screen 6
           if (_isPaused)
             PauseOverlay(
               theme: theme,
@@ -173,7 +281,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
               onHome: widget.onHome,
             ),
 
-          // Game Over Overlay
+          // 5. Game Over Overlay matching Reference Screen 5
           if (_isGameOver)
             GameOverOverlay(
               theme: theme,

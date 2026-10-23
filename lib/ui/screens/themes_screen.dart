@@ -22,63 +22,102 @@ class ThemesScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: theme.background,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'THEMES',
-                        style: TextStyle(
-                          color: theme.text,
-                          fontSize: 20,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 1.5,
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: theme.backgroundGradient,
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            child: Column(
+              children: [
+                // Top Header Bar matching Reference Screen 7
+                Row(
+                  children: [
+                    // Back Arrow
+                    GestureDetector(
+                      onTap: onDismiss,
+                      behavior: HitTestBehavior.opaque,
+                      child: Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF14284A).withValues(alpha: 0.8),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.10),
+                            width: 1.0,
+                          ),
+                        ),
+                        child: const Center(
+                          child: Icon(
+                            Icons.arrow_back_rounded,
+                            color: Colors.white,
+                            size: 20,
+                          ),
                         ),
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'Unlock vibrant palettes as your high score grows',
-                        style: TextStyle(
-                          color: theme.secondaryText,
-                          fontSize: 12,
-                        ),
+                    ),
+                    const Expanded(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'CHOOSE YOUR VIBE',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 2.0,
+                            ),
+                          ),
+                          SizedBox(height: 3),
+                          Text(
+                            'Make every stack your own.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Color(0xFFA8C4E4),
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.close, color: theme.text),
-                    onPressed: onDismiss,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              Expanded(
-                child: ListView.separated(
-                  itemCount: GameTheme.allThemes.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 12),
-                  itemBuilder: (context, index) {
-                    final item = GameTheme.allThemes[index];
-                    final isUnlocked = bestScore >= item.unlockScore;
-                    final isSelected = item.type == currentTheme.type;
-
-                    return ThemeCard(
-                      theme: item,
-                      isSelected: isSelected,
-                      isUnlocked: isUnlocked,
-                      onSelect: () => onSelectTheme(item),
-                    );
-                  },
+                    ),
+                    const SizedBox(width: 40), // Balances back arrow
+                  ],
                 ),
-              ),
-            ],
+                const SizedBox(height: 24),
+
+                // 2x2 Grid of Theme Cards matching Reference Screen 7
+                Expanded(
+                  child: GridView.builder(
+                    physics: const BouncingScrollPhysics(),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      mainAxisSpacing: 14,
+                      crossAxisSpacing: 14,
+                      childAspectRatio: 0.86,
+                    ),
+                    itemCount: GameTheme.allThemes.length,
+                    itemBuilder: (context, index) {
+                      final item = GameTheme.allThemes[index];
+                      final isUnlocked = bestScore >= item.unlockScore;
+                      final isSelected = item.type == currentTheme.type;
+
+                      return ThemeCard(
+                        theme: item,
+                        isSelected: isSelected,
+                        isUnlocked: isUnlocked,
+                        onSelect: () => onSelectTheme(item),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

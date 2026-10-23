@@ -35,5 +35,7 @@ class PlacementResult {
     this.isExcessOnRight = true,
   });
 
-  bool get isSuccessful => type == PlacementResultType.perfect || type == PlacementResultType.partial;
+  bool get isSuccessful =>
+      type == PlacementResultType.perfect ||
+      type == PlacementResultType.partial;
 }
