@@ -66,18 +66,122 @@ Every visual element in the application directly corresponds to one of the 10 sc
 | `secondaryText` | `#A8C4E4` | Subtitles, labels, and descriptions |
 | `mutedText` | `#6B8DB5` | Subtle borders and secondary hints |
 
-### 4.2 Theme-Specific Block Palettes
+### 4.2 Complete 10-Theme Specifications & Block Palettes
 
-Each theme supplies 6 cycling gradient colors for gameplay blocks:
+Stack Pulse organizes its 10 interactive themes into 3 distinct priority progression tiers. Each theme supplies 6 cycling gradient colors for gameplay blocks alongside dedicated ambient and reactive visual environments:
 
-- **Midnight Neon** (Default, Unlock Score: 0):
-  `#13D9FF` (Cyan) → `#347BFF` (Neon Blue) → `#9658FF` (Electric Purple) → `#F34BEA` (Neon Magenta) → `#FF995B` (Sunset Orange) → `#14E4C5` (Mint).
-- **Aurora** (Unlock Score: 10):
-  `#14E4C5` (Mint) → `#2DD4BF` (Turquoise) → `#34D399` (Polar Green) → `#10B981` (Emerald) → `#06B6D4` (Cyan) → `#6EE7B7` (Soft Polar).
-- **Sunset Pulse** (Unlock Score: 25):
-  `#FF995B` (Neon Orange) → `#FF7043` (Coral) → `#FF4081` (Vivid Pink) → `#F34BEA` (Neon Magenta) → `#9658FF` (Electric Purple) → `#FFB300` (Sunset Gold).
-- **Arctic Glow** (Unlock Score: 50):
-  `#E0F2FE` (Glacial White) → `#7DD3FC` (Polar Ice) → `#38BDF8` (Glacial Cyan) → `#347BFF` (Neon Blue) → `#818CF8` (Frost Indigo) → `#0284C7` (Deep Ocean).
+#### Priority 1 — Core Environments (Themes 1–4)
+- **1. Midnight Neon (Cyber Dimension)**
+  - Tier: `ThemeTier.core`
+  - Unlock Requirement: Unlocked by default (Best Score 0)
+  - Visual Identity: Deep navy futuristic architecture, cyan & violet lighting, subtle cyber grid elements.
+  - Assets: `assets/images/gameplay_bg_1792779594243.jpg`, `assets/images/theme_preview_neon.jpg`
+  - Block Palette: `#13D9FF` (Cyan) → `#347BFF` (Neon Blue) → `#9658FF` (Electric Purple) → `#F34BEA` (Neon Magenta) → `#FF995B` (Sunset Orange) → `#14E4C5` (Mint).
+  - Ambient Animation: Slow edge vertical light beams, moving cyber diamond particles, subtle floor mist breathing.
+  - Reactive Feedback: Electric cyan shockwave expanding outward on perfect placement; streak multiplier intensifies cyber beam glow.
+
+- **2. Aurora (Living Lights)**
+  - Tier: `ThemeTier.core`
+  - Unlock Requirement: Best Score 10
+  - Visual Identity: Deep emerald & turquoise northern lights, soft atmospheric depth, flowing ethereal ribbons.
+  - Assets: `assets/images/gameplay_bg_aurora.jpg`, `assets/images/theme_preview_aurora.jpg`
+  - Block Palette: `#14E4C5` (Mint) → `#2DD4BF` (Turquoise) → `#34D399` (Polar Green) → `#10B981` (Emerald) → `#06B6D4` (Cyan) → `#6EE7B7` (Soft Polar).
+  - Ambient Animation: Flowing dual-layer upper aurora wave ribbons, floating luminous spirit particles.
+  - Reactive Feedback: Shimmer wave sweep horizontally across northern lights on perfect placement; streaks temporarily boost aurora brightness.
+
+- **3. Sunset Pulse (Golden Horizon)**
+  - Tier: `ThemeTier.core`
+  - Unlock Requirement: Best Score 25
+  - Visual Identity: Coral & orange twilight, deep violet horizon, warm atmospheric breathing.
+  - Assets: `assets/images/gameplay_bg_sunset.jpg`, `assets/images/theme_preview_sunset.jpg`
+  - Block Palette: `#FF995B` (Neon Orange) → `#FF7043` (Coral) → `#FF4081` (Vivid Pink) → `#F34BEA` (Neon Magenta) → `#9658FF` (Electric Purple) → `#FFB300` (Sunset Gold).
+  - Ambient Animation: Slow horizon glow breathing, glowing boundary horizon line, drifting golden dust motes.
+  - Reactive Feedback: Radiant golden sweep radiating along horizon on perfect placement; streaks brighten sunset horizon glow.
+
+- **4. Arctic Glow (Frozen Dimension)**
+  - Tier: `ThemeTier.core`
+  - Unlock Requirement: Best Score 50
+  - Visual Identity: Deep icy blue environment, cold cyan lighting, distant crystalline spires.
+  - Assets: `assets/images/gameplay_bg_arctic.jpg`, `assets/images/theme_preview_arctic.jpg`
+  - Block Palette: `#E0F2FE` (Glacial White) → `#7DD3FC` (Polar Ice) → `#38BDF8` (Glacial Cyan) → `#347BFF` (Neon Blue) → `#818CF8` (Frost Indigo) → `#0284C7` (Deep Ocean).
+  - Ambient Animation: Gentle crystalline snow drift, floor frost mist breathing, twinkling crystal spire glints.
+  - Reactive Feedback: Sharp icy sparkle flash with expanding frost ring on perfect placement; streaks add crystalline sparkle highlights.
+
+#### Priority 2 — Advanced Environments (Themes 5–7)
+- **5. Sakura Drift (Cherry Blossom Sanctuary)**
+  - Tier: `ThemeTier.advanced`
+  - Unlock Requirement: 100 Lifetime Placements
+  - Visual Identity: Serene nighttime Japanese garden sanctuary, deep indigo & muted violet atmosphere, soft warm lantern lighting, layered silhouette edges.
+  - Assets: `assets/images/gameplay_bg_sakura.jpg`, `assets/images/theme_preview_sakura.jpg`
+  - Block Palette: `#FF85A2` (Blossom Pink) → `#FFAAC0` (Soft Petal) → `#FF6384` (Deep Sakura) → `#D070FF` (Orchid Violet) → `#FF94B8` (Radiant Pink) → `#F8E8EE` (Cherry White).
+  - Ambient Animation: Diagonally fluttering cherry blossom petals drifting with natural sway, soft lantern breathing illumination in outer lower corners.
+  - Reactive Feedback: Delicate blossom burst radiating 6 petal sparkles outward on perfect placement; streaks create soft pink ambient shimmer.
+
+- **6. Abyssal Depths (Bioluminescent Ocean)**
+  - Tier: `ThemeTier.advanced`
+  - Unlock Requirement: 250 Lifetime Placements
+  - Visual Identity: Deep oceanic abyss, dark ocean blue & turquoise, volumetric caustic light shafts, bioluminescent environmental detailing.
+  - Assets: `assets/images/gameplay_bg_abyssal.jpg`, `assets/images/theme_preview_abyssal.jpg`
+  - Block Palette: `#00E5FF` (Bioluminescent Cyan) → `#00FFD1` (Marine Mint) → `#00B0FF` (Deep Turquoise) → `#1DE9B6` (Aqua Teal) → `#0091EA` (Abyss Blue) → `#80D8FF` (Surface Shimmer).
+  - Ambient Animation: Slowly rising underwater bubbles with specular highlights, atmospheric angled caustic light shafts descending in outer margins.
+  - Reactive Feedback: Concentric circular underwater sonar ripple on perfect placement; streaks increase bioluminescent light shaft radiance.
+
+- **7. Retro Grid (Digital Synthwave)**
+  - Tier: `ThemeTier.advanced`
+  - Unlock Requirement: 450 Lifetime Placements
+  - Visual Identity: 80s digital synthwave cyber world, deep purple and midnight blue, magenta horizon, perspective wireframe grid, minimal glowing geometric silhouettes.
+  - Assets: `assets/images/gameplay_bg_retro.jpg`, `assets/images/theme_preview_retro.jpg`
+  - Block Palette: `#FF007F` (Neon Magenta) → `#FF2E93` (Synth Pink) → `#9D00FF` (Cyber Violet) → `#00E5FF` (Laser Cyan) → `#7928CA` (Retro Purple) → `#2BFBFF` (Electric Aqua).
+  - Ambient Animation: Receding perspective wireframe grid scrolling smoothly at the bottom, horizon magenta glow, horizontal laser scan line sweeping vertically, digital square/diamond bits in edge margins.
+  - Reactive Feedback: High-energy synthwave pulse wave traveling horizontally across the grid line + vibrant magenta shockwave on perfect placement; streaks brighten the digital grid and horizon.
+
+#### Priority 3 — Prestige Environments (Themes 8–10)
+- **8. Ember Core (Volcanic Chamber)**
+  - Tier: `ThemeTier.prestige`
+  - Unlock Requirement: 700 Lifetime Placements
+  - Visual Identity: Dark volcanic obsidian chamber, molten rock fissures, glowing lava formations in edge columns, cinematic contrast.
+  - Assets: `assets/images/gameplay_bg_ember.jpg`, `assets/images/theme_preview_ember.jpg`
+  - Block Palette: `#FF6600` (Molten Orange) → `#FF8800` (Fiery Amber) → `#FFCC00` (Blazing Gold) → `#FF3300` (Crimson Magma) → `#FFAE00` (Sun Gold) → `#FF5722` (Obsidian Core).
+  - Ambient Animation: Slowly rising glowing embers, breathing volcanic floor heat shimmer, molten edge fissure flares.
+  - Reactive Feedback: Blazing magma shockwave with double fire rings and central ember spark on perfect placement; streaks amplify molten fissure illumination.
+
+- **9. Celestial Observatory (Golden Constellations)**
+  - Tier: `ThemeTier.prestige`
+  - Unlock Requirement: 1,000 Lifetime Placements
+  - Visual Identity: Rare midnight-blue celestial sky, elegant golden architectural silhouettes, fine constellation geometry, pure refined luxury.
+  - Assets: `assets/images/gameplay_bg_celestial.jpg`, `assets/images/theme_preview_celestial.jpg`
+  - Block Palette: `#FFD700` (Celestial Gold) → `#FFE57F` (Astral Yellow) → `#BF80FF` (Cosmic Violet) → `#FFF080` (Starlight) → `#9D65FF` (Deep Nebula) → `#FFFDE7` (Golden White).
+  - Ambient Animation: Star clusters connected with fine glowing constellation lines in upper corners, periodic faint shooting star streak, golden 4-pointed sparkle stars.
+  - Reactive Feedback: Starburst constellation flash with 8-pointed golden celestial sparkle at center on perfect placement; streaks illuminate constellation connections.
+
+- **10. Prism Rift (Dimensional Fracture)**
+  - Tier: `ThemeTier.prestige`
+  - Unlock Requirement: 1,500 Lifetime Placements
+  - Visual Identity: Dimensional fracture in deep space, dark violet and black void, prismatic cyan, magenta, and indigo reflections, crystalline dimensional facets.
+  - Assets: `assets/images/gameplay_bg_prism.jpg`, `assets/images/theme_preview_prism.jpg`
+  - Block Palette: `#00F0FF` (Prismatic Cyan) → `#50F7FF` (Refracted Aqua) → `#FF00CC` (Prismatic Magenta) → `#B026FF` (Prismatic Indigo) → `#FF40DF` (Neon Fuchsia) → `#FFFFFF` (Pure Spectrum).
+  - Ambient Animation: Shifting angular dimensional refracted light facets, drifting faceted diamond crystal shards along outer margins.
+  - Reactive Feedback: Multi-spectral chromatic dispersion ripple (cyan outer ring, magenta inner ring) + crystalline refractive flash on perfect placement; streaks illuminate distant crystalline dimensional fractures.
+
+---
+
+### 4.3 Environmental Rendering Architecture & Performance Guarantees
+
+1. **Layered Structure**:
+   - **Layer 1 (Background Artwork)**: High-resolution 9:16 portrait artwork locally bundled in `assets/images/` rendered via `Image.asset(fit: BoxFit.cover)` with smooth crossfade `AnimatedSwitcher`.
+   - **Layer 2 (Procedural Ambient Graphics)**: Lightweight, GPU-accelerated procedural movement (petals, bubbles, grid scanlines, embers, stars, refractive facets) rendered via `CustomPainter`.
+   - **Layer 3 (Reactive Placement Feedback)**: Decoupled listeners responding to perfect placement and streak milestones with non-blocking decorative visual pulses.
+   - **Layer 4 (Atmospheric Scrim)**: Guaranteed legibility gradient scrim ensuring HUD score numbers and active gameplay stacking blocks maintain maximum contrast regardless of background scenery.
+2. **Strict Playfield Protection**:
+   - The central **55–65%** stacking column is strictly unobstructed across all 10 themes.
+   - All ambient particles, silhouettes, light shafts, and fissures are anchored to outer edge columns (`x < 0.22` or `x > 0.78`) or top/bottom horizons.
+3. **Performance & Energy Efficiency**:
+   - **Single Active Environment**: Only the currently selected theme animates during gameplay. Inactive environments consume zero GPU or CPU resources.
+   - **Zero Per-Frame Allocations**: All particle models are static constant structures with precomputed phases and speeds; `CustomPaint` reuses drawing structures without heap thrashing.
+   - **Pause & Reduced Motion Lifecycle**: Ambient and reactive animation controllers immediately stop when the game is paused, inactive, or when the user activates `Reduced Motion`.
+4. **Decoupled Game Engine Isolation**:
+   - All environmental rendering is isolated in Flutter widget tree and background layers.
+   - Stacking block components, movement, trimming, overlap calculations, difficulty speeds, collision logic, and scoring are 100% untouched and preserved.
 
 ---
 

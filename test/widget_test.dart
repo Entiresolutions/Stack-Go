@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:stack_pulse/app.dart';
 import 'package:stack_pulse/core/game_theme.dart';
 import 'package:stack_pulse/ui/screens/splash_screen.dart';
+import 'package:stack_pulse/ui/screens/themes_screen.dart';
 import 'package:stack_pulse/ui/widgets/gameplay_background.dart';
 
 void main() {
@@ -180,16 +181,9 @@ void main() {
   });
 
   testWidgets(
-      'ThemeGameplayBackground renders distinct environment assets for all 4 themes',
+      'ThemeGameplayBackground renders distinct environment assets for all 10 themes',
       (WidgetTester tester) async {
-    const allThemes = [
-      GameTheme.midnightNeon,
-      GameTheme.aurora,
-      GameTheme.sunsetPulse,
-      GameTheme.arcticGlow,
-    ];
-
-    for (final theme in allThemes) {
+    for (final theme in GameTheme.allThemes) {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -209,7 +203,9 @@ void main() {
       expect(
         find.byWidgetPredicate((w) =>
             w is CustomPaint &&
-            w.painter.runtimeType.toString().contains('ThemeEnvironmentPainter')),
+            w.painter.runtimeType
+                .toString()
+                .contains('ThemeEnvironmentPainter')),
         findsOneWidget,
       );
     }
@@ -241,5 +237,42 @@ void main() {
           w.painter.runtimeType.toString().contains('ThemeEnvironmentPainter')),
       findsNothing,
     );
+  });
+
+  testWidgets(
+      'ThemesScreen displays all 10 theme cards and respects unlock milestones',
+      (WidgetTester tester) async {
+    GameTheme? selected;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: ThemesScreen(
+          currentTheme: GameTheme.midnightNeon,
+          bestScore: 25,
+          totalPlacements: 300,
+          onSelectTheme: (t) => selected = t,
+          onDismiss: () {},
+        ),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+    expect(find.text('CHOOSE YOUR VIBE'), findsOneWidget);
+
+    // Verify initial cards
+    expect(find.text('Midnight Neon'), findsOneWidget);
+    expect(find.text('Aurora'), findsOneWidget);
+
+    // Tap Aurora card and verify selection callback
+    await tester.tap(find.text('Aurora'));
+    await tester.pumpAndSettle();
+    expect(selected?.type, ThemeType.aurora);
+
+    // Scroll down to check prestige themes
+    await tester.scrollUntilVisible(
+      find.text('Prism Rift'),
+      300.0,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.text('Prism Rift'), findsOneWidget);
   });
 }

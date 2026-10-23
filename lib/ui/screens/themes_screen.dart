@@ -17,6 +17,7 @@ import '../widgets/theme_card.dart';
 class ThemesScreen extends StatelessWidget {
   final GameTheme currentTheme;
   final int bestScore;
+  final int totalPlacements;
   final Function(GameTheme) onSelectTheme;
   final VoidCallback onDismiss;
   final bool reducedMotion;
@@ -25,6 +26,7 @@ class ThemesScreen extends StatelessWidget {
     super.key,
     required this.currentTheme,
     required this.bestScore,
+    this.totalPlacements = 0,
     required this.onSelectTheme,
     required this.onDismiss,
     this.reducedMotion = false,
@@ -95,21 +97,12 @@ class ThemesScreen extends StatelessWidget {
                 Expanded(
                   child: LayoutBuilder(
                     builder: (context, constraints) {
-                      // Calculate dynamic aspect ratio to ensure comfortable card layout
-                      final double availableWidth = constraints.maxWidth;
-                      final double availableHeight = constraints.maxHeight;
-                      final double itemWidth = (availableWidth - 16) / 2;
-                      final double targetItemHeight =
-                          (availableHeight - 16) / 2;
-
-                      // Clamp aspect ratio to maintain attractive proportions across all screens
-                      double aspectRatio = itemWidth / targetItemHeight;
-                      if (aspectRatio < 0.78) aspectRatio = 0.78;
-                      if (aspectRatio > 0.90) aspectRatio = 0.90;
+                      const double aspectRatio = 0.82;
 
                       return GridView.builder(
                         physics: const BouncingScrollPhysics(),
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 2,
                           mainAxisSpacing: 16,
                           crossAxisSpacing: 16,
@@ -118,7 +111,10 @@ class ThemesScreen extends StatelessWidget {
                         itemCount: GameTheme.allThemes.length,
                         itemBuilder: (context, index) {
                           final item = GameTheme.allThemes[index];
-                          final isUnlocked = bestScore >= item.unlockScore;
+                          final isUnlocked = item.isUnlocked(
+                            bestScore: bestScore,
+                            totalPlacements: totalPlacements,
+                          );
                           final isSelected = item.type == currentTheme.type;
 
                           return ThemeCard(

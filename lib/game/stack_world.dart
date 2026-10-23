@@ -61,40 +61,6 @@ class StackWorld extends World {
   }
 
   void _renderThemeAtmosphere(Canvas canvas) {
-    const width = GameConfig.logicalWidth;
-    const height = GameConfig.logicalHeight;
-
-    switch (theme.type) {
-      case ThemeType.midnightNeon:
-        _renderMidnightNeonAtmosphere(canvas, width, height);
-        break;
-      case ThemeType.aurora:
-        _renderAuroraAtmosphere(canvas, width, height);
-        break;
-      case ThemeType.sunsetPulse:
-        _renderSunsetPulseAtmosphere(canvas, width, height);
-        break;
-      case ThemeType.arcticGlow:
-        _renderArcticGlowAtmosphere(canvas, width, height);
-        break;
-    }
-  }
-
-  void _renderMidnightNeonAtmosphere(
-      Canvas canvas, double width, double height) {
-    // Rendered by high-fidelity production asset and ThemeGameplayBackground
-  }
-
-  void _renderAuroraAtmosphere(Canvas canvas, double width, double height) {
-    // Rendered by high-fidelity production asset and ThemeGameplayBackground
-  }
-
-  void _renderSunsetPulseAtmosphere(
-      Canvas canvas, double width, double height) {
-    // Rendered by high-fidelity production asset and ThemeGameplayBackground
-  }
-
-  void _renderArcticGlowAtmosphere(Canvas canvas, double width, double height) {
-    // Rendered by high-fidelity production asset and ThemeGameplayBackground
+    // Atmosphere and procedural effects are rendered by ThemeGameplayBackground
   }
 }
