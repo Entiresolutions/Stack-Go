@@ -87,8 +87,9 @@ class _PremiumButtonState extends State<PremiumButton>
     final isTest =
         WidgetsBinding.instance.runtimeType.toString().contains('Test');
     final now = DateTime.now().millisecondsSinceEpoch;
-    if (!isTest && now - _lastTapTimestamp < 300)
+    if (!isTest && now - _lastTapTimestamp < 300) {
       return; // Debounce duplicate rapid taps
+    }
     _lastTapTimestamp = now;
     widget.onTap();
   }

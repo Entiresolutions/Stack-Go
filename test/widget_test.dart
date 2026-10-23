@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:stack_pulse/app.dart';
 import 'package:stack_pulse/core/game_theme.dart';
 import 'package:stack_pulse/ui/screens/splash_screen.dart';
+import 'package:stack_pulse/ui/widgets/gameplay_background.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -176,5 +177,69 @@ void main() {
     // Settle and verify callback triggers cleanly
     await tester.pumpAndSettle();
     expect(loaded, isTrue);
+  });
+
+  testWidgets(
+      'ThemeGameplayBackground renders distinct environment assets for all 4 themes',
+      (WidgetTester tester) async {
+    const allThemes = [
+      GameTheme.midnightNeon,
+      GameTheme.aurora,
+      GameTheme.sunsetPulse,
+      GameTheme.arcticGlow,
+    ];
+
+    for (final theme in allThemes) {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: ThemeGameplayBackground(
+              theme: theme,
+              currentScore: 5,
+              currentStreak: 2,
+              perfectTriggerCount: 1,
+              reducedMotion: false,
+            ),
+          ),
+        ),
+      );
+
+      await tester.pump();
+      expect(find.byType(ThemeGameplayBackground), findsOneWidget);
+      expect(
+        find.byWidgetPredicate((w) =>
+            w is CustomPaint &&
+            w.painter.runtimeType.toString().contains('ThemeEnvironmentPainter')),
+        findsOneWidget,
+      );
+    }
+  });
+
+  testWidgets(
+      'ThemeGameplayBackground respects reducedMotion by bypassing procedural CustomPaint',
+      (WidgetTester tester) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(
+          body: ThemeGameplayBackground(
+            theme: GameTheme.aurora,
+            currentScore: 10,
+            currentStreak: 3,
+            perfectTriggerCount: 2,
+            reducedMotion: true,
+          ),
+        ),
+      ),
+    );
+
+    await tester.pump();
+    expect(find.byType(ThemeGameplayBackground), findsOneWidget);
+    // CustomPaint for procedural environment effects must not be in tree
+    expect(
+      find.byWidgetPredicate((w) =>
+          w is CustomPaint &&
+          w.painter.runtimeType.toString().contains('ThemeEnvironmentPainter')),
+      findsNothing,
+    );
   });
 }

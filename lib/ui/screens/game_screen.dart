@@ -6,6 +6,7 @@ import '../../models/game_statistics.dart';
 import '../../game/stack_pulse_game.dart';
 import '../overlays/pause_overlay.dart';
 import '../overlays/game_over_overlay.dart';
+import '../widgets/gameplay_background.dart';
 import '../widgets/score_display.dart';
 import 'settings_screen.dart';
 import 'themes_screen.dart';
@@ -45,6 +46,8 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   bool _isNewBest = false;
   int _finalScore = 0;
   int _bestStreakInRun = 0;
+  int _perfectTriggerCount = 0;
+  int _normalPlacementCount = 0;
 
   @override
   void initState() {
@@ -53,17 +56,32 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     _initGame();
   }
 
+  @override
+  void didUpdateWidget(covariant GameScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.theme.type != oldWidget.theme.type) {
+      _game.updateTheme(widget.theme);
+    }
+    if (widget.settings != oldWidget.settings) {
+      _game.updateSettings(widget.settings);
+    }
+  }
+
   void _initGame() {
     _game = StackPulseGame(
       theme: widget.theme,
       settings: widget.settings,
       onScoreUpdate: (score, streak, badge) {
+        final isPerfect = streak > 0 && badge != null;
         setState(() {
           _currentScore = score;
           _currentStreak = streak;
           _streakBadge = badge;
-          if (streak > 0 && badge != null) {
+          if (isPerfect) {
             _showPerfectBanner = true;
+            _perfectTriggerCount++;
+          } else {
+            _normalPlacementCount++;
           }
         });
       },
@@ -125,6 +143,8 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
       _currentStreak = 0;
       _streakBadge = null;
       _showPerfectBanner = false;
+      _perfectTriggerCount = 0;
+      _normalPlacementCount = 0;
     });
     _game.initializeGame();
   }
@@ -208,42 +228,16 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // 1. NANO BANANA GENERATED GAMEPLAY BACKGROUND (Asset)
-          Image.asset(
-            'assets/images/gameplay_bg.jpg',
-            fit: BoxFit.cover,
-            width: double.infinity,
-            height: double.infinity,
-            errorBuilder: (context, error, stackTrace) {
-              return Container(
-                decoration: BoxDecoration(
-                  gradient: theme.backgroundGradient,
-                ),
-              );
-            },
-          ),
-
-          // 2. Theme Tint Overlay for Non-Default Themes (Aurora, Sunset, Arctic)
-          if (theme.type != ThemeType.midnightNeon)
-            Container(
-              color: theme.background.withValues(alpha: 0.60),
-            ),
-
-          // 3. Subtle Dark Gradient Overlay for Ambient Contrast & Grounding
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  const Color(0xFF061225).withValues(alpha: 0.45),
-                  Colors.transparent,
-                  Colors.transparent,
-                  const Color(0xFF061225).withValues(alpha: 0.45),
-                ],
-                stops: const [0.0, 0.18, 0.82, 1.0],
-              ),
-            ),
+          // 1. DYNAMIC THEME-BASED INTERACTIVE GAMEPLAY BACKGROUND
+          ThemeGameplayBackground(
+            theme: theme,
+            currentScore: _currentScore,
+            currentStreak: _currentStreak,
+            perfectTriggerCount: _perfectTriggerCount,
+            normalPlacementCount: _normalPlacementCount,
+            isGameOver: _isGameOver,
+            isPaused: _isPaused,
+            reducedMotion: widget.settings.reducedMotion,
           ),
 
           // 4. The Flame Game Viewport (Blocks & Pedestal)

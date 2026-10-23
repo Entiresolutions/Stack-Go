@@ -385,6 +385,62 @@ class GameTheme {
     }
   }
 
+  /// Path to the dedicated 9:16 high-fidelity gameplay environment background asset
+  String get gameplayBackgroundAsset {
+    switch (type) {
+      case ThemeType.midnightNeon:
+        return 'assets/images/gameplay_bg.jpg';
+      case ThemeType.aurora:
+        return 'assets/images/gameplay_bg_aurora.jpg';
+      case ThemeType.sunsetPulse:
+        return 'assets/images/gameplay_bg_sunset.jpg';
+      case ThemeType.arcticGlow:
+        return 'assets/images/gameplay_bg_arctic.jpg';
+    }
+  }
+
+  /// Thematic environment designation
+  String get environmentName {
+    switch (type) {
+      case ThemeType.midnightNeon:
+        return 'Cyber Dimension';
+      case ThemeType.aurora:
+        return 'Living Lights';
+      case ThemeType.sunsetPulse:
+        return 'Golden Horizon';
+      case ThemeType.arcticGlow:
+        return 'Frozen Dimension';
+    }
+  }
+
+  /// Primary color for interactive reactive pulses on perfect placement
+  Color get reactivePulseColor {
+    switch (type) {
+      case ThemeType.midnightNeon:
+        return primaryAccent; // #13D9FF Electric Cyan
+      case ThemeType.aurora:
+        return mintAccent; // #14E4C5 Mint/Turquoise
+      case ThemeType.sunsetPulse:
+        return goldAccent; // #FFCB78 Golden Amber
+      case ThemeType.arcticGlow:
+        return const Color(0xFFBBEFFF); // Glacial Icy White/Cyan
+    }
+  }
+
+  /// Secondary color for atmospheric ambient ripples and shimmer
+  Color get reactiveSecondaryPulseColor {
+    switch (type) {
+      case ThemeType.midnightNeon:
+        return secondaryAccent; // #9658FF Electric Purple
+      case ThemeType.aurora:
+        return const Color(0xFF10B981); // Emerald Green
+      case ThemeType.sunsetPulse:
+        return neonMagenta; // #F34BEA Neon Magenta
+      case ThemeType.arcticGlow:
+        return primaryAccent; // #13D9FF Electric Cyan
+    }
+  }
+
   // ==========================================
   // PHASE 7: STANDARDIZED UI TOKENS
   // ==========================================

@@ -112,82 +112,19 @@ class StackWorld extends World {
 
   void _renderMidnightNeonAtmosphere(
       Canvas canvas, double width, double height) {
-    // Background is rendered by high-fidelity production asset gameplay_bg.jpg
+    // Rendered by high-fidelity production asset and ThemeGameplayBackground
   }
 
   void _renderAuroraAtmosphere(Canvas canvas, double width, double height) {
-    // Polar emerald aurora curtain
-    final auroraPaint = Paint()
-      ..shader = LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [
-          const Color(0xFF14E4C5).withValues(alpha: 0.18),
-          const Color(0xFF10B981).withValues(alpha: 0.10),
-          Colors.transparent,
-        ],
-      ).createShader(Rect.fromLTWH(0, -3000, width, 8000));
-    canvas.drawRect(Rect.fromLTWH(0, -3000, width, 8000), auroraPaint);
-
-    // Subtle mountain silhouettes
-    final mountainPaint = Paint()
-      ..color = const Color(0xFF092924).withValues(alpha: 0.6)
-      ..style = PaintingStyle.fill;
-    final path = Path()
-      ..moveTo(0, height)
-      ..lineTo(0, height * 0.7)
-      ..lineTo(width * 0.35, height * 0.45)
-      ..lineTo(width * 0.7, height * 0.65)
-      ..lineTo(width, height * 0.4)
-      ..lineTo(width, height)
-      ..close();
-    canvas.drawPath(path, mountainPaint);
+    // Rendered by high-fidelity production asset and ThemeGameplayBackground
   }
 
   void _renderSunsetPulseAtmosphere(
       Canvas canvas, double width, double height) {
-    // Dusk glowing horizon
-    final horizonGlow = Paint()
-      ..shader = RadialGradient(
-        colors: [
-          const Color(0xFFFF995B).withValues(alpha: 0.22),
-          const Color(0xFFF34BEA).withValues(alpha: 0.12),
-          Colors.transparent,
-        ],
-        radius: 0.9,
-      ).createShader(Rect.fromLTWH(0, height * 0.2, width, height));
-    canvas.drawRect(Rect.fromLTWH(0, -3000, width, 8000), horizonGlow);
-
-    // City skyline silhouettes
-    final skylinePaint = Paint()
-      ..color = const Color(0xFF260D25).withValues(alpha: 0.65)
-      ..style = PaintingStyle.fill;
-    canvas.drawRect(const Rect.fromLTWH(20, -2000, 30, 7000), skylinePaint);
-    canvas.drawRect(Rect.fromLTWH(width - 55, -2000, 35, 7000), skylinePaint);
+    // Rendered by high-fidelity production asset and ThemeGameplayBackground
   }
 
   void _renderArcticGlowAtmosphere(Canvas canvas, double width, double height) {
-    // Ice crystal light beams
-    final iceBeam = Paint()
-      ..shader = LinearGradient(
-        colors: [
-          const Color(0xFF7DD3FC).withValues(alpha: 0.15),
-          Colors.transparent,
-        ],
-      ).createShader(const Rect.fromLTWH(40, -3000, 16, 8000));
-    canvas.drawRect(const Rect.fromLTWH(40, -3000, 16, 8000), iceBeam);
-
-    final mountainPaint = Paint()
-      ..color = const Color(0xFF0C2448).withValues(alpha: 0.55)
-      ..style = PaintingStyle.fill;
-    final path = Path()
-      ..moveTo(0, height)
-      ..lineTo(0, height * 0.55)
-      ..lineTo(width * 0.45, height * 0.35)
-      ..lineTo(width * 0.85, height * 0.6)
-      ..lineTo(width, height * 0.45)
-      ..lineTo(width, height)
-      ..close();
-    canvas.drawPath(path, mountainPaint);
+    // Rendered by high-fidelity production asset and ThemeGameplayBackground
   }
 }

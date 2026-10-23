@@ -163,6 +163,14 @@ The typography scale utilizes `Plus Jakarta Sans` (with system sans-serif fallba
 - **Smooth Transition**: At 7.0 seconds, on verified animation completion and local storage readiness, smoothly transitions to `AppView.home` via `AnimatedSwitcher` (260ms `Curves.easeOutCubic`).
 - **Resilience & Testing**: Single-navigation latch (`_hasNavigated`) prevents duplicate transitions. Supports `reducedMotion` (bypasses spatial translations). Widget tests automatically bypass long timers via `TestWidgetsFlutterBinding` checks.
 
+### 7.5.4 Ambient Background Animation System (Enhanced VFX)
+- **Layer 1 — Static Production Background**: `assets/images/splash_bg.jpg` maintained as base layer with ambient dark contrast gradient scrim.
+- **Layer 2 — Animated Aurora Lighting**: Smooth, slow-moving ambient cyan (`#13D9FF`), blue (`#347BFF`), and violet (`#9658FF`) light pools drifting along outer decorative quadrants with subtle sinusoidal breathing opacity (`0.08` to `0.18`), keeping the central logo readable.
+- **Layer 3 — Initial Light Sweep**: Single-run diagonal luminous anamorphic light band sweeping smoothly across the atmospheric background during entrance (`0.02` to `0.14` progress, ~840ms), featuring soft cyan/blue gradients without harsh flashes.
+- **Layer 4 — Ambient Energy Rings**: Expanding dual concentric circular wave outlines (radii 55px to 150px) radiating softly behind the central 3-pill emblem over 2.4s wave cycles with fading luminous edges.
+- **Layer 5 — Floating Geometric Light Particles**: 18 persistent `const` light points (13 circular motes, 5 geometric diamond prisms) drifting upward with horizontal sway, edge fade-out, and staggered entrance.
+- **Performance & Reduced Motion**: Isolated with `RepaintBoundary`, zero per-frame heap allocations, repaints driven by `_controller`. When `reducedMotion` is true, procedural painter is completely bypassed.
+
 ---
 
 ## 8. Home Screen Specifications (Reference Screen 2 — Phase 1 Implementation)
@@ -211,16 +219,25 @@ The typography scale utilizes `Plus Jakarta Sans` (with system sans-serif fallba
   - Dimensions, speeds, collision tolerances, spawn coordinates, and trimming math are 100% preserved.
   - Block rendering styles, bevels, and palette assignments remain authoritative and decoupled from HUD/background presentation.
 
-### 9.2 Production Background Asset (`assets/images/gameplay_bg.jpg`)
-- **Asset Architecture**:
-  - High-resolution (9:16 portrait) environment generated via Nano Banana image generation (`gameplay_bg_1792779594243.jpg`).
-  - Composition: Ultra-dark midnight navy void (`#061225`) with sleek architectural cyber skyscraper silhouettes concentrated strictly on the left and right outer margins.
-  - High Visibility Channel: The central 60% vertical column is spacious, dark, and low-contrast, providing maximum contrast and visual readability for the colorful stacking tower and moving block.
-  - Upper & Lower Grounding: The upper 20% area is shaded for HUD legibility, while the lower foundation features subtle cyan volumetric floor mist.
-  - Viewport-Fixed Strategy: Decoded once and displayed via `Image.asset(..., fit: BoxFit.cover)` behind the transparent Flame `GameWidget`, preventing camera-follow jitter and eliminating runtime decode overhead.
-- **Theme Adaptability**:
-  - `Midnight Neon`: Displays the native `gameplay_bg.jpg` cyber arcade artwork.
-  - `Aurora`, `Sunset Pulse`, `Arctic Glow`: Harmonized via a thematic translucent overlay (`theme.background.withValues(alpha: 0.60)`), preserving environmental geometry while shifting the color temperature.
+### 9.2 Dynamic Theme-Based Gameplay Environments (`ThemeGameplayBackground`)
+- **Multi-Environment Architecture**:
+  - Replaced the single background image and flat color tint with 4 authentic, high-resolution (9:16 portrait) Nano Banana-generated environment assets:
+    1. **Midnight Neon (Cyber Dimension)**: `assets/images/gameplay_bg.jpg` — Deep navy cybernetic void, futuristic skyscraper monoliths on outer margins, cyan/purple lighting, subtle cyber light pillars, 12 drifting cyber motes, and floor mist.
+    2. **Aurora (Living Lights)**: `assets/images/gameplay_bg_aurora.jpg` — Deep emerald night atmosphere, glowing turquoise and mint northern lights flowing in the upper sky, jagged obsidian peaks framing outer edges, 12 floating spirit motes, and soft emerald ground mist.
+    3. **Sunset Pulse (Golden Horizon)**: `assets/images/gameplay_bg_sunset.jpg` — Vibrant twilight sky (deep violet to radiant amber), futuristic cyber city spires, glowing low horizon line with warm ambient breathing, 12 rising golden embers, and coral floor mist.
+    4. **Arctic Glow (Frozen Dimension)**: `assets/images/gameplay_bg_arctic.jpg` — Sub-zero polar sapphire void, majestic crystalline glacial spires and obsidian obelisks framing outer margins, 11 crystalline snowflakes gently drifting downward, and glacial floor frost.
+- **Three-Tier Environmental Stack**:
+  - **Layer 1 — Static Artwork with Crossfade**: Decoded once, cached locally, and smoothly crossfaded across theme switches via `AnimatedSwitcher(380ms, Curves.easeOut)`.
+  - **Layer 2 — Procedural Ambient Motion**: Lightweight `CustomPainter` rendering theme-specific light beams, procedural aurora wave ribbons, horizon warmth oscillation, crystalline sparkle glints, and persistent particles.
+  - **Layer 3 — Reactive Interactive Feedback**:
+    - *Perfect Placement*: Instantaneous themed shockwave/pulse (Electric Cyan pulse in Midnight Neon, Mint/Turquoise aurora shimmer wave in Aurora, Golden Horizon amber sweep in Sunset Pulse, sharp Icy Glacial sparkle in Arctic Glow).
+    - *Streak Escalation*: Higher placement streaks dynamically scale environmental luminescence and particle breathing (+8% to +35%).
+    - *Game Over*: Smooth, calming ambient settling and vignette dimming (`0.28` alpha over 600ms).
+- **Readability & Block Protection**:
+  - Central 56% vertical column (`x: 0.22` to `0.78`) is strictly guaranteed dark, clean, and particle-free.
+  - Transparent center atmospheric gradient scrim provides WCAG AAA contrast for moving blocks, placed blocks, and score display.
+  - Zero interference with Flame physics, block rendering, collision math, scoring, or input handling (`IgnorePointer`).
+  - Supports `reducedMotion`: displays static theme artwork without procedural particles or motion.
 
 ### 9.3 Screen-Fixed HUD Layout
 - **Top-Left (Best Score Pill)**:
