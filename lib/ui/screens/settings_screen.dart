@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/game_theme.dart';
 import '../../models/game_settings.dart';
+import '../../services/music_service.dart';
 import '../widgets/premium_button.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -23,6 +24,7 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   late bool _sound;
+  late bool _music;
   late bool _haptics;
   late bool _reducedMotion;
 
@@ -30,6 +32,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void initState() {
     super.initState();
     _sound = widget.settings.soundEnabled;
+    _music = widget.settings.musicEnabled;
     _haptics = widget.settings.hapticsEnabled;
     _reducedMotion = widget.settings.reducedMotion;
   }
@@ -37,6 +40,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void _applyChanges() {
     final updated = widget.settings.copyWith(
       soundEnabled: _sound,
+      musicEnabled: _music,
       hapticsEnabled: _haptics,
       reducedMotion: _reducedMotion,
     );
@@ -70,38 +74,60 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   IconButton(
                     icon: Icon(Icons.close, color: theme.text),
-                    onPressed: widget.onDismiss,
+                    onPressed: () {
+                      MusicService.instance.setMusicEnabled(widget.settings.musicEnabled);
+                      widget.onDismiss();
+                    },
                   ),
                 ],
               ),
-              const SizedBox(height: 24),
-              _switchTile(
-                title: 'Sound Effects',
-                subtitle: 'Auditory feedback on placement, streak combos and game over',
-                value: _sound,
-                icon: Icons.volume_up_rounded,
-                onChanged: (val) => setState(() => _sound = val),
-                theme: theme,
+              const SizedBox(height: 20),
+              Expanded(
+                child: ListView(
+                  physics: const BouncingScrollPhysics(),
+                  children: [
+                    _switchTile(
+                      title: 'Sound Effects',
+                      subtitle: 'Auditory feedback on placement, streak combos and game over',
+                      value: _sound,
+                      icon: Icons.volume_up_rounded,
+                      onChanged: (val) => setState(() => _sound = val),
+                      theme: theme,
+                    ),
+                    const SizedBox(height: 16),
+                    _switchTile(
+                      title: 'Background Music',
+                      subtitle: 'Continuous ambient soundtrack during gameplay and menus',
+                      value: _music,
+                      icon: Icons.music_note_rounded,
+                      onChanged: (val) {
+                        setState(() => _music = val);
+                        MusicService.instance.setMusicEnabled(val);
+                      },
+                      theme: theme,
+                    ),
+                    const SizedBox(height: 16),
+                    _switchTile(
+                      title: 'Haptic Feedback',
+                      subtitle: 'Vibrations when snapping blocks and achieving perfect streaks',
+                      value: _haptics,
+                      icon: Icons.vibration_rounded,
+                      onChanged: (val) => setState(() => _haptics = val),
+                      theme: theme,
+                    ),
+                    const SizedBox(height: 16),
+                    _switchTile(
+                      title: 'Reduced Motion',
+                      subtitle: 'Minimizes particle fireworks and screen shake effects',
+                      value: _reducedMotion,
+                      icon: Icons.motion_photos_off_rounded,
+                      onChanged: (val) => setState(() => _reducedMotion = val),
+                      theme: theme,
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(height: 16),
-              _switchTile(
-                title: 'Haptic Feedback',
-                subtitle: 'Vibrations when snapping blocks and achieving perfect streaks',
-                value: _haptics,
-                icon: Icons.vibration_rounded,
-                onChanged: (val) => setState(() => _haptics = val),
-                theme: theme,
-              ),
-              const SizedBox(height: 16),
-              _switchTile(
-                title: 'Reduced Motion',
-                subtitle: 'Minimizes particle fireworks and screen shake effects',
-                value: _reducedMotion,
-                icon: Icons.motion_photos_off_rounded,
-                onChanged: (val) => setState(() => _reducedMotion = val),
-                theme: theme,
-              ),
-              const Spacer(),
               PremiumButton(
                 label: 'SAVE SETTINGS',
                 isPrimary: true,
