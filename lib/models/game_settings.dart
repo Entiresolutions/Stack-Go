@@ -1,5 +1,6 @@
 class GameSettings {
   final bool soundEnabled;
+  final bool musicEnabled;
   final bool hapticsEnabled;
   final bool reducedMotion;
   final bool tutorialCompleted;
@@ -7,6 +8,7 @@ class GameSettings {
 
   const GameSettings({
     this.soundEnabled = true,
+    this.musicEnabled = true,
     this.hapticsEnabled = true,
     this.reducedMotion = false,
     this.tutorialCompleted = false,
@@ -15,6 +17,7 @@ class GameSettings {
 
   GameSettings copyWith({
     bool? soundEnabled,
+    bool? musicEnabled,
     bool? hapticsEnabled,
     bool? reducedMotion,
     bool? tutorialCompleted,
@@ -22,6 +25,7 @@ class GameSettings {
   }) {
     return GameSettings(
       soundEnabled: soundEnabled ?? this.soundEnabled,
+      musicEnabled: musicEnabled ?? this.musicEnabled,
       hapticsEnabled: hapticsEnabled ?? this.hapticsEnabled,
       reducedMotion: reducedMotion ?? this.reducedMotion,
       tutorialCompleted: tutorialCompleted ?? this.tutorialCompleted,
@@ -31,6 +35,7 @@ class GameSettings {
 
   Map<String, dynamic> toJson() => {
         'soundEnabled': soundEnabled,
+        'musicEnabled': musicEnabled,
         'hapticsEnabled': hapticsEnabled,
         'reducedMotion': reducedMotion,
         'tutorialCompleted': tutorialCompleted,
@@ -39,6 +44,7 @@ class GameSettings {
 
   factory GameSettings.fromJson(Map<String, dynamic> json) => GameSettings(
         soundEnabled: json['soundEnabled'] as bool? ?? true,
+        musicEnabled: json['musicEnabled'] as bool? ?? true,
         hapticsEnabled: json['hapticsEnabled'] as bool? ?? true,
         reducedMotion: json['reducedMotion'] as bool? ?? false,
         tutorialCompleted: json['tutorialCompleted'] as bool? ?? false,

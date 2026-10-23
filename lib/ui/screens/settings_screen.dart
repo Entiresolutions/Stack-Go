@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/game_theme.dart';
 import '../../models/game_settings.dart';
+import '../../services/music_service.dart';
 import '../widgets/stack_pulse_logo.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -25,6 +26,7 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   late bool _sound;
+  late bool _music;
   late bool _haptics;
   late bool _reducedMotion;
 
@@ -32,23 +34,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void initState() {
     super.initState();
     _sound = widget.settings.soundEnabled;
+    _music = widget.settings.musicEnabled;
     _haptics = widget.settings.hapticsEnabled;
     _reducedMotion = widget.settings.reducedMotion;
   }
 
-  void _updateSettings({bool? sound, bool? haptics, bool? motion}) {
+  void _updateSettings(
+      {bool? sound, bool? music, bool? haptics, bool? motion}) {
     setState(() {
       if (sound != null) _sound = sound;
+      if (music != null) _music = music;
       if (haptics != null) _haptics = haptics;
       if (motion != null) _reducedMotion = motion;
     });
 
     final updated = widget.settings.copyWith(
       soundEnabled: _sound,
+      musicEnabled: _music,
       hapticsEnabled: _haptics,
       reducedMotion: _reducedMotion,
     );
     widget.onSave(updated);
+    if (music != null) {
+      MusicService.instance.setMusicEnabled(music);
+    }
   }
 
   @override
@@ -135,6 +144,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         label: 'Sound Effects',
                         value: _sound,
                         onChanged: (val) => _updateSettings(sound: val),
+                      ),
+                      _buildDivider(),
+                      _buildRow(
+                        icon: Icons.music_note_rounded,
+                        label: 'Background Music',
+                        value: _music,
+                        onChanged: (val) => _updateSettings(music: val),
                       ),
                       _buildDivider(),
                       _buildRow(

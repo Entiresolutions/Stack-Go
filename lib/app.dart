@@ -3,6 +3,7 @@ import 'core/game_theme.dart';
 import 'models/game_settings.dart';
 import 'models/game_statistics.dart';
 import 'services/local_storage_service.dart';
+import 'services/music_service.dart';
 import 'ui/screens/splash_screen.dart';
 import 'ui/screens/home_screen.dart';
 import 'ui/screens/game_screen.dart';
@@ -26,7 +27,8 @@ class StackPulseApp extends StatefulWidget {
   State<StackPulseApp> createState() => _StackPulseAppState();
 }
 
-class _StackPulseAppState extends State<StackPulseApp> {
+class _StackPulseAppState extends State<StackPulseApp>
+    with WidgetsBindingObserver {
   final LocalStorageService _storage = LocalStorageService();
   GameSettings _settings = const GameSettings();
   GameStatistics _statistics = const GameStatistics();
@@ -36,7 +38,20 @@ class _StackPulseAppState extends State<StackPulseApp> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _loadState();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    MusicService.instance.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    MusicService.instance.onAppLifecycleStateChanged(state);
   }
 
   Future<void> _loadState() async {
@@ -47,6 +62,7 @@ class _StackPulseAppState extends State<StackPulseApp> {
       _statistics = stats;
       _isLoading = false;
     });
+    await MusicService.instance.initialize(musicEnabled: settings.musicEnabled);
   }
 
   GameTheme get _currentTheme {
@@ -60,6 +76,7 @@ class _StackPulseAppState extends State<StackPulseApp> {
   void _updateSettings(GameSettings updated) {
     setState(() => _settings = updated);
     _storage.saveSettings(updated);
+    MusicService.instance.setMusicEnabled(updated.musicEnabled);
   }
 
   void _updateStatistics(GameStatistics updated) {
