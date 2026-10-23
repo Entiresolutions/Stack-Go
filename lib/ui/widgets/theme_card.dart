@@ -265,7 +265,7 @@ class _ThemeCardState extends State<ThemeCard> with TickerProviderStateMixin {
                         FittedBox(
                           fit: BoxFit.scaleDown,
                           child: Text(
-                            'Unlock at Best Score ${theme.unlockScore}',
+                            theme.unlockRequirementText,
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               color: const Color(0xFFA8C4E4)

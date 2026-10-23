@@ -224,6 +224,7 @@ class _StackPulseAppState extends State<StackPulseApp>
         return ThemesScreen(
           currentTheme: theme,
           bestScore: _statistics.bestScore,
+          totalPlacements: _statistics.totalBlocksPlaced,
           reducedMotion: _settings.reducedMotion,
           onSelectTheme: (newTheme) {
             _updateSettings(

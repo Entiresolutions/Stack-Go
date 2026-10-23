@@ -5,6 +5,18 @@ enum ThemeType {
   aurora,
   sunsetPulse,
   arcticGlow,
+  sakuraDrift,
+  abyssalDepths,
+  retroGrid,
+  emberCore,
+  celestialObservatory,
+  prismRift,
+}
+
+enum ThemeTier {
+  core, // Themes 1–4
+  advanced, // Themes 5–7
+  prestige, // Themes 8–10
 }
 
 /// Centralized Single Source of Truth for all Stack Pulse styling, palettes,
@@ -14,6 +26,8 @@ class GameTheme {
   final String name;
   final String description;
   final int unlockScore;
+  final int unlockPlacements;
+  final ThemeTier tier;
 
   // Background tokens
   final Color background;
@@ -47,6 +61,8 @@ class GameTheme {
     required this.name,
     required this.description,
     required this.unlockScore,
+    this.unlockPlacements = 0,
+    this.tier = ThemeTier.core,
     required this.background,
     required this.secondaryBackground,
     required this.surface,
@@ -353,11 +369,227 @@ class GameTheme {
     ],
   );
 
+  /// Sakura Drift: Sakura pink, soft lavender, deep mauve, lantern amber
+  static const GameTheme sakuraDrift = GameTheme(
+    type: ThemeType.sakuraDrift,
+    name: 'Sakura Drift',
+    description:
+        'Peaceful nighttime sanctuary of fluttering pink cherry blossoms and warm lantern light.',
+    unlockScore: 0,
+    unlockPlacements: 100,
+    tier: ThemeTier.advanced,
+    background: Color(0xFF0D0B1C),
+    secondaryBackground: Color(0xFF1A1230),
+    surface: Color(0xFF271B42),
+    surfaceElevated: Color(0xFF38265E),
+    primaryAccent: Color(0xFFFF7EB6), // Sakura Pink
+    neonBlue: Color(0xFFC084FC), // Soft Lavender
+    secondaryAccent: Color(0xFFA855F7), // Deep Mauve
+    neonMagenta: Color(0xFFFDA4AF), // Soft Rose
+    mintAccent: Color(0xFFFFD166), // Lantern Amber
+    orangeAccent: Color(0xFFFF9E7D),
+    goldAccent: Color(0xFFFDE047),
+    successAccent: Color(0xFFFF7EB6),
+    warningAccent: Color(0xFFFFD166),
+    text: Color(0xFFFFF1F2),
+    secondaryText: Color(0xFFE2C4D8),
+    mutedText: Color(0xFF9B7B94),
+    blockPalette: [
+      Color(0xFFFF7EB6), // Sakura Pink
+      Color(0xFFFDA4AF), // Soft Rose
+      Color(0xFFC084FC), // Soft Lavender
+      Color(0xFFA855F7), // Deep Mauve
+      Color(0xFFFFD166), // Lantern Amber
+      Color(0xFFFFF1F2), // Blossom White
+    ],
+  );
+
+  /// Abyssal Depths: Bioluminescent aqua, electric marine, abyssal cyan, coral glow
+  static const GameTheme abyssalDepths = GameTheme(
+    type: ThemeType.abyssalDepths,
+    name: 'Abyssal Depths',
+    description:
+        'Deep oceanic trench glowing with bioluminescent aqua and vibrant deep-sea coral.',
+    unlockScore: 0,
+    unlockPlacements: 250,
+    tier: ThemeTier.advanced,
+    background: Color(0xFF030F1F),
+    secondaryBackground: Color(0xFF061D36),
+    surface: Color(0xFF0A2D52),
+    surfaceElevated: Color(0xFF0F3E70),
+    primaryAccent: Color(0xFF00F5D4), // Bioluminescent Aqua
+    neonBlue: Color(0xFF00BBF9), // Electric Marine
+    secondaryAccent: Color(0xFF38BDF8), // Abyssal Cyan
+    neonMagenta: Color(0xFFF15BB5), // Deep-sea Coral Pink
+    mintAccent: Color(0xFF00F5D4),
+    orangeAccent: Color(0xFFFF9F1C),
+    goldAccent: Color(0xFFFEE440),
+    successAccent: Color(0xFF00F5D4),
+    warningAccent: Color(0xFFFF9F1C),
+    text: Color(0xFFF0FDFA),
+    secondaryText: Color(0xFF99E6E6),
+    mutedText: Color(0xFF5394A0),
+    blockPalette: [
+      Color(0xFF00F5D4), // Bioluminescent Aqua
+      Color(0xFF00BBF9), // Electric Marine
+      Color(0xFF38BDF8), // Abyssal Cyan
+      Color(0xFFF15BB5), // Coral Glow
+      Color(0xFF7B2CBF), // Deep Violet
+      Color(0xFF5EEAD4), // Seafoam Aqua
+    ],
+  );
+
+  /// Retro Grid: Hot neon pink, synthwave cyan, laser violet, neon yellow
+  static const GameTheme retroGrid = GameTheme(
+    type: ThemeType.retroGrid,
+    name: 'Retro Grid',
+    description:
+        '80s digital synthwave wireframe universe with laser magenta and neon cyan horizons.',
+    unlockScore: 0,
+    unlockPlacements: 450,
+    tier: ThemeTier.advanced,
+    background: Color(0xFF120826),
+    secondaryBackground: Color(0xFF210C3D),
+    surface: Color(0xFF32135C),
+    surfaceElevated: Color(0xFF451A7E),
+    primaryAccent: Color(0xFFFF007F), // Hot Neon Pink
+    neonBlue: Color(0xFF00F0FF), // Synthwave Cyan
+    secondaryAccent: Color(0xFF9D00FF), // Laser Violet
+    neonMagenta: Color(0xFFFF00AA), // Vivid Magenta
+    mintAccent: Color(0xFF00F0FF),
+    orangeAccent: Color(0xFFFF5400),
+    goldAccent: Color(0xFFFFE600), // Neon Yellow
+    successAccent: Color(0xFF00F0FF),
+    warningAccent: Color(0xFFFFE600),
+    text: Color(0xFFFDF4FF),
+    secondaryText: Color(0xFFE2B6FF),
+    mutedText: Color(0xFF9369BA),
+    blockPalette: [
+      Color(0xFFFF007F), // Hot Neon Pink
+      Color(0xFF00F0FF), // Synthwave Cyan
+      Color(0xFF9D00FF), // Laser Violet
+      Color(0xFFFFE600), // Laser Yellow
+      Color(0xFFFF00AA), // Vivid Magenta
+      Color(0xFF3A86FF), // Cyber Blue
+    ],
+  );
+
+  /// Ember Core: Molten lava orange, blazing gold amber, magma red, smoldering coral
+  static const GameTheme emberCore = GameTheme(
+    type: ThemeType.emberCore,
+    name: 'Ember Core',
+    description:
+        'Dark volcanic obsidian forge illuminated by molten magma veins and rising embers.',
+    unlockScore: 0,
+    unlockPlacements: 700,
+    tier: ThemeTier.prestige,
+    background: Color(0xFF140707),
+    secondaryBackground: Color(0xFF260D0D),
+    surface: Color(0xFF3B1414),
+    surfaceElevated: Color(0xFF521C1C),
+    primaryAccent: Color(0xFFFF5400), // Molten Lava Orange
+    neonBlue: Color(0xFFFF758F), // Smoldering Coral
+    secondaryAccent: Color(0xFFFFB703), // Blazing Gold Amber
+    neonMagenta: Color(0xFFE63946), // Magma Red
+    mintAccent: Color(0xFFFFB703),
+    orangeAccent: Color(0xFFFF5400),
+    goldAccent: Color(0xFFFFB703),
+    successAccent: Color(0xFFFF5400),
+    warningAccent: Color(0xFFFFB703),
+    text: Color(0xFFFFF7ED),
+    secondaryText: Color(0xFFE6B8A2),
+    mutedText: Color(0xFF9C6652),
+    blockPalette: [
+      Color(0xFFFF5400), // Molten Orange
+      Color(0xFFFFB703), // Blazing Gold
+      Color(0xFFE63946), // Magma Red
+      Color(0xFFFF758F), // Smoldering Coral
+      Color(0xFFF77F00), // Lava Amber
+      Color(0xFFFF9E00), // Golden Flare
+    ],
+  );
+
+  /// Celestial Observatory: Celestial gold, starlight cyan, stellar white, twilight mauve
+  static const GameTheme celestialObservatory = GameTheme(
+    type: ThemeType.celestialObservatory,
+    name: 'Celestial Observatory',
+    description:
+        'Royal midnight cosmos adorned with fine golden constellation charts and astrological armillaries.',
+    unlockScore: 0,
+    unlockPlacements: 1000,
+    tier: ThemeTier.prestige,
+    background: Color(0xFF070B1E),
+    secondaryBackground: Color(0xFF0E1638),
+    surface: Color(0xFF162252),
+    surfaceElevated: Color(0xFF1F3070),
+    primaryAccent: Color(0xFFFFD166), // Celestial Gold
+    neonBlue: Color(0xFFA0C4FF), // Starlight Cyan
+    secondaryAccent: Color(0xFFBDB2FF), // Twilight Mauve
+    neonMagenta: Color(0xFFFFC6FF), // Nebula Pink
+    mintAccent: Color(0xFFA0C4FF),
+    orangeAccent: Color(0xFFFFB703),
+    goldAccent: Color(0xFFFFD166),
+    successAccent: Color(0xFFFFD166),
+    warningAccent: Color(0xFFFFD166),
+    text: Color(0xFFFFFBEB),
+    secondaryText: Color(0xFFD6D1E6),
+    mutedText: Color(0xFF8882A6),
+    blockPalette: [
+      Color(0xFFFFD166), // Celestial Gold
+      Color(0xFFA0C4FF), // Starlight Cyan
+      Color(0xFFBDB2FF), // Twilight Mauve
+      Color(0xFFEBF4F6), // Stellar White
+      Color(0xFFFFC6FF), // Nebula Pink
+      Color(0xFF3A86FF), // Astral Blue
+    ],
+  );
+
+  /// Prism Rift: Spectral cyan, prismatic violet, laser magenta, pure prism white
+  static const GameTheme prismRift = GameTheme(
+    type: ThemeType.prismRift,
+    name: 'Prism Rift',
+    description:
+        'Mysterious dimensional fracture with multi-spectral crystalline refraction and prismatic radiance.',
+    unlockScore: 0,
+    unlockPlacements: 1500,
+    tier: ThemeTier.prestige,
+    background: Color(0xFF0A0618),
+    secondaryBackground: Color(0xFF150C2E),
+    surface: Color(0xFF221447),
+    surfaceElevated: Color(0xFF321D63),
+    primaryAccent: Color(0xFFC77DFF), // Prismatic Violet
+    neonBlue: Color(0xFF70D6FF), // Spectral Cyan
+    secondaryAccent: Color(0xFFFF70A6), // Laser Magenta
+    neonMagenta: Color(0xFFFF9770), // Prism Coral
+    mintAccent: Color(0xFF7AE582), // Hologram Mint
+    orangeAccent: Color(0xFFFF9770),
+    goldAccent: Color(0xFFFFD670),
+    successAccent: Color(0xFF70D6FF),
+    warningAccent: Color(0xFFFFD670),
+    text: Color(0xFFFAFAFA),
+    secondaryText: Color(0xFFDFCCF5),
+    mutedText: Color(0xFF8F76AD),
+    blockPalette: [
+      Color(0xFF70D6FF), // Spectral Cyan
+      Color(0xFFC77DFF), // Prismatic Violet
+      Color(0xFFFF70A6), // Laser Magenta
+      Color(0xFFFFFFFF), // Pure Prism White
+      Color(0xFF7AE582), // Hologram Mint
+      Color(0xFFFFD670), // Rainbow Gold
+    ],
+  );
+
   static const List<GameTheme> allThemes = [
     midnightNeon,
     aurora,
     sunsetPulse,
     arcticGlow,
+    sakuraDrift,
+    abyssalDepths,
+    retroGrid,
+    emberCore,
+    celestialObservatory,
+    prismRift,
   ];
 
   static GameTheme fromType(ThemeType type) {
@@ -370,6 +602,18 @@ class GameTheme {
         return arcticGlow;
       case ThemeType.midnightNeon:
         return midnightNeon;
+      case ThemeType.sakuraDrift:
+        return sakuraDrift;
+      case ThemeType.abyssalDepths:
+        return abyssalDepths;
+      case ThemeType.retroGrid:
+        return retroGrid;
+      case ThemeType.emberCore:
+        return emberCore;
+      case ThemeType.celestialObservatory:
+        return celestialObservatory;
+      case ThemeType.prismRift:
+        return prismRift;
     }
   }
 
@@ -377,7 +621,7 @@ class GameTheme {
     return blockPalette[index % blockPalette.length];
   }
 
-  /// Path to the dedicated 3D isometric theme preview asset (Phase 5)
+  /// Path to the dedicated 3D isometric theme preview asset
   String get previewAssetPath {
     switch (type) {
       case ThemeType.midnightNeon:
@@ -388,6 +632,18 @@ class GameTheme {
         return 'assets/images/theme_preview_sunset.jpg';
       case ThemeType.arcticGlow:
         return 'assets/images/theme_preview_arctic.jpg';
+      case ThemeType.sakuraDrift:
+        return 'assets/images/theme_preview_sakura.jpg';
+      case ThemeType.abyssalDepths:
+        return 'assets/images/theme_preview_abyssal.jpg';
+      case ThemeType.retroGrid:
+        return 'assets/images/theme_preview_retro.jpg';
+      case ThemeType.emberCore:
+        return 'assets/images/theme_preview_ember.jpg';
+      case ThemeType.celestialObservatory:
+        return 'assets/images/theme_preview_celestial.jpg';
+      case ThemeType.prismRift:
+        return 'assets/images/theme_preview_prism.jpg';
     }
   }
 
@@ -402,6 +658,18 @@ class GameTheme {
         return 'assets/images/gameplay_bg_sunset.jpg';
       case ThemeType.arcticGlow:
         return 'assets/images/gameplay_bg_arctic.jpg';
+      case ThemeType.sakuraDrift:
+        return 'assets/images/gameplay_bg_sakura.jpg';
+      case ThemeType.abyssalDepths:
+        return 'assets/images/gameplay_bg_abyssal.jpg';
+      case ThemeType.retroGrid:
+        return 'assets/images/gameplay_bg_retro.jpg';
+      case ThemeType.emberCore:
+        return 'assets/images/gameplay_bg_ember.jpg';
+      case ThemeType.celestialObservatory:
+        return 'assets/images/gameplay_bg_celestial.jpg';
+      case ThemeType.prismRift:
+        return 'assets/images/gameplay_bg_prism.jpg';
     }
   }
 
@@ -416,6 +684,18 @@ class GameTheme {
         return 'Golden Horizon';
       case ThemeType.arcticGlow:
         return 'Frozen Dimension';
+      case ThemeType.sakuraDrift:
+        return 'Cherry Blossom Sanctuary';
+      case ThemeType.abyssalDepths:
+        return 'Bioluminescent Ocean';
+      case ThemeType.retroGrid:
+        return 'Digital Synthwave';
+      case ThemeType.emberCore:
+        return 'Volcanic Chamber';
+      case ThemeType.celestialObservatory:
+        return 'Golden Constellations';
+      case ThemeType.prismRift:
+        return 'Dimensional Fracture';
     }
   }
 
@@ -430,6 +710,18 @@ class GameTheme {
         return goldAccent; // #FFCB78 Golden Amber
       case ThemeType.arcticGlow:
         return const Color(0xFFBBEFFF); // Glacial Icy White/Cyan
+      case ThemeType.sakuraDrift:
+        return primaryAccent; // #FF7EB6 Sakura Pink
+      case ThemeType.abyssalDepths:
+        return primaryAccent; // #00F5D4 Bioluminescent Aqua
+      case ThemeType.retroGrid:
+        return primaryAccent; // #FF007F Hot Neon Pink
+      case ThemeType.emberCore:
+        return secondaryAccent; // #FFB703 Blazing Gold
+      case ThemeType.celestialObservatory:
+        return primaryAccent; // #FFD166 Celestial Gold
+      case ThemeType.prismRift:
+        return primaryAccent; // #C77DFF Prismatic Violet
     }
   }
 
@@ -444,7 +736,41 @@ class GameTheme {
         return neonMagenta; // #F34BEA Neon Magenta
       case ThemeType.arcticGlow:
         return primaryAccent; // #13D9FF Electric Cyan
+      case ThemeType.sakuraDrift:
+        return neonBlue; // #C084FC Soft Lavender
+      case ThemeType.abyssalDepths:
+        return neonBlue; // #00BBF9 Electric Marine
+      case ThemeType.retroGrid:
+        return neonBlue; // #00F0FF Synthwave Cyan
+      case ThemeType.emberCore:
+        return primaryAccent; // #FF5400 Molten Orange
+      case ThemeType.celestialObservatory:
+        return neonBlue; // #A0C4FF Starlight Cyan
+      case ThemeType.prismRift:
+        return neonBlue; // #70D6FF Spectral Cyan
     }
+  }
+
+  /// Verifies unlock status using either best score or cumulative lifetime placements
+  bool isUnlocked({required int bestScore, required int totalPlacements}) {
+    if (unlockScore > 0) {
+      return bestScore >= unlockScore;
+    }
+    if (unlockPlacements > 0) {
+      return totalPlacements >= unlockPlacements;
+    }
+    return true; // Default unlocked (Midnight Neon)
+  }
+
+  /// Formatted user-facing requirement string
+  String get unlockRequirementText {
+    if (unlockScore > 0) {
+      return 'Unlock at Best Score $unlockScore';
+    }
+    if (unlockPlacements > 0) {
+      return 'Unlock at $unlockPlacements Placements';
+    }
+    return 'Unlocked';
   }
 
   // ==========================================
