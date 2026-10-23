@@ -1,12 +1,25 @@
 import 'package:flutter/material.dart';
 import '../../core/game_theme.dart';
+import '../widgets/premium_button.dart';
 import '../widgets/theme_card.dart';
 
+/// Phase 5: Production Themes Screen
+///
+/// Faithfully reconstructs Reference Screen 7:
+/// - Header: Circular glass back navigation button, centered 'CHOOSE YOUR VIBE' title,
+///   and 'Make every stack your own.' subtitle.
+/// - 2x2 Gallery Grid: Four distinct theme cards (Midnight Neon, Aurora, Sunset Pulse, Arctic Glow)
+///   showcasing 3D isometric glowing previews on elevated cyber surfaces.
+/// - Selected state: Bright illuminated electric cyan border with neon drop glow and checkmark badge.
+/// - Unlocked state: Seamless immediate tap selection with persistent save.
+/// - Locked state: Disabled styling, lock icon, and 'Unlock at Best Score X' condition.
+/// - Responsive layout adapting smoothly to varying device heights without clipping.
 class ThemesScreen extends StatelessWidget {
   final GameTheme currentTheme;
   final int bestScore;
   final Function(GameTheme) onSelectTheme;
   final VoidCallback onDismiss;
+  final bool reducedMotion;
 
   const ThemesScreen({
     super.key,
@@ -14,6 +27,7 @@ class ThemesScreen extends StatelessWidget {
     required this.bestScore,
     required this.onSelectTheme,
     required this.onDismiss,
+    this.reducedMotion = false,
   });
 
   @override
@@ -28,36 +42,22 @@ class ThemesScreen extends StatelessWidget {
         ),
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
             child: Column(
               children: [
-                // Top Header Bar matching Reference Screen 7
+                // 1. Top Header Bar matching Reference Screen 7
                 Row(
                   children: [
-                    // Back Arrow
-                    GestureDetector(
+                    // Back Arrow Button
+                    GlassIconButton(
+                      icon: Icons.arrow_back_rounded,
+                      size: 42,
+                      iconSize: 20,
+                      reducedMotion: reducedMotion,
                       onTap: onDismiss,
-                      behavior: HitTestBehavior.opaque,
-                      child: Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF14284A).withValues(alpha: 0.8),
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.10),
-                            width: 1.0,
-                          ),
-                        ),
-                        child: const Center(
-                          child: Icon(
-                            Icons.arrow_back_rounded,
-                            color: Colors.white,
-                            size: 20,
-                          ),
-                        ),
-                      ),
                     ),
+
+                    // Centered Header Title & Subtitle
                     const Expanded(
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
@@ -67,7 +67,7 @@ class ThemesScreen extends StatelessWidget {
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: 18,
+                              fontSize: 19,
                               fontWeight: FontWeight.w900,
                               letterSpacing: 2.0,
                             ),
@@ -78,40 +78,57 @@ class ThemesScreen extends StatelessWidget {
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               color: Color(0xFFA8C4E4),
-                              fontSize: 12,
+                              fontSize: 12.5,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(width: 40), // Balances back arrow
+
+                    const SizedBox(width: 42), // Balances the 42px back button
                   ],
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 20),
 
-                // 2x2 Grid of Theme Cards matching Reference Screen 7
+                // 2. Responsive 2x2 Grid of Theme Cards matching Reference Screen 7
                 Expanded(
-                  child: GridView.builder(
-                    physics: const BouncingScrollPhysics(),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      mainAxisSpacing: 14,
-                      crossAxisSpacing: 14,
-                      childAspectRatio: 0.86,
-                    ),
-                    itemCount: GameTheme.allThemes.length,
-                    itemBuilder: (context, index) {
-                      final item = GameTheme.allThemes[index];
-                      final isUnlocked = bestScore >= item.unlockScore;
-                      final isSelected = item.type == currentTheme.type;
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      // Calculate dynamic aspect ratio to ensure comfortable card layout
+                      final double availableWidth = constraints.maxWidth;
+                      final double availableHeight = constraints.maxHeight;
+                      final double itemWidth = (availableWidth - 16) / 2;
+                      final double targetItemHeight =
+                          (availableHeight - 16) / 2;
 
-                      return ThemeCard(
-                        theme: item,
-                        isSelected: isSelected,
-                        isUnlocked: isUnlocked,
-                        onSelect: () => onSelectTheme(item),
+                      // Clamp aspect ratio to maintain attractive proportions across all screens
+                      double aspectRatio = itemWidth / targetItemHeight;
+                      if (aspectRatio < 0.78) aspectRatio = 0.78;
+                      if (aspectRatio > 0.90) aspectRatio = 0.90;
+
+                      return GridView.builder(
+                        physics: const BouncingScrollPhysics(),
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          mainAxisSpacing: 16,
+                          crossAxisSpacing: 16,
+                          childAspectRatio: aspectRatio,
+                        ),
+                        itemCount: GameTheme.allThemes.length,
+                        itemBuilder: (context, index) {
+                          final item = GameTheme.allThemes[index];
+                          final isUnlocked = bestScore >= item.unlockScore;
+                          final isSelected = item.type == currentTheme.type;
+
+                          return ThemeCard(
+                            theme: item,
+                            isSelected: isSelected,
+                            isUnlocked: isUnlocked,
+                            reducedMotion: reducedMotion,
+                            onSelect: () => onSelectTheme(item),
+                          );
+                        },
                       );
                     },
                   ),

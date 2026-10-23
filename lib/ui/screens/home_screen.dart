@@ -70,93 +70,112 @@ class HomeScreen extends StatelessWidget {
           SafeArea(
             child: LayoutBuilder(
               builder: (context, constraints) {
-                final isCompact = constraints.maxHeight < 680;
+                final height = constraints.maxHeight;
+                final isCompact = height < 700;
+                final isVeryCompact = height < 580;
 
-                return Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 22,
-                    vertical: isCompact ? 10 : 16,
-                  ),
-                  child: Column(
-                    children: [
-                      // TOP BAR: Best Score Pill (Left) & Settings Button (Right)
-                      _buildTopBar(),
+                final heroSize = (height * 0.25).clamp(120.0, 210.0);
 
-                      const Spacer(flex: 1),
-
-                      // BRANDING: 3-Pill Glowing Emblem inside Circular Halo + Title
-                      StackPulseLogo(
-                        scale: isCompact ? 0.95 : 1.1,
-                        showHalo: true,
-                        showText: true,
-                        stackedText: false,
+                return SingleChildScrollView(
+                  physics: isCompact
+                      ? const BouncingScrollPhysics()
+                      : const NeverScrollableScrollPhysics(),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(minHeight: height),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 22,
+                        vertical: isCompact ? 10 : 16,
                       ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          // TOP BAR: Best Score Pill (Left) & Settings Button (Right)
+                          _buildTopBar(),
 
-                      SizedBox(height: isCompact ? 8 : 14),
+                          SizedBox(height: isCompact ? 6 : 14),
 
-                      // HERO: 3D Stacking Blocks on Cyber Pedestal
-                      Expanded(
-                        flex: 6,
-                        child: Center(
-                          child: AnimatedHeroTowerPreview(
+                          // BRANDING: 3-Pill Glowing Emblem inside Circular Halo + Title
+                          StackPulseLogo(
+                            scale:
+                                isVeryCompact ? 0.85 : (isCompact ? 0.95 : 1.1),
+                            showHalo: true,
+                            showText: true,
+                            stackedText: false,
+                          ),
+
+                          SizedBox(height: isCompact ? 6 : 12),
+
+                          // HERO: 3D Stacking Blocks on Cyber Pedestal
+                          Center(
+                            child: AnimatedHeroTowerPreview(
+                              theme: theme,
+                              reducedMotion: settings?.reducedMotion ?? false,
+                              size: heroSize,
+                            ),
+                          ),
+
+                          SizedBox(height: isCompact ? 10 : 18),
+
+                          // PRIMARY CTA: Cyan-to-Purple Gradient PLAY Button
+                          PremiumButton(
+                            label: 'PLAY',
+                            icon: Icons.play_arrow_rounded,
+                            isPrimary: true,
                             theme: theme,
                             reducedMotion: settings?.reducedMotion ?? false,
-                            size: isCompact ? 160 : 210,
+                            height: isCompact ? 54 : 62,
+                            fontSize: 18,
+                            onTap: onPlay,
                           ),
-                        ),
-                      ),
 
-                      const Spacer(flex: 1),
+                          SizedBox(height: isCompact ? 12 : 16),
 
-                      // PRIMARY CTA: Cyan-to-Purple Gradient PLAY Button
-                      PremiumButton(
-                        label: 'PLAY',
-                        icon: Icons.play_arrow_rounded,
-                        isPrimary: true,
-                        theme: theme,
-                        height: isCompact ? 54 : 62,
-                        fontSize: 18,
-                        onTap: onPlay,
-                      ),
-
-                      SizedBox(height: isCompact ? 14 : 18),
-
-                      // BOTTOM ACTION ROW: 3 Tiles (THEMES, HOW TO PLAY, SETTINGS)
-                      Row(
-                        children: [
-                          Expanded(
-                            child: HomeActionTile(
-                              label: 'THEMES',
-                              icon: Icons.palette_rounded,
-                              accentColor: const Color(0xFF14E4C5), // Mint
-                              theme: theme,
-                              onTap: onThemes,
-                            ),
+                          // BOTTOM ACTION ROW: 3 Tiles (THEMES, HOW TO PLAY, SETTINGS)
+                          Row(
+                            children: [
+                              Expanded(
+                                child: HomeActionTile(
+                                  label: 'THEMES',
+                                  icon: Icons.palette_rounded,
+                                  accentColor: const Color(0xFF14E4C5), // Mint
+                                  theme: theme,
+                                  reducedMotion:
+                                      settings?.reducedMotion ?? false,
+                                  onTap: onThemes,
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: HomeActionTile(
+                                  label: 'HOW TO PLAY',
+                                  icon: Icons.help_rounded,
+                                  accentColor: const Color(0xFF13D9FF), // Cyan
+                                  theme: theme,
+                                  reducedMotion:
+                                      settings?.reducedMotion ?? false,
+                                  onTap: onTutorial,
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: HomeActionTile(
+                                  label: 'SETTINGS',
+                                  icon: Icons.settings_rounded,
+                                  accentColor:
+                                      const Color(0xFFF34BEA), // Magenta
+                                  theme: theme,
+                                  reducedMotion:
+                                      settings?.reducedMotion ?? false,
+                                  onTap: onSettings,
+                                ),
+                              ),
+                            ],
                           ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: HomeActionTile(
-                              label: 'HOW TO PLAY',
-                              icon: Icons.help_rounded,
-                              accentColor: const Color(0xFF13D9FF), // Cyan
-                              theme: theme,
-                              onTap: onTutorial,
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: HomeActionTile(
-                              label: 'SETTINGS',
-                              icon: Icons.settings_rounded,
-                              accentColor: const Color(0xFFF34BEA), // Magenta
-                              theme: theme,
-                              onTap: onSettings,
-                            ),
-                          ),
+                          SizedBox(height: isCompact ? 4 : 8),
                         ],
                       ),
-                      SizedBox(height: isCompact ? 4 : 8),
-                    ],
+                    ),
                   ),
                 );
               },
@@ -229,35 +248,12 @@ class HomeScreen extends StatelessWidget {
         ),
 
         // Settings Icon Button matching Reference Screen 2
-        GestureDetector(
+        GlassIconButton(
+          icon: Icons.settings_rounded,
+          size: 44,
+          iconSize: 20,
+          reducedMotion: settings?.reducedMotion ?? false,
           onTap: onSettings,
-          behavior: HitTestBehavior.opaque,
-          child: Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: const Color(0xFF14284A).withValues(alpha: 0.85),
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.12),
-                width: 1.0,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.35),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: const Center(
-              child: Icon(
-                Icons.settings_rounded,
-                color: Colors.white,
-                size: 20,
-              ),
-            ),
-          ),
         ),
       ],
     );

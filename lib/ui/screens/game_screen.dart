@@ -6,14 +6,18 @@ import '../../models/game_statistics.dart';
 import '../../game/stack_pulse_game.dart';
 import '../overlays/pause_overlay.dart';
 import '../overlays/game_over_overlay.dart';
+import '../widgets/gameplay_background.dart';
 import '../widgets/score_display.dart';
 import '../../services/ad_service.dart';
+import 'settings_screen.dart';
+import 'themes_screen.dart';
 
 class GameScreen extends StatefulWidget {
   final GameTheme theme;
   final GameSettings settings;
   final GameStatistics statistics;
   final Function(GameStatistics) onUpdateStatistics;
+  final Function(GameSettings)? onUpdateSettings;
   final VoidCallback onHome;
   final VoidCallback onOpenSettings;
 
@@ -23,6 +27,7 @@ class GameScreen extends StatefulWidget {
     required this.settings,
     required this.statistics,
     required this.onUpdateStatistics,
+    this.onUpdateSettings,
     required this.onHome,
     required this.onOpenSettings,
   });
@@ -42,6 +47,8 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   bool _isNewBest = false;
   int _finalScore = 0;
   int _bestStreakInRun = 0;
+  int _perfectTriggerCount = 0;
+  int _normalPlacementCount = 0;
 
   @override
   void initState() {
@@ -50,17 +57,32 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     _initGame();
   }
 
+  @override
+  void didUpdateWidget(covariant GameScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.theme.type != oldWidget.theme.type) {
+      _game.updateTheme(widget.theme);
+    }
+    if (widget.settings != oldWidget.settings) {
+      _game.updateSettings(widget.settings);
+    }
+  }
+
   void _initGame() {
     _game = StackPulseGame(
       theme: widget.theme,
       settings: widget.settings,
       onScoreUpdate: (score, streak, badge) {
+        final isPerfect = streak > 0 && badge != null;
         setState(() {
           _currentScore = score;
           _currentStreak = streak;
           _streakBadge = badge;
-          if (streak > 0 && badge != null) {
+          if (isPerfect) {
             _showPerfectBanner = true;
+            _perfectTriggerCount++;
+          } else {
+            _normalPlacementCount++;
           }
         });
       },
@@ -126,6 +148,8 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
       _currentStreak = 0;
       _streakBadge = null;
       _showPerfectBanner = false;
+      _perfectTriggerCount = 0;
+      _normalPlacementCount = 0;
     });
     _game.initializeGame();
   }
@@ -153,20 +177,104 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
         "Ad not available. Please check your internet connection and try again.";
   }
 
+  /// Opens Settings as a modal route on top of the live GameScreen,
+  /// guaranteeing that when dismissed, the paused game state and current
+  /// tower run are completely preserved.
+  void _openSettings() {
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        opaque: false,
+        barrierDismissible: true,
+        barrierColor: Colors.black.withValues(alpha: 0.70),
+        pageBuilder: (context, animation, secondaryAnimation) {
+          final isReduced = widget.settings.reducedMotion;
+          final content = SettingsScreen(
+            theme: widget.theme,
+            settings: widget.settings,
+            onSave: (updated) {
+              if (widget.onUpdateSettings != null) {
+                widget.onUpdateSettings!(updated);
+              }
+            },
+            onDismiss: () {
+              Navigator.of(context).pop();
+            },
+            onOpenThemes: () {
+              // Allows modal theme browsing directly from pause menu without breaking session
+              Navigator.of(context).push(
+                PageRouteBuilder(
+                  opaque: false,
+                  pageBuilder: (ctx, anim, secAnim) {
+                    return FadeTransition(
+                      opacity: anim,
+                      child: ThemesScreen(
+                        currentTheme: widget.theme,
+                        bestScore: widget.statistics.bestScore,
+                        reducedMotion: widget.settings.reducedMotion,
+                        onSelectTheme: (newTheme) {
+                          if (widget.onUpdateSettings != null) {
+                            widget.onUpdateSettings!(
+                              widget.settings.copyWith(
+                                selectedTheme: newTheme.type.name,
+                              ),
+                            );
+                          }
+                        },
+                        onDismiss: () => Navigator.of(ctx).pop(),
+                      ),
+                    );
+                  },
+                ),
+              );
+            },
+          );
+
+          if (isReduced) {
+            return content;
+          }
+          final scale = Tween<double>(begin: 0.96, end: 1.0).animate(
+            CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
+          );
+          return FadeTransition(
+            opacity: animation,
+            child: ScaleTransition(
+              scale: scale,
+              child: content,
+            ),
+          );
+        },
+      ),
+    );
+  }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = widget.theme;
 
     return Scaffold(
-      backgroundColor: theme.background,
+      backgroundColor: const Color(0xFF061225),
       body: Stack(
+        fit: StackFit.expand,
         children: [
-          // 1. The Flame Game Viewport
+          // 1. DYNAMIC THEME-BASED INTERACTIVE GAMEPLAY BACKGROUND
+          ThemeGameplayBackground(
+            theme: theme,
+            currentScore: _currentScore,
+            currentStreak: _currentStreak,
+            perfectTriggerCount: _perfectTriggerCount,
+            normalPlacementCount: _normalPlacementCount,
+            isGameOver: _isGameOver,
+            isPaused: _isPaused,
+            reducedMotion: widget.settings.reducedMotion,
+          ),
+
+          // 4. The Flame Game Viewport (Blocks & Pedestal)
           Positioned.fill(
             child: GameWidget(game: _game),
           ),
 
-          // 2. Top HUD (Positioned at Top Center)
+          // 5. Top HUD (Positioned at Top Center)
           Positioned(
             top: 0,
             left: 0,
@@ -179,7 +287,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                 child: Stack(
                   alignment: Alignment.topCenter,
                   children: [
-                    // Center: Large Score & COMBO Underline Badge (Top Center!)
+                    // Center: Large Score & COMBO Underline Badge (Top Center)
                     Padding(
                       padding: const EdgeInsets.only(top: 2),
                       child: ScoreDisplay(
@@ -188,6 +296,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                         streakBadge: _streakBadge,
                         textColor: Colors.white,
                         accentColor: theme.primaryAccent,
+                        reducedMotion: widget.settings.reducedMotion,
                       ),
                     ),
 
@@ -198,7 +307,8 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF14284A).withValues(alpha: 0.85),
+                          color:
+                              const Color(0xFF14284A).withValues(alpha: 0.85),
                           borderRadius: BorderRadius.circular(18),
                           border: Border.all(
                             color: Colors.white.withValues(alpha: 0.12),
@@ -241,7 +351,9 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                                     fontSize: 12,
                                     fontWeight: FontWeight.w900,
                                     letterSpacing: 0.5,
-                                    fontFeatures: [FontFeature.tabularFigures()],
+                                    fontFeatures: [
+                                      FontFeature.tabularFigures()
+                                    ],
                                   ),
                                 ),
                               ],
@@ -251,48 +363,21 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                       ),
                     ),
 
-                    // Top-Right: Circular Glass Pause Button
+                    // Top-Right: Circular Glass Pause Button with Press Spring Feedback
                     Align(
                       alignment: Alignment.topRight,
-                      child: GestureDetector(
-                        onTap: _onPause,
-                        behavior: HitTestBehavior.opaque,
-                        child: Container(
-                          width: 44,
-                          height: 44,
-                          decoration: BoxDecoration(
-                            color:
-                                const Color(0xFF14284A).withValues(alpha: 0.85),
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.12),
-                              width: 1.0,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.3),
-                                blurRadius: 8,
-                                offset: const Offset(0, 3),
-                              ),
-                            ],
-                          ),
-                          child: const Center(
-                            child: Icon(
-                              Icons.pause_rounded,
-                              color: Colors.white,
-                              size: 22,
-                            ),
-                          ),
-                        ),
-                      ),
+                      child: _PauseButton(onTap: _onPause),
                     ),
                   ],
                 ),
               ),
             ),
           ),
+              ),
+            ),
+          ),
 
-          // 3. Floating PERFECT! xN Banner matching Reference Screen 4
+          // 6. Floating PERFECT! xN Banner matching Reference Screen 4
           if (_showPerfectBanner)
             Positioned(
               top: MediaQuery.of(context).size.height * 0.22,
@@ -302,6 +387,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                 child: PerfectComboBanner(
                   key: ValueKey('streak_$_currentScore$_currentStreak'),
                   streak: _currentStreak,
+                  reducedMotion: widget.settings.reducedMotion,
                   onDismissed: () {
                     if (mounted) {
                       setState(() => _showPerfectBanner = false);
@@ -311,20 +397,22 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
               ),
             ),
 
-          // 4. Pause Overlay matching Reference Screen 6
+          // 7. Pause Overlay matching Reference Screen 6
           if (_isPaused)
             PauseOverlay(
               theme: theme,
+              reducedMotion: widget.settings.reducedMotion,
               onResume: _onResume,
               onRestart: _onRestart,
-              onSettings: widget.onOpenSettings,
+              onSettings: _openSettings,
               onHome: widget.onHome,
             ),
 
-          // 5. Game Over Overlay matching Reference Screen 5
+          // 8. Game Over Overlay matching Reference Screen 5
           if (_isGameOver)
             GameOverOverlay(
               theme: theme,
+              reducedMotion: widget.settings.reducedMotion,
               finalScore: _finalScore,
               bestScore: widget.statistics.bestScore,
               bestStreak: _bestStreakInRun,
@@ -334,6 +422,82 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
               onWatchChance: _onRevive,
             ),
         ],
+      ),
+    );
+  }
+}
+
+/// Circular Glass Pause Button with Interactive Spring Feedback
+class _PauseButton extends StatefulWidget {
+  final VoidCallback onTap;
+  const _PauseButton({required this.onTap});
+
+  @override
+  State<_PauseButton> createState() => _PauseButtonState();
+}
+
+class _PauseButtonState extends State<_PauseButton>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scale;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 90),
+      reverseDuration: const Duration(milliseconds: 140),
+    );
+    _scale = Tween<double>(begin: 1.0, end: 0.92).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOutCubic),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ScaleTransition(
+      scale: _scale,
+      child: GestureDetector(
+        onTapDown: (_) => _controller.forward(),
+        onTapUp: (_) {
+          _controller.reverse();
+          widget.onTap();
+        },
+        onTapCancel: () => _controller.reverse(),
+        behavior: HitTestBehavior.opaque,
+        child: Container(
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(
+            color: const Color(0xFF14284A).withValues(alpha: 0.85),
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.12),
+              width: 1.0,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.35),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: const Center(
+            child: Icon(
+              Icons.pause_rounded,
+              color: Colors.white,
+              size: 22,
+            ),
+          ),
+        ),
       ),
     );
   }
