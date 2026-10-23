@@ -135,20 +135,42 @@ The typography scale utilizes `Plus Jakarta Sans` (with system sans-serif fallba
 
 ---
 
-## 8. Home Screen Specifications (Reference Screen 2)
+## 8. Home Screen Specifications (Reference Screen 2 — Phase 1 Implementation)
 
+### 8.1 Production Asset Architecture
+- **Asset A — Home Background (`assets/images/home_bg.jpg`)**:
+  - High-resolution (9:16 portrait) environment generated via Nano Banana image generation (`home_bg_1792777090120.jpg`), optimized to 397 KB.
+  - Composition: Ultra-dark midnight navy void (`#061225`) with atmospheric volumetric depth, sleek cyber city monolith silhouettes at the sides, a luminous electric cyan neon portal arch framing the center, floating 3D isometric neon cubes (cyan on left, purple on right), and a ground-level cybernetic pedestal platform with cyan bevel seams and floor mist.
+  - Zero text, buttons, or embedded UI elements; foreground and navigation bands are shaded with subtle programmatic gradient scrims (`alpha: 0.60` top, `alpha: 0.75` bottom) for WCAG AAA contrast.
+- **Asset B — Hero Stacking Artwork Evaluation**:
+  - Evaluated standalone raster generation vs programmatic Flame/CustomPainter rendering.
+  - Decision: Pure programmatic CustomPainter (`_HeroBlocksPainter`) ensures clean alpha isolation (eliminating artificial black/checkerboard backgrounds), dynamic theme color synchronization, 60/120 FPS performance, and smooth real-time physical animation without raster artifacting.
+
+### 8.2 Component Hierarchy & Layout
 - **Top Bar**:
-  - Left: Capsule badge with golden crown icon and `BEST <score>` label.
-  - Right: 44×44px circular glass Settings button with gear icon.
+  - Left: Capsule badge (`Color(0xFF14284A)`, border `alpha: 0.12`) with golden crown icon (`#FFCB78`) and two stacked lines: `BEST` (small, 9px, `#A8C4E4`) and tabular high score numeral (`${statistics.bestScore}`, 13px, bold white).
+  - Right: 44×44px circular glass Settings button with gear icon (`Icons.settings_rounded`).
 - **Brand Hero Stack**:
-  - 3D cyber-city isometric tower preview: 4 stacked blocks with theme gradients, top sheen, glowing bevel pedestal, and floating neon cubes.
-  - 3-Pill Glowing Logo: Electric Cyan, Electric Purple, and Neon Magenta rounded pills.
-  - Game Title: `STACK PULSE` in bold uppercase.
-  - Subtitle: `ONE TAP. PERFECT STACK.` with wide letter spacing (+2.2).
+  - **Emblem Halo**: 3 rounded stacked pills (Cyan `#13D9FF`, Blue `#347BFF`, Purple `#9658FF`) enclosed inside a circular dark glass halo (`Color(0xFF0C1B36)` at `alpha: 0.65`, cyan border `alpha: 0.22`, and soft drop glow).
+  - **Game Title**: `STACK PULSE` in bold uppercase with letter spacing +4.0.
+  - **Subtitle**: `ONE TAP. PERFECT STACK.` with letter spacing +1.5 in `#A8C4E4`.
+  - **Hero Tower**: 4 stacked blocks rendered directly on the cyber pedestal:
+    - Layer 1 (bottom): Deep Cobalt/Cyan block (`#1E60D0` to `#13D9FF`), 114px width, 20px height, 26px depth.
+    - Layer 2: Electric Purple/Magenta block (`#8A30E0` to `#F34BEA`), 94px width, 19px height, 24px depth.
+    - Layer 3: Neon Coral/Salmon Pink block (`#FF5E7E` to `#FF8A65`), 76px width, 18px height, 22px depth.
+    - Layer 4 (top): Sky Blue / Electric Cyan block (`#13D9FF` to `#BBEFFF`), 62px width, 17px height, 20px depth, floating with a sinusoidal hover (`math.sin(t) * 6.0`) and jaunty tilt (`-0.04 + math.sin(t) * 0.04`), surrounded by a radiant cyan bloom (`RadialGradient` radius 46).
 - **Primary CTA**:
-  - Full-width `PLAY` pill button with cyan-to-purple gradient, play triangle icon, and radiant glow.
+  - Full-width `PLAY` pill button (`height / 2` radius) with 3-stop gradient: Electric Cyan (`#13D9FF`) to Neon Blue (`#347BFF`) to Electric Purple (`#9658FF`), bold white play icon, and radiant cyan-purple drop bloom.
 - **Bottom Navigation**:
-  - Row of 3 `HomeActionTile`s: `THEMES` (palette icon), `HOW TO PLAY` (question icon), `SETTINGS` (gear icon).
+  - Row of 3 `HomeActionTile`s:
+    - `THEMES`: Palette icon (`Icons.palette_rounded`) with mint accent (`#14E4C5`).
+    - `HOW TO PLAY`: Question badge (`Icons.help_rounded`) with cyan/blue accent (`#13D9FF`).
+    - `SETTINGS`: Gear icon (`Icons.settings_rounded`) with neon magenta accent (`#F34BEA`).
+  - Dark elevated container (`#14284A` / `#1D3560`), 18px corner radius, hairline white border (`alpha: 0.10`), and interactive scale spring feedback.
+- **Motion & Accessibility**:
+  - Respects `GameSettings.reducedMotion`: disables floating and tilting oscillations on the hero top block when enabled.
+  - Safe for automated widget tests (prevents `pumpAndSettle` timeout).
+
 
 ---
 

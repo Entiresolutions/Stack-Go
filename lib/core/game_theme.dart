@@ -96,6 +96,7 @@ class GameTheme {
         end: Alignment.centerRight,
         colors: [
           Color(0xFF13D9FF),
+          Color(0xFF347BFF),
           Color(0xFF9658FF),
         ],
       );

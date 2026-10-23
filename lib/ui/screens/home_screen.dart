@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../../core/game_theme.dart';
+import '../../models/game_settings.dart';
 import '../../models/game_statistics.dart';
 import '../widgets/premium_button.dart';
 import '../widgets/stack_pulse_logo.dart';
@@ -8,6 +9,7 @@ import '../widgets/stack_pulse_logo.dart';
 class HomeScreen extends StatelessWidget {
   final GameTheme theme;
   final GameStatistics statistics;
+  final GameSettings? settings;
   final VoidCallback onPlay;
   final VoidCallback onThemes;
   final VoidCallback onSettings;
@@ -17,6 +19,7 @@ class HomeScreen extends StatelessWidget {
     super.key,
     required this.theme,
     required this.statistics,
+    this.settings,
     required this.onPlay,
     required this.onThemes,
     required this.onSettings,
@@ -26,104 +29,140 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: theme.background,
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: theme.backgroundGradient,
-        ),
-        child: SafeArea(
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final isCompact = constraints.maxHeight < 680;
-
-              return Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: 22,
-                  vertical: isCompact ? 10 : 16,
-                ),
-                child: Column(
-                  children: [
-                    // TOP BAR: Best Score Pill (Left) & Settings Button (Right)
-                    _buildTopBar(),
-
-                    const Spacer(flex: 1),
-
-                    // BRANDING: 3-Pill Logo & Title
-                    StackPulseLogo(
-                      scale: isCompact ? 0.95 : 1.1,
-                      showText: true,
-                      stackedText: false,
-                    ),
-
-                    SizedBox(height: isCompact ? 14 : 22),
-
-                    // HERO: Futuristic Neon 3D Tower & Cyber Skyline
-                    Expanded(
-                      flex: 6,
-                      child: Center(
-                        child: AnimatedHeroTowerPreview(
-                          theme: theme,
-                          size: isCompact ? 160 : 210,
-                        ),
-                      ),
-                    ),
-
-                    const Spacer(flex: 1),
-
-                    // PRIMARY CTA: Cyan-to-Purple Gradient PLAY Button
-                    PremiumButton(
-                      label: 'PLAY',
-                      icon: Icons.play_arrow_rounded,
-                      isPrimary: true,
-                      theme: theme,
-                      height: isCompact ? 56 : 62,
-                      fontSize: 18,
-                      onTap: onPlay,
-                    ),
-
-                    SizedBox(height: isCompact ? 14 : 20),
-
-                    // BOTTOM ACTION ROW: 3 Tiles (THEMES, HOW TO PLAY, SETTINGS)
-                    Row(
-                      children: [
-                        Expanded(
-                          child: HomeActionTile(
-                            label: 'THEMES',
-                            icon: Icons.palette_outlined,
-                            accentColor: const Color(0xFF14E4C5), // Mint
-                            theme: theme,
-                            onTap: onThemes,
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: HomeActionTile(
-                            label: 'HOW TO PLAY',
-                            icon: Icons.help_outline_rounded,
-                            accentColor: const Color(0xFF13D9FF), // Cyan
-                            theme: theme,
-                            onTap: onTutorial,
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: HomeActionTile(
-                            label: 'SETTINGS',
-                            icon: Icons.settings_outlined,
-                            accentColor: const Color(0xFFF34BEA), // Magenta
-                            theme: theme,
-                            onTap: onSettings,
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: isCompact ? 6 : 12),
-                  ],
+      backgroundColor: const Color(0xFF061225),
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          // 1. NANO BANANA GENERATED PRODUCTION BACKGROUND (Asset A)
+          Image.asset(
+            'assets/images/home_bg.jpg',
+            fit: BoxFit.cover,
+            width: double.infinity,
+            height: double.infinity,
+            errorBuilder: (context, error, stackTrace) {
+              // Fallback gradient if asset is loading or in headless tests
+              return Container(
+                decoration: BoxDecoration(
+                  gradient: theme.backgroundGradient,
                 ),
               );
             },
           ),
-        ),
+
+          // 2. Subtle Dark Gradient Overlay for Safe Area & System Bar Contrast
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  const Color(0xFF061225).withValues(alpha: 0.60),
+                  Colors.transparent,
+                  Colors.transparent,
+                  const Color(0xFF061225).withValues(alpha: 0.75),
+                ],
+                stops: const [0.0, 0.16, 0.80, 1.0],
+              ),
+            ),
+          ),
+
+          // 3. Foreground Content with Responsive Safe Layout
+          SafeArea(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final isCompact = constraints.maxHeight < 680;
+
+                return Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 22,
+                    vertical: isCompact ? 10 : 16,
+                  ),
+                  child: Column(
+                    children: [
+                      // TOP BAR: Best Score Pill (Left) & Settings Button (Right)
+                      _buildTopBar(),
+
+                      const Spacer(flex: 1),
+
+                      // BRANDING: 3-Pill Glowing Emblem inside Circular Halo + Title
+                      StackPulseLogo(
+                        scale: isCompact ? 0.95 : 1.1,
+                        showHalo: true,
+                        showText: true,
+                        stackedText: false,
+                      ),
+
+                      SizedBox(height: isCompact ? 8 : 14),
+
+                      // HERO: 3D Stacking Blocks on Cyber Pedestal
+                      Expanded(
+                        flex: 6,
+                        child: Center(
+                          child: AnimatedHeroTowerPreview(
+                            theme: theme,
+                            reducedMotion: settings?.reducedMotion ?? false,
+                            size: isCompact ? 160 : 210,
+                          ),
+                        ),
+                      ),
+
+                      const Spacer(flex: 1),
+
+                      // PRIMARY CTA: Cyan-to-Purple Gradient PLAY Button
+                      PremiumButton(
+                        label: 'PLAY',
+                        icon: Icons.play_arrow_rounded,
+                        isPrimary: true,
+                        theme: theme,
+                        height: isCompact ? 54 : 62,
+                        fontSize: 18,
+                        onTap: onPlay,
+                      ),
+
+                      SizedBox(height: isCompact ? 14 : 18),
+
+                      // BOTTOM ACTION ROW: 3 Tiles (THEMES, HOW TO PLAY, SETTINGS)
+                      Row(
+                        children: [
+                          Expanded(
+                            child: HomeActionTile(
+                              label: 'THEMES',
+                              icon: Icons.palette_rounded,
+                              accentColor: const Color(0xFF14E4C5), // Mint
+                              theme: theme,
+                              onTap: onThemes,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: HomeActionTile(
+                              label: 'HOW TO PLAY',
+                              icon: Icons.help_rounded,
+                              accentColor: const Color(0xFF13D9FF), // Cyan
+                              theme: theme,
+                              onTap: onTutorial,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: HomeActionTile(
+                              label: 'SETTINGS',
+                              icon: Icons.settings_rounded,
+                              accentColor: const Color(0xFFF34BEA), // Magenta
+                              theme: theme,
+                              onTap: onSettings,
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: isCompact ? 4 : 8),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -213,7 +252,7 @@ class HomeScreen extends StatelessWidget {
             ),
             child: const Center(
               child: Icon(
-                Icons.settings_outlined,
+                Icons.settings_rounded,
                 color: Colors.white,
                 size: 20,
               ),
@@ -225,16 +264,17 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-/// Animated 3D Isometric Neon Hero Tower Preview with Cyber Skyline Background
-/// matching Reference Screen 2
+/// Animated 2.5D Stacking Blocks on Cyber Pedestal matching Reference Screen 2
 class AnimatedHeroTowerPreview extends StatefulWidget {
   final GameTheme theme;
   final double size;
+  final bool reducedMotion;
 
   const AnimatedHeroTowerPreview({
     super.key,
     required this.theme,
     this.size = 210,
+    this.reducedMotion = false,
   });
 
   @override
@@ -251,16 +291,29 @@ class _AnimatedHeroTowerPreviewState extends State<AnimatedHeroTowerPreview>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 3200),
+      duration: const Duration(milliseconds: 3000),
     );
 
-    // In widget tests, avoid infinite repeat so tester.pumpAndSettle() completes cleanly
+    // In widget tests or reduced motion, avoid infinite repeat
     final isTest =
         WidgetsBinding.instance.runtimeType.toString().contains('Test');
-    if (!isTest) {
+    if (!isTest && !widget.reducedMotion) {
       _controller.repeat();
     } else {
       _controller.value = 0.25;
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant AnimatedHeroTowerPreview oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.reducedMotion != oldWidget.reducedMotion) {
+      if (widget.reducedMotion) {
+        _controller.stop();
+        _controller.value = 0.25;
+      } else {
+        _controller.repeat();
+      }
     }
   }
 
@@ -276,14 +329,17 @@ class _AnimatedHeroTowerPreviewState extends State<AnimatedHeroTowerPreview>
       animation: _controller,
       builder: (context, _) {
         final progress = _controller.value;
-        final floatOffset = math.sin(progress * 2 * math.pi) * 8.0;
-        final tiltAngle = math.sin(progress * 2 * math.pi) * 0.08;
+        final floatOffset =
+            widget.reducedMotion ? 0.0 : math.sin(progress * 2 * math.pi) * 6.0;
+        final tiltAngle = widget.reducedMotion
+            ? -0.04
+            : -0.04 + math.sin(progress * 2 * math.pi) * 0.04;
 
         return SizedBox(
           width: widget.size * 1.5,
           height: widget.size,
           child: CustomPaint(
-            painter: _HeroCyberTowerPainter(
+            painter: _HeroBlocksPainter(
               theme: widget.theme,
               floatOffset: floatOffset,
               tiltAngle: tiltAngle,
@@ -296,13 +352,13 @@ class _AnimatedHeroTowerPreviewState extends State<AnimatedHeroTowerPreview>
   }
 }
 
-class _HeroCyberTowerPainter extends CustomPainter {
+class _HeroBlocksPainter extends CustomPainter {
   final GameTheme theme;
   final double floatOffset;
   final double tiltAngle;
   final double progress;
 
-  _HeroCyberTowerPainter({
+  _HeroBlocksPainter({
     required this.theme,
     required this.floatOffset,
     required this.tiltAngle,
@@ -312,170 +368,98 @@ class _HeroCyberTowerPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final centerX = size.width / 2;
-    final baseY = size.height * 0.88;
+    // Align base with the pedestal surface
+    final baseY = size.height * 0.84;
 
-    // 1. Cyber-City Skyline & Vertical Light Beams (Background)
-    _drawSkylineAndBeams(canvas, size);
-
-    // 2. Glowing Light Pool under Pedestal
+    // 1. Ambient cyan/blue glow pooling on the pedestal
     final glowPaint = Paint()
       ..shader = RadialGradient(
         colors: [
-          const Color(0xFF13D9FF).withValues(alpha: 0.38),
-          const Color(0xFF9658FF).withValues(alpha: 0.12),
+          const Color(0xFF13D9FF).withValues(alpha: 0.35),
+          const Color(0xFF347BFF).withValues(alpha: 0.15),
           Colors.transparent,
         ],
       ).createShader(
         Rect.fromCenter(
-          center: Offset(centerX, baseY),
-          width: 240,
-          height: 90,
+          center: Offset(centerX, baseY + 6),
+          width: 180,
+          height: 60,
         ),
       );
     canvas.drawOval(
       Rect.fromCenter(
-          center: Offset(centerX, baseY + 6), width: 220, height: 60),
+        center: Offset(centerX, baseY + 6),
+        width: 180,
+        height: 60,
+      ),
       glowPaint,
     );
 
-    // 3. Isometric Base Pedestal Platform
+    // 2. Layer 1 Block (Bottom): Deep Cyan / Cobalt Blue
     _drawIsometricBlock(
       canvas: canvas,
-      center: Offset(centerX, baseY - 6),
-      width: 140,
+      center: Offset(centerX, baseY - 12),
+      width: 114,
+      height: 20,
+      depth: 26,
+      baseColor: const Color(0xFF1E60D0),
+      topHighlight: const Color(0xFF13D9FF),
+      borderColor: Colors.white.withValues(alpha: 0.40),
+    );
+
+    // 3. Layer 2 Block: Electric Purple / Neon Magenta
+    _drawIsometricBlock(
+      canvas: canvas,
+      center: Offset(centerX, baseY - 36),
+      width: 94,
+      height: 19,
+      depth: 24,
+      baseColor: const Color(0xFF8A30E0),
+      topHighlight: const Color(0xFFF34BEA),
+      borderColor: Colors.white.withValues(alpha: 0.45),
+    );
+
+    // 4. Layer 3 Block: Neon Coral Pink / Sunset
+    _drawIsometricBlock(
+      canvas: canvas,
+      center: Offset(centerX, baseY - 59),
+      width: 76,
       height: 18,
-      depth: 28,
-      baseColor: const Color(0xFF14284A),
-      topHighlight: const Color(0xFF1E3C6E),
-      borderColor: const Color(0xFF13D9FF).withValues(alpha: 0.6),
-    );
-
-    // 4. Layer 1 Block (Deep Navy / Indigo Blue)
-    _drawIsometricBlock(
-      canvas: canvas,
-      center: Offset(centerX, baseY - 28),
-      width: 105,
-      height: 16,
       depth: 22,
-      baseColor: const Color(0xFF1C3A70),
-      topHighlight: const Color(0xFF347BFF),
-      borderColor: Colors.white.withValues(alpha: 0.3),
+      baseColor: const Color(0xFFFF5E7E),
+      topHighlight: const Color(0xFFFF8A65),
+      borderColor: Colors.white.withValues(alpha: 0.50),
     );
 
-    // 5. Layer 2 Block (Vibrant Neon Magenta / Pink)
-    _drawIsometricBlock(
-      canvas: canvas,
-      center: Offset(centerX, baseY - 48),
-      width: 85,
-      height: 16,
-      depth: 20,
-      baseColor: const Color(0xFFF34BEA),
-      topHighlight: const Color(0xFFFF85F9),
-      borderColor: Colors.white.withValues(alpha: 0.4),
-    );
-
-    // 6. Layer 3 Block (Electric Cyan / Sky Blue)
-    _drawIsometricBlock(
-      canvas: canvas,
-      center: Offset(centerX, baseY - 68),
-      width: 70,
-      height: 15,
-      depth: 18,
-      baseColor: const Color(0xFF13D9FF),
-      topHighlight: const Color(0xFF75EDFF),
-      borderColor: Colors.white.withValues(alpha: 0.5),
-    );
-
-    // 7. Top Active Floating Block (Electric Cyan, floating & tilted!)
+    // 5. Layer 4 Active Top Block: Sky Blue / Electric Cyan (floating & jaunty tilt)
     canvas.save();
-    final topCenter = Offset(centerX, baseY - 98 + floatOffset);
+    final topCenter = Offset(centerX, baseY - 92 + floatOffset);
     canvas.translate(topCenter.dx, topCenter.dy);
     canvas.rotate(tiltAngle);
 
-    // Floating Block Ambient Glow
-    final activeGlow = Paint()
+    // Radiant cyan bloom around the floating block
+    final topGlow = Paint()
       ..shader = RadialGradient(
         colors: [
-          const Color(0xFF13D9FF).withValues(alpha: 0.45),
+          const Color(0xFF13D9FF).withValues(alpha: 0.40),
           Colors.transparent,
         ],
       ).createShader(
-        Rect.fromCircle(center: Offset.zero, radius: 50),
+        Rect.fromCircle(center: Offset.zero, radius: 46),
       );
-    canvas.drawCircle(Offset.zero, 50, activeGlow);
+    canvas.drawCircle(Offset.zero, 46, topGlow);
 
     _drawIsometricBlock(
       canvas: canvas,
       center: Offset.zero,
-      width: 60,
-      height: 14,
-      depth: 16,
+      width: 62,
+      height: 17,
+      depth: 20,
       baseColor: const Color(0xFF13D9FF),
-      topHighlight: Colors.white,
-      borderColor: Colors.white.withValues(alpha: 0.8),
+      topHighlight: const Color(0xFFBBEFFF),
+      borderColor: Colors.white.withValues(alpha: 0.85),
     );
     canvas.restore();
-  }
-
-  void _drawSkylineAndBeams(Canvas canvas, Size size) {
-    final buildingPaint = Paint()
-      ..color = const Color(0xFF0C1F42).withValues(alpha: 0.65)
-      ..style = PaintingStyle.fill;
-
-    // Distant cyber buildings
-    canvas.drawRect(
-      Rect.fromLTWH(
-          size.width * 0.08, size.height * 0.25, 26, size.height * 0.7),
-      buildingPaint,
-    );
-    canvas.drawRect(
-      Rect.fromLTWH(
-          size.width * 0.18, size.height * 0.35, 32, size.height * 0.6),
-      buildingPaint,
-    );
-    canvas.drawRect(
-      Rect.fromLTWH(
-          size.width * 0.75, size.height * 0.30, 28, size.height * 0.7),
-      buildingPaint,
-    );
-    canvas.drawRect(
-      Rect.fromLTWH(
-          size.width * 0.86, size.height * 0.22, 24, size.height * 0.7),
-      buildingPaint,
-    );
-
-    // Vertical neon light beams
-    final beamPaintCyan = Paint()
-      ..shader = LinearGradient(
-        begin: Alignment.bottomCenter,
-        end: Alignment.topCenter,
-        colors: [
-          const Color(0xFF13D9FF).withValues(alpha: 0.25),
-          Colors.transparent,
-        ],
-      ).createShader(
-        Rect.fromLTWH(size.width * 0.22, 0, 14, size.height),
-      );
-    canvas.drawRect(
-      Rect.fromLTWH(size.width * 0.22, 0, 14, size.height * 0.85),
-      beamPaintCyan,
-    );
-
-    final beamPaintPurple = Paint()
-      ..shader = LinearGradient(
-        begin: Alignment.bottomCenter,
-        end: Alignment.topCenter,
-        colors: [
-          const Color(0xFF9658FF).withValues(alpha: 0.25),
-          Colors.transparent,
-        ],
-      ).createShader(
-        Rect.fromLTWH(size.width * 0.78, 0, 16, size.height),
-      );
-    canvas.drawRect(
-      Rect.fromLTWH(size.width * 0.78, 0, 16, size.height * 0.85),
-      beamPaintPurple,
-    );
   }
 
   void _drawIsometricBlock({
@@ -498,14 +482,14 @@ class _HeroCyberTowerPainter extends CustomPainter {
       height: height,
     );
     final frontRRect =
-        RRect.fromRectAndRadius(frontRect, const Radius.circular(3));
+        RRect.fromRectAndRadius(frontRect, const Radius.circular(3.5));
     final frontPaint = Paint()
       ..shader = LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
         colors: [
           baseColor,
-          Color.lerp(baseColor, Colors.black, 0.25)!,
+          Color.lerp(baseColor, Colors.black, 0.28)!,
         ],
       ).createShader(frontRect);
     canvas.drawRRect(frontRRect, frontPaint);
@@ -514,29 +498,52 @@ class _HeroCyberTowerPainter extends CustomPainter {
     final topPath = Path()
       ..moveTo(center.dx - halfW, center.dy - halfH)
       ..lineTo(
-          center.dx - halfW + depth * 0.5, center.dy - halfH - depth * 0.35)
+          center.dx - halfW + depth * 0.48, center.dy - halfH - depth * 0.32)
       ..lineTo(
-          center.dx + halfW + depth * 0.5, center.dy - halfH - depth * 0.35)
+          center.dx + halfW + depth * 0.48, center.dy - halfH - depth * 0.32)
       ..lineTo(center.dx + halfW, center.dy - halfH)
       ..close();
     final topPaint = Paint()
-      ..color = topHighlight.withValues(alpha: 0.75)
-      ..style = PaintingStyle.fill;
+      ..shader = LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          topHighlight,
+          Color.lerp(topHighlight, baseColor, 0.40)!,
+        ],
+      ).createShader(topPath.getBounds());
     canvas.drawPath(topPath, topPaint);
 
     // Right Isometric Bevel Face
     final rightPath = Path()
       ..moveTo(center.dx + halfW, center.dy - halfH)
       ..lineTo(
-          center.dx + halfW + depth * 0.5, center.dy - halfH - depth * 0.35)
+          center.dx + halfW + depth * 0.48, center.dy - halfH - depth * 0.32)
       ..lineTo(
-          center.dx + halfW + depth * 0.5, center.dy + halfH - depth * 0.35)
+          center.dx + halfW + depth * 0.48, center.dy + halfH - depth * 0.32)
       ..lineTo(center.dx + halfW, center.dy + halfH)
       ..close();
     final rightPaint = Paint()
-      ..color = Color.lerp(baseColor, Colors.black, 0.35)!
+      ..color = Color.lerp(baseColor, Colors.black, 0.36)!
       ..style = PaintingStyle.fill;
     canvas.drawPath(rightPath, rightPaint);
+
+    // Top Sheen Line across Front Face for glassmorphic gloss
+    final sheenPaint = Paint()
+      ..shader = LinearGradient(
+        colors: [
+          Colors.white.withValues(alpha: 0.1),
+          Colors.white.withValues(alpha: 0.55),
+          Colors.white.withValues(alpha: 0.1),
+        ],
+      ).createShader(frontRect)
+      ..strokeWidth = 1.2
+      ..style = PaintingStyle.stroke;
+    canvas.drawLine(
+      Offset(center.dx - halfW + 2, center.dy - halfH + 1.2),
+      Offset(center.dx + halfW - 2, center.dy - halfH + 1.2),
+      sheenPaint,
+    );
 
     // Perimeter crisp highlight stroke
     final strokePaint = Paint()
@@ -549,7 +556,8 @@ class _HeroCyberTowerPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _HeroCyberTowerPainter oldDelegate) =>
+  bool shouldRepaint(covariant _HeroBlocksPainter oldDelegate) =>
       oldDelegate.floatOffset != floatOffset ||
-      oldDelegate.tiltAngle != tiltAngle;
+      oldDelegate.tiltAngle != tiltAngle ||
+      oldDelegate.theme != theme;
 }

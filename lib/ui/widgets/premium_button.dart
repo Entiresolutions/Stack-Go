@@ -91,6 +91,7 @@ class _PremiumButtonState extends State<PremiumButton>
         end: Alignment.centerRight,
         colors: [
           Color(0xFF13D9FF), // Electric Cyan
+          Color(0xFF347BFF), // Neon Blue
           Color(0xFF9658FF), // Electric Purple
         ],
       );

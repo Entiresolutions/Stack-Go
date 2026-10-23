@@ -172,6 +172,7 @@ class _StackPulseAppState extends State<StackPulseApp>
         return HomeScreen(
           theme: theme,
           statistics: _statistics,
+          settings: _settings,
           onPlay: () => setState(() => _currentView = AppView.game),
           onThemes: () => setState(() => _currentView = AppView.themes),
           onSettings: () => setState(() => _currentView = AppView.settings),

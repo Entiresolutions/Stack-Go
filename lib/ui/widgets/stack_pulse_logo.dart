@@ -4,52 +4,77 @@ class StackPulseLogo extends StatelessWidget {
   final double scale;
   final bool showText;
   final bool stackedText;
+  final bool showHalo;
 
   const StackPulseLogo({
     super.key,
     this.scale = 1.0,
     this.showText = true,
     this.stackedText = false,
+    this.showHalo = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    final pills = Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _buildPill(
+          width: 24 * scale,
+          height: 7.0 * scale,
+          gradient: const LinearGradient(
+            colors: [Color(0xFF55E7FF), Color(0xFF13D9FF)],
+          ),
+          shadowColor: const Color(0xFF13D9FF),
+        ),
+        SizedBox(height: 3.5 * scale),
+        _buildPill(
+          width: 34 * scale,
+          height: 7.0 * scale,
+          gradient: const LinearGradient(
+            colors: [Color(0xFF6EA8FE), Color(0xFF347BFF)],
+          ),
+          shadowColor: const Color(0xFF347BFF),
+        ),
+        SizedBox(height: 3.5 * scale),
+        _buildPill(
+          width: 44 * scale,
+          height: 7.0 * scale,
+          gradient: const LinearGradient(
+            colors: [Color(0xFFB485FF), Color(0xFF9658FF)],
+          ),
+          shadowColor: const Color(0xFF9658FF),
+        ),
+      ],
+    );
+
+    final emblem = showHalo
+        ? Container(
+            width: 66 * scale,
+            height: 66 * scale,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: const Color(0xFF0C1B36).withValues(alpha: 0.65),
+              border: Border.all(
+                color: const Color(0xFF13D9FF).withValues(alpha: 0.22),
+                width: 1.0,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF13D9FF).withValues(alpha: 0.18),
+                  blurRadius: 18 * scale,
+                  spreadRadius: 1,
+                ),
+              ],
+            ),
+            child: Center(child: pills),
+          )
+        : pills;
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // The 3-pill glowing stacked emblem
-        Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _buildPill(
-              width: 26 * scale,
-              height: 7.5 * scale,
-              gradient: const LinearGradient(
-                colors: [Color(0xFF55E7FF), Color(0xFF13D9FF)],
-              ),
-              shadowColor: const Color(0xFF13D9FF),
-            ),
-            SizedBox(height: 3.5 * scale),
-            _buildPill(
-              width: 36 * scale,
-              height: 7.5 * scale,
-              gradient: const LinearGradient(
-                colors: [Color(0xFFB485FF), Color(0xFF9658FF)],
-              ),
-              shadowColor: const Color(0xFF9658FF),
-            ),
-            SizedBox(height: 3.5 * scale),
-            _buildPill(
-              width: 48 * scale,
-              height: 7.5 * scale,
-              gradient: const LinearGradient(
-                colors: [Color(0xFFFF72F7), Color(0xFFF34BEA)],
-              ),
-              shadowColor: const Color(0xFFF34BEA),
-            ),
-          ],
-        ),
-
+        emblem,
         if (showText) ...[
           SizedBox(height: 14 * scale),
           if (stackedText) ...[
