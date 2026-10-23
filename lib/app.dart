@@ -4,6 +4,8 @@ import 'models/game_settings.dart';
 import 'models/game_statistics.dart';
 import 'services/local_storage_service.dart';
 import 'services/music_service.dart';
+import 'services/feedback_service.dart';
+import 'services/sound_synthesizer.dart';
 import 'services/ad_service.dart';
 import 'ui/screens/splash_screen.dart';
 import 'ui/screens/home_screen.dart';
@@ -70,8 +72,14 @@ class _StackPulseAppState extends State<StackPulseApp>
           }
         });
       }
-      await MusicService.instance
-          .initialize(musicEnabled: settings.musicEnabled);
+      FeedbackService.updateSettings(settings);
+      await MusicService.instance.initialize(
+        musicEnabled: settings.musicEnabled,
+        musicVolume: settings.musicVolume,
+      );
+      await SoundSynthesizer.instance.initialize(
+        volume: settings.soundVolume,
+      );
     } catch (_) {
       if (mounted) {
         setState(() {
@@ -116,7 +124,10 @@ class _StackPulseAppState extends State<StackPulseApp>
   void _updateSettings(GameSettings updated) {
     setState(() => _settings = updated);
     _storage.saveSettings(updated);
+    FeedbackService.updateSettings(updated);
     MusicService.instance.setMusicEnabled(updated.musicEnabled);
+    MusicService.instance.setVolume(updated.musicVolume);
+    SoundSynthesizer.instance.setVolume(updated.soundVolume);
   }
 
   void _updateStatistics(GameStatistics updated) {

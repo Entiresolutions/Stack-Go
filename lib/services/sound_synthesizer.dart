@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:math';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
@@ -6,7 +7,7 @@ class SoundSynthesizer {
   static final SoundSynthesizer instance = SoundSynthesizer._();
 
   SoundSynthesizer._() {
-    _initAudio();
+    initialize();
   }
 
   static const List<double> _pentatonicFrequencies = [
@@ -30,102 +31,197 @@ class SoundSynthesizer {
   ];
 
   final Map<int, Uint8List> _normalSoundCache = {};
+  final Map<int, Source> _normalSourceCache = {};
+
   final Map<int, Uint8List> _streakSoundCache = {};
+  final Map<int, Source> _streakSourceCache = {};
+
   Uint8List? _gameOverSound;
+  Source? _gameOverSource;
+
   Uint8List? _buttonSound;
+  Source? _buttonSource;
 
   final List<AudioPlayer> _players = [];
   int _playerIndex = 0;
   bool _initialized = false;
+  double _volume = 0.8;
 
-  void _initAudio() {
-    if (_initialized) return;
+  double get volume => _volume;
+
+  Future<void> initialize({double volume = 0.8}) async {
+    _volume = volume.clamp(0.0, 1.0);
+    if (_initialized) {
+      setVolume(_volume);
+      return;
+    }
     _initialized = true;
 
     try {
+      Directory? sfxDir;
+      if (!kIsWeb) {
+        try {
+          sfxDir = Directory('${Directory.systemTemp.path}/stack_pulse_sfx');
+          if (!sfxDir.existsSync()) {
+            sfxDir.createSync(recursive: true);
+          }
+        } catch (_) {}
+      }
+
       // Round robin pool of 4 players for overlapping polyphonic effects
       for (int i = 0; i < 4; i++) {
         final player = AudioPlayer();
-        player.setPlayerMode(PlayerMode.lowLatency);
+        if (!kIsWeb) {
+          try {
+            await player.setPlayerMode(PlayerMode.lowLatency);
+          } catch (_) {}
+        }
+        try {
+          await player.setVolume(_volume);
+        } catch (_) {}
         _players.add(player);
       }
 
       // Pre-synthesize normal notes
       for (int i = 0; i < _pentatonicFrequencies.length; i++) {
-        _normalSoundCache[i] = _generateWav(
+        final wav = _generateWav(
           frequency: _pentatonicFrequencies[i],
           durationSeconds: 0.18,
           decay: 14.0,
-          volume: 0.28,
+          volume: 0.35,
         );
+        _normalSoundCache[i] = wav;
+
+        if (sfxDir != null) {
+          try {
+            final file = File('${sfxDir.path}/normal_$i.wav');
+            if (!file.existsSync() || file.lengthSync() != wav.length) {
+              file.writeAsBytesSync(wav, flush: true);
+            }
+            _normalSourceCache[i] = DeviceFileSource(file.path);
+          } catch (_) {}
+        }
       }
 
       // Pre-synthesize streak notes with rich harmonic overtones
       for (int i = 0; i < _streakScale.length; i++) {
         final baseFreq = _streakScale[i];
         final harmonicFreq = i >= 4 ? baseFreq * 2.0 : baseFreq * 1.5;
-        _streakSoundCache[i] = _generateWav(
+        final wav = _generateWav(
           frequency: baseFreq,
           durationSeconds: 0.35,
           decay: 9.0,
-          volume: 0.32,
+          volume: 0.40,
           harmonicFrequency: harmonicFreq,
-          harmonicVolume: 0.16,
+          harmonicVolume: 0.20,
         );
+        _streakSoundCache[i] = wav;
+
+        if (sfxDir != null) {
+          try {
+            final file = File('${sfxDir.path}/streak_$i.wav');
+            if (!file.existsSync() || file.lengthSync() != wav.length) {
+              file.writeAsBytesSync(wav, flush: true);
+            }
+            _streakSourceCache[i] = DeviceFileSource(file.path);
+          } catch (_) {}
+        }
       }
 
-      // Game over thud (120Hz down to 60Hz)
+      // Game over thud
       _gameOverSound = _generateGameOverWav();
+      if (sfxDir != null && _gameOverSound != null) {
+        try {
+          final file = File('${sfxDir.path}/game_over.wav');
+          if (!file.existsSync() || file.lengthSync() != _gameOverSound!.length) {
+            file.writeAsBytesSync(_gameOverSound!, flush: true);
+          }
+          _gameOverSource = DeviceFileSource(file.path);
+        } catch (_) {}
+      }
 
       // UI button click
       _buttonSound = _generateWav(
         frequency: 800.0,
         durationSeconds: 0.05,
         decay: 35.0,
-        volume: 0.2,
+        volume: 0.30,
       );
+      if (sfxDir != null && _buttonSound != null) {
+        try {
+          final file = File('${sfxDir.path}/button.wav');
+          if (!file.existsSync() || file.lengthSync() != _buttonSound!.length) {
+            file.writeAsBytesSync(_buttonSound!, flush: true);
+          }
+          _buttonSource = DeviceFileSource(file.path);
+        } catch (_) {}
+      }
     } catch (e) {
       if (kDebugMode) {
-        print('Error pre-rendering synthesized audio: $e');
+        print('Error initializing SoundSynthesizer: $e');
       }
     }
   }
 
-  void playNormalPlacement(int score) {
-    final idx = score % _pentatonicFrequencies.length;
-    final bytes = _normalSoundCache[idx];
-    if (bytes != null) {
-      _playBytes(bytes);
+  void setVolume(double volume) {
+    _volume = volume.clamp(0.0, 1.0);
+    for (final player in _players) {
+      try {
+        player.setVolume(_volume);
+      } catch (_) {}
     }
+  }
+
+  void playNormalPlacement(int score) {
+    if (_volume <= 0.0) return;
+    final idx = score % _pentatonicFrequencies.length;
+    _play(
+      source: _normalSourceCache[idx],
+      fallbackBytes: _normalSoundCache[idx],
+    );
   }
 
   void playPerfectPlacement(int streak) {
+    if (_volume <= 0.0) return;
     final streakIndex = (streak - 1).clamp(0, _streakScale.length - 1);
-    final bytes = _streakSoundCache[streakIndex];
-    if (bytes != null) {
-      _playBytes(bytes);
-    }
+    _play(
+      source: _streakSourceCache[streakIndex],
+      fallbackBytes: _streakSoundCache[streakIndex],
+    );
   }
 
   void playGameOver() {
-    if (_gameOverSound != null) {
-      _playBytes(_gameOverSound!);
-    }
+    if (_volume <= 0.0) return;
+    _play(
+      source: _gameOverSource,
+      fallbackBytes: _gameOverSound,
+    );
   }
 
   void playButton() {
-    if (_buttonSound != null) {
-      _playBytes(_buttonSound!);
-    }
+    if (_volume <= 0.0) return;
+    _play(
+      source: _buttonSource,
+      fallbackBytes: _buttonSound,
+    );
   }
 
-  void _playBytes(Uint8List bytes) {
+  void _play({Source? source, Uint8List? fallbackBytes}) {
     if (_players.isEmpty) return;
     try {
       final player = _players[_playerIndex];
       _playerIndex = (_playerIndex + 1) % _players.length;
-      player.play(BytesSource(bytes));
-    } catch (_) {}
+
+      if (source != null) {
+        player.play(source, volume: _volume);
+      } else if (fallbackBytes != null) {
+        player.play(BytesSource(fallbackBytes), volume: _volume);
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('SoundSynthesizer playback error: $e');
+      }
+    }
   }
 
   /// Generates a valid 16-bit mono 22.05kHz PCM WAV audio file in-memory
@@ -246,7 +342,6 @@ class SoundSynthesizer {
     for (int i = 0; i < totalSamples; i++) {
       final double t = i / sampleRate;
       final double envelope = exp(-6.0 * t);
-      // Pitch drops from 140Hz down to 55Hz
       final double freq = 140.0 - 85.0 * (t / durationSeconds);
       final double sample = sin(2 * pi * freq * t) * envelope * 0.4;
 

@@ -1,16 +1,34 @@
 import 'package:flutter/services.dart';
+import '../models/game_settings.dart';
 import 'sound_synthesizer.dart';
 
 class FeedbackService {
+  static bool hapticsEnabled = true;
+  static bool soundEnabled = true;
+
+  static void updateSettings(GameSettings settings) {
+    hapticsEnabled = settings.hapticsEnabled;
+    soundEnabled = settings.soundEnabled;
+    SoundSynthesizer.instance.setVolume(settings.soundVolume);
+  }
+
   static void triggerNormalPlacement({
-    required bool haptics,
-    required bool sound,
+    bool? haptics,
+    bool? sound,
     int score = 0,
   }) {
-    if (haptics) {
-      HapticFeedback.lightImpact();
+    final useHaptics = haptics ?? hapticsEnabled;
+    final useSound = sound ?? soundEnabled;
+
+    if (useHaptics) {
+      try {
+        // Medium impact provides a distinct, noticeable tactile impulse on all Android devices
+        HapticFeedback.mediumImpact();
+      } catch (_) {
+        HapticFeedback.vibrate();
+      }
     }
-    if (sound) {
+    if (useSound) {
       try {
         SoundSynthesizer.instance.playNormalPlacement(score);
       } catch (_) {
@@ -21,20 +39,27 @@ class FeedbackService {
 
   /// Plays unique feedback for consecutive perfect placements, escalating haptic and procedural musical pitch response
   static void triggerPerfectPlacement({
-    required bool haptics,
-    required bool sound,
+    bool? haptics,
+    bool? sound,
     int streak = 1,
   }) {
-    if (haptics) {
-      if (streak >= 5) {
-        HapticFeedback.heavyImpact();
-      } else if (streak >= 3) {
-        HapticFeedback.mediumImpact();
-      } else {
-        HapticFeedback.lightImpact();
+    final useHaptics = haptics ?? hapticsEnabled;
+    final useSound = sound ?? soundEnabled;
+
+    if (useHaptics) {
+      try {
+        if (streak >= 5) {
+          HapticFeedback.heavyImpact();
+        } else if (streak >= 3) {
+          HapticFeedback.heavyImpact();
+        } else {
+          HapticFeedback.mediumImpact();
+        }
+      } catch (_) {
+        HapticFeedback.vibrate();
       }
     }
-    if (sound) {
+    if (useSound) {
       try {
         SoundSynthesizer.instance.playPerfectPlacement(streak);
       } catch (_) {
@@ -44,13 +69,21 @@ class FeedbackService {
   }
 
   static void triggerGameOver({
-    required bool haptics,
-    required bool sound,
+    bool? haptics,
+    bool? sound,
   }) {
-    if (haptics) {
-      HapticFeedback.heavyImpact();
+    final useHaptics = haptics ?? hapticsEnabled;
+    final useSound = sound ?? soundEnabled;
+
+    if (useHaptics) {
+      try {
+        HapticFeedback.heavyImpact();
+        HapticFeedback.vibrate();
+      } catch (_) {
+        HapticFeedback.vibrate();
+      }
     }
-    if (sound) {
+    if (useSound) {
       try {
         SoundSynthesizer.instance.playGameOver();
       } catch (_) {
@@ -60,18 +93,29 @@ class FeedbackService {
   }
 
   static void triggerButtonTap({
-    required bool haptics,
-    required bool sound,
+    bool? haptics,
+    bool? sound,
   }) {
-    if (haptics) {
-      HapticFeedback.selectionClick();
+    final useHaptics = haptics ?? hapticsEnabled;
+    final useSound = sound ?? soundEnabled;
+
+    if (useHaptics) {
+      try {
+        HapticFeedback.selectionClick();
+      } catch (_) {}
     }
-    if (sound) {
+    if (useSound) {
       try {
         SoundSynthesizer.instance.playButton();
-      } catch (_) {
-        SystemSound.play(SystemSoundType.click);
-      }
+      } catch (_) {}
+    }
+  }
+
+  static void triggerSliderTick() {
+    if (hapticsEnabled) {
+      try {
+        HapticFeedback.selectionClick();
+      } catch (_) {}
     }
   }
 }

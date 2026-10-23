@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/game_theme.dart';
+import '../../services/feedback_service.dart';
 
 enum ButtonVariant {
   primary,
@@ -91,6 +92,7 @@ class _PremiumButtonState extends State<PremiumButton>
       return; // Debounce duplicate rapid taps
     }
     _lastTapTimestamp = now;
+    FeedbackService.triggerButtonTap();
     widget.onTap();
   }
 
@@ -349,6 +351,7 @@ class _HomeActionTileState extends State<HomeActionTile>
     final now = DateTime.now().millisecondsSinceEpoch;
     if (!isTest && now - _lastTapTimestamp < 300) return; // Debounce rapid taps
     _lastTapTimestamp = now;
+    FeedbackService.triggerButtonTap();
     widget.onTap();
   }
 
@@ -503,6 +506,7 @@ class _GlassIconButtonState extends State<GlassIconButton>
     final now = DateTime.now().millisecondsSinceEpoch;
     if (!isTest && now - _lastTapTimestamp < 300) return; // Debounce rapid taps
     _lastTapTimestamp = now;
+    FeedbackService.triggerButtonTap();
     widget.onTap();
   }
 

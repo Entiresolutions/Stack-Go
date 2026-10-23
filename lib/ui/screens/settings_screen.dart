@@ -1,18 +1,21 @@
 import 'package:flutter/material.dart';
 import '../../core/game_theme.dart';
 import '../../models/game_settings.dart';
+import '../../services/feedback_service.dart';
 import '../../services/music_service.dart';
+import '../../services/sound_synthesizer.dart';
 import '../widgets/premium_button.dart';
 
 /// Phase 6: Production Settings Screen
 ///
-/// Faithfully reconstructs Reference Screen 8:
+/// Features:
 /// - Clean, premium futuristic aesthetic with deep navy background.
 /// - Top bar: Circular glass back button, centered bold 'SETTINGS' header.
-/// - Three distinct setting rows:
-///   1. Sound Effects (speaker icon + custom cyan neon toggle).
-///   2. Haptic Feedback (phone vibration icon + custom cyan neon toggle).
-///   3. Reduced Motion (crescent moon icon + custom toggle).
+/// - Audio & Haptic Controls:
+///   1. Sound Effects (speaker icon + neon toggle + collapsible volume slider & percentage field).
+///   2. Background Music (music note icon + neon toggle + collapsible volume slider & percentage field).
+///   3. Haptic Feedback (phone vibration icon + neon toggle + instant tactile pulse preview).
+///   4. Reduced Motion (crescent moon icon + custom toggle).
 /// - THEME Section:
 ///   - 'THEME' section header.
 ///   - Interactive theme shortcut card displaying active theme preview,
@@ -41,6 +44,8 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   late bool _sound;
   late bool _music;
+  late double _soundVolume;
+  late double _musicVolume;
   late bool _haptics;
   late bool _reducedMotion;
 
@@ -49,16 +54,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
     super.initState();
     _sound = widget.settings.soundEnabled;
     _music = widget.settings.musicEnabled;
+    _soundVolume = widget.settings.soundVolume;
+    _musicVolume = widget.settings.musicVolume;
     _haptics = widget.settings.hapticsEnabled;
     _reducedMotion = widget.settings.reducedMotion;
   }
 
-  void _updateSettings({bool? sound, bool? haptics, bool? motion}) {
+  void _updateSettings({
+    bool? sound,
+    bool? music,
+    double? soundVolume,
+    double? musicVolume,
+    bool? haptics,
+    bool? motion,
+  }) {
     setState(() {
-      if (sound != null) {
-        _sound = sound;
-        _music = sound; // Synchronize music state with sound effects toggle
-      }
+      if (sound != null) _sound = sound;
+      if (music != null) _music = music;
+      if (soundVolume != null) _soundVolume = soundVolume;
+      if (musicVolume != null) _musicVolume = musicVolume;
       if (haptics != null) _haptics = haptics;
       if (motion != null) _reducedMotion = motion;
     });
@@ -66,11 +80,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final updated = widget.settings.copyWith(
       soundEnabled: _sound,
       musicEnabled: _music,
+      soundVolume: _soundVolume,
+      musicVolume: _musicVolume,
       hapticsEnabled: _haptics,
       reducedMotion: _reducedMotion,
     );
     widget.onSave(updated);
+    FeedbackService.updateSettings(updated);
     MusicService.instance.setMusicEnabled(_music);
+    MusicService.instance.setVolume(_musicVolume);
+    SoundSynthesizer.instance.setVolume(_soundVolume);
   }
 
   @override
@@ -89,7 +108,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // 1. Top Header Bar matching Reference Screen 8
+                // 1. Top Header Bar
                 Row(
                   children: [
                     // Back Arrow Button
@@ -116,7 +135,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
 
                     const SizedBox(
-                        width: 42), // Balances back arrow symmetrically
+                      width: 42,
+                    ), // Balances back arrow symmetrically
                   ],
                 ),
                 const SizedBox(height: 24),
@@ -128,25 +148,60 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Card 1: Sound Effects matching Reference Screen 8
-                        _buildSettingCard(
+                        // Card 1: Sound Effects with Volume Slider
+                        _buildAudioSettingCard(
                           icon: Icons.volume_up_rounded,
                           title: 'Sound Effects',
-                          value: _sound,
-                          onChanged: (val) => _updateSettings(sound: val),
+                          enabled: _sound,
+                          volume: _soundVolume,
+                          onToggleChanged: (val) {
+                            _updateSettings(sound: val);
+                            if (val) {
+                              FeedbackService.triggerButtonTap(
+                                sound: true,
+                                haptics: false,
+                              );
+                            }
+                          },
+                          onVolumeChanged: (val) {
+                            _updateSettings(soundVolume: val);
+                          },
                         ),
                         const SizedBox(height: 12),
 
-                        // Card 2: Haptic Feedback matching Reference Screen 8
+                        // Card 2: Background Music with Volume Slider
+                        _buildAudioSettingCard(
+                          icon: Icons.music_note_rounded,
+                          title: 'Background Music',
+                          enabled: _music,
+                          volume: _musicVolume,
+                          onToggleChanged: (val) {
+                            _updateSettings(music: val);
+                          },
+                          onVolumeChanged: (val) {
+                            _updateSettings(musicVolume: val);
+                          },
+                        ),
+                        const SizedBox(height: 12),
+
+                        // Card 3: Haptic Feedback
                         _buildSettingCard(
                           icon: Icons.vibration_rounded,
                           title: 'Haptic Feedback',
                           value: _haptics,
-                          onChanged: (val) => _updateSettings(haptics: val),
+                          onChanged: (val) {
+                            _updateSettings(haptics: val);
+                            if (val) {
+                              FeedbackService.triggerNormalPlacement(
+                                haptics: true,
+                                sound: false,
+                              );
+                            }
+                          },
                         ),
                         const SizedBox(height: 12),
 
-                        // Card 3: Reduced Motion matching Reference Screen 8
+                        // Card 4: Reduced Motion
                         _buildSettingCard(
                           icon: Icons.nightlight_round,
                           title: 'Reduced Motion',
@@ -155,7 +210,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                         const SizedBox(height: 32),
 
-                        // THEME Section Header matching Reference Screen 8
+                        // THEME Section Header
                         const Padding(
                           padding: EdgeInsets.only(left: 4, bottom: 10),
                           child: Text(
@@ -169,9 +224,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ),
                         ),
 
-                        // Theme Shortcut Card matching Reference Screen 8
+                        // Theme Shortcut Card
                         GestureDetector(
-                          onTap: widget.onOpenThemes,
+                          onTap: () {
+                            FeedbackService.triggerButtonTap();
+                            if (widget.onOpenThemes != null) {
+                              widget.onOpenThemes!();
+                            }
+                          },
                           behavior: HitTestBehavior.opaque,
                           child: Container(
                             padding: const EdgeInsets.symmetric(
@@ -280,7 +340,182 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  /// Individual Setting Card matching Reference Screen 8
+  /// Interactive Audio Card with dynamic neon toggle switch and collapsible volume slider bar
+  Widget _buildAudioSettingCard({
+    required IconData icon,
+    required String title,
+    required bool enabled,
+    required double volume,
+    required ValueChanged<bool> onToggleChanged,
+    required ValueChanged<double> onVolumeChanged,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: const Color(0xFF14284A).withValues(alpha: 0.85),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.12),
+          width: 1.0,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.35),
+            blurRadius: 14,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Row 1: Header with Icon, Title, and Neon Toggle Switch
+          Row(
+            children: [
+              Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.08),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.12),
+                    width: 1.0,
+                  ),
+                ),
+                child: Center(
+                  child: Icon(
+                    icon,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 14),
+
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 15.5,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.2,
+                  ),
+                ),
+              ),
+
+              _NeonPillSwitch(
+                value: enabled,
+                activeColor: const Color(0xFF13D9FF),
+                reducedMotion: _reducedMotion,
+                onChanged: onToggleChanged,
+              ),
+            ],
+          ),
+
+          // Row 2: Animated Collapsible Volume Slider Bar & Percentage Field
+          AnimatedCrossFade(
+            duration: _reducedMotion
+                ? Duration.zero
+                : const Duration(milliseconds: 240),
+            crossFadeState:
+                enabled ? CrossFadeState.showFirst : CrossFadeState.showSecond,
+            firstChild: Padding(
+              padding: const EdgeInsets.only(top: 14),
+              child: Column(
+                children: [
+                  Divider(
+                    color: Colors.white.withValues(alpha: 0.08),
+                    height: 1,
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Icon(
+                        volume == 0
+                            ? Icons.volume_mute_rounded
+                            : volume < 0.5
+                                ? Icons.volume_down_rounded
+                                : Icons.volume_up_rounded,
+                        color: const Color(0xFFA8C4E4),
+                        size: 19,
+                      ),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: SliderTheme(
+                          data: SliderThemeData(
+                            trackHeight: 5,
+                            activeTrackColor: const Color(0xFF13D9FF),
+                            inactiveTrackColor:
+                                const Color(0xFF0C192E).withValues(alpha: 0.9),
+                            thumbColor: Colors.white,
+                            overlayColor:
+                                const Color(0xFF13D9FF).withValues(alpha: 0.22),
+                            thumbShape: const RoundSliderThumbShape(
+                              enabledThumbRadius: 8.5,
+                              elevation: 2.5,
+                            ),
+                            overlayShape: const RoundSliderOverlayShape(
+                              overlayRadius: 16,
+                            ),
+                          ),
+                          child: Slider(
+                            value: volume,
+                            min: 0.0,
+                            max: 1.0,
+                            onChanged: (val) {
+                              final prevStep = (volume * 20).round();
+                              final newStep = (val * 20).round();
+                              if (prevStep != newStep) {
+                                FeedbackService.triggerSliderTick();
+                              }
+                              onVolumeChanged(val);
+                            },
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+
+                      // Interactive Volume Percentage Badge
+                      Container(
+                        width: 48,
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 4,
+                          horizontal: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF0F1E38),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.12),
+                            width: 1.0,
+                          ),
+                        ),
+                        child: Text(
+                          '${(volume * 100).round()}%',
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: Color(0xFF13D9FF),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w800,
+                            fontFeatures: [FontFeature.tabularFigures()],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            secondChild: const SizedBox.shrink(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Individual Standard Setting Card
   Widget _buildSettingCard({
     required IconData icon,
     required String title,
@@ -309,7 +544,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
         child: Row(
           children: [
-            // Circular Icon Container matching Reference Screen 8
+            // Circular Icon Container
             Container(
               width: 38,
               height: 38,
@@ -344,7 +579,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ),
 
-            // Custom Neon Pill Switch matching Reference Screen 8
+            // Custom Neon Pill Switch
             _NeonPillSwitch(
               value: value,
               activeColor: const Color(0xFF13D9FF),
@@ -358,7 +593,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 }
 
-/// Custom Neon Pill Switch matching Reference Screen 8
+/// Custom Neon Pill Switch
 /// Features electric cyan illuminated track with glowing bloom when active,
 /// and smooth sliding pure white circular thumb.
 class _NeonPillSwitch extends StatelessWidget {
@@ -381,7 +616,10 @@ class _NeonPillSwitch extends StatelessWidget {
     const double thumbSize = 22.0;
 
     return GestureDetector(
-      onTap: () => onChanged(!value),
+      onTap: () {
+        FeedbackService.triggerButtonTap(sound: false);
+        onChanged(!value);
+      },
       behavior: HitTestBehavior.opaque,
       child: AnimatedContainer(
         duration:

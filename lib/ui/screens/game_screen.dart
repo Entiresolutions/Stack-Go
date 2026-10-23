@@ -192,6 +192,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
             theme: widget.theme,
             settings: widget.settings,
             onSave: (updated) {
+              _game.updateSettings(updated);
               if (widget.onUpdateSettings != null) {
                 widget.onUpdateSettings!(updated);
               }
