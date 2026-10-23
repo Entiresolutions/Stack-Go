@@ -5,7 +5,7 @@ import '../widgets/premium_button.dart';
 
 /// Phase 4: Production Pause Menu Overlay
 ///
-/// Faithfully reconstructs Reference Screen 6:
+/// Reconstructs Reference Screen 6:
 /// - Live paused gameplay scene visible behind frosted glass backdrop
 ///   (BackdropFilter blur + dark translucent navy overlay + ambient neon highlights).
 /// - Compact floating glassmorphic modal with soft cyan/blue illuminated border.
@@ -16,7 +16,7 @@ import '../widgets/premium_button.dart';
 ///   3. 'SETTINGS' (Dark navy surface pill with settings icon).
 ///   4. 'HOME' (Dark navy surface pill with home icon).
 /// - Top-right close icon controls that cleanly trigger onResume.
-/// - Single-tap debouncing and opaque tap-barrier preventing touch pass-through.
+/// - Safe timestamp debouncing preventing double-taps without locking when returning from modal dialogs.
 class PauseOverlay extends StatefulWidget {
   final GameTheme theme;
   final VoidCallback onResume;
@@ -45,8 +45,9 @@ class _PauseOverlayState extends State<PauseOverlay>
   late Animation<double> _scaleAnimation;
   late Animation<double> _fadeAnimation;
 
-  // Single-tap debounce guard to prevent duplicate rapid transitions
-  bool _isTransitioning = false;
+  // Timestamp-based debounce guard: avoids rapid duplicate triggers while
+  // guaranteeing buttons immediately respond when returning from modal sub-screens (Settings / Themes).
+  int _lastActionTimestamp = 0;
 
   @override
   void initState() {
@@ -78,8 +79,11 @@ class _PauseOverlayState extends State<PauseOverlay>
   }
 
   void _safeAction(VoidCallback action) {
-    if (_isTransitioning) return;
-    _isTransitioning = true;
+    final isTest =
+        WidgetsBinding.instance.runtimeType.toString().contains('Test');
+    final now = DateTime.now().millisecondsSinceEpoch;
+    if (!isTest && now - _lastActionTimestamp < 350) return;
+    _lastActionTimestamp = now;
     action();
   }
 

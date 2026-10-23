@@ -186,7 +186,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
         opaque: false,
         barrierDismissible: true,
         barrierColor: Colors.black.withValues(alpha: 0.70),
-        pageBuilder: (context, animation, secondaryAnimation) {
+        pageBuilder: (routeContext, animation, secondaryAnimation) {
           final isReduced = widget.settings.reducedMotion;
           final content = SettingsScreen(
             theme: widget.theme,
@@ -198,7 +198,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
               }
             },
             onDismiss: () {
-              Navigator.of(context).pop();
+              Navigator.of(routeContext).pop();
             },
             onOpenThemes: () {
               // Allows modal theme browsing directly from pause menu without breaking session

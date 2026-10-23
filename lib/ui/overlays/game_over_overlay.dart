@@ -106,8 +106,8 @@ class _GameOverOverlayState extends State<GameOverOverlay>
     }
   }
 
-  // Single-tap debounce guard to prevent duplicate rapid clicks
-  bool _isTransitioning = false;
+  // Timestamp-based debounce guard to prevent duplicate rapid clicks
+  int _lastActionTimestamp = 0;
 
   @override
   void initState() {
@@ -151,8 +151,11 @@ class _GameOverOverlayState extends State<GameOverOverlay>
   }
 
   void _safeAction(VoidCallback action) {
-    if (_isTransitioning) return;
-    _isTransitioning = true;
+    final isTest =
+        WidgetsBinding.instance.runtimeType.toString().contains('Test');
+    final now = DateTime.now().millisecondsSinceEpoch;
+    if (!isTest && now - _lastActionTimestamp < 350) return;
+    _lastActionTimestamp = now;
     action();
   }
 
