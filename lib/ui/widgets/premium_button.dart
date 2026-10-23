@@ -127,13 +127,19 @@ class _PremiumButtonState extends State<PremiumButton>
         ],
       );
     } else {
+      final Color bgTop = widget.customAccent != null
+          ? widget.customAccent!.withValues(alpha: 0.16)
+          : effectiveTheme.surfaceElevated;
+      final Color bgBottom = widget.customAccent != null
+          ? widget.customAccent!.withValues(alpha: 0.08)
+          : effectiveTheme.surface;
       // Dark elevated pill button
       gradient = LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
         colors: [
-          effectiveTheme.surfaceElevated,
-          effectiveTheme.surface,
+          bgTop,
+          bgBottom,
         ],
       );
     }
@@ -152,8 +158,10 @@ class _PremiumButtonState extends State<PremiumButton>
       );
     } else {
       border = Border.all(
-        color: Colors.white.withValues(alpha: 0.12),
-        width: 1.0,
+        color: widget.customAccent != null
+            ? widget.customAccent!.withValues(alpha: 0.45)
+            : Colors.white.withValues(alpha: 0.12),
+        width: widget.customAccent != null ? 1.2 : 1.0,
       );
     }
 
@@ -177,28 +185,6 @@ class _PremiumButtonState extends State<PremiumButton>
         ),
       ];
     } else {
-      // Dark elevated pill button (or accented if customAccent provided)
-      final Color bgTop = widget.customAccent != null
-          ? widget.customAccent!.withValues(alpha: 0.16)
-          : effectiveTheme.surfaceElevated;
-      final Color bgBottom = widget.customAccent != null
-          ? widget.customAccent!.withValues(alpha: 0.08)
-          : effectiveTheme.surface;
-
-      gradient = LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [
-          bgTop,
-          bgBottom,
-        ],
-      );
-      border = Border.all(
-        color: widget.customAccent != null
-            ? widget.customAccent!.withValues(alpha: 0.45)
-            : Colors.white.withValues(alpha: 0.12),
-        width: widget.customAccent != null ? 1.2 : 1.0,
-      );
       shadows = [
         BoxShadow(
           color: widget.customAccent != null

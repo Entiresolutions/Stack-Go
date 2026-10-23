@@ -49,7 +49,6 @@ class _GameOverOverlayState extends State<GameOverOverlay>
   late Animation<double> _scaleAnimation;
   late Animation<double> _fadeAnimation;
   late Animation<int> _scoreCountAnimation;
-  bool _isHomePressed = false;
   bool _isLoadingAd = false;
   String? _adErrorMessage;
 
@@ -547,9 +546,8 @@ class _GameOverOverlayState extends State<GameOverOverlay>
             ),
           ),
         ),
-      ),
-    ],
-  );
+      ],
+    );
   }
 }
 

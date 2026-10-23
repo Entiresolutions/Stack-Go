@@ -246,7 +246,6 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
       ),
     );
   }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -370,9 +369,6 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                     ),
                   ],
                 ),
-              ),
-            ),
-          ),
               ),
             ),
           ),
