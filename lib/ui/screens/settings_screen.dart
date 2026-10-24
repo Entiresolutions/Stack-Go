@@ -4,6 +4,7 @@ import '../../models/game_settings.dart';
 import '../../services/feedback_service.dart';
 import '../../services/music_service.dart';
 import '../../services/sound_synthesizer.dart';
+import '../../services/ad_service.dart';
 import '../widgets/premium_button.dart';
 
 /// Phase 6: Production Settings Screen
@@ -162,9 +163,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 haptics: false,
                               );
                             }
+                            AdService.instance.showInterstitialAd(onComplete: () {});
                           },
                           onVolumeChanged: (val) {
                             _updateSettings(soundVolume: val);
+                          },
+                          onVolumeChangeEnd: (val) {
+                            AdService.instance.showInterstitialAd(onComplete: () {});
                           },
                         ),
                         const SizedBox(height: 12),
@@ -177,9 +182,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           volume: _musicVolume,
                           onToggleChanged: (val) {
                             _updateSettings(music: val);
+                            AdService.instance.showInterstitialAd(onComplete: () {});
                           },
                           onVolumeChanged: (val) {
                             _updateSettings(musicVolume: val);
+                          },
+                          onVolumeChangeEnd: (val) {
+                            AdService.instance.showInterstitialAd(onComplete: () {});
                           },
                         ),
                         const SizedBox(height: 12),
@@ -197,6 +206,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 sound: false,
                               );
                             }
+                            AdService.instance.showInterstitialAd(onComplete: () {});
                           },
                         ),
                         const SizedBox(height: 12),
@@ -206,7 +216,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           icon: Icons.nightlight_round,
                           title: 'Reduced Motion',
                           value: _reducedMotion,
-                          onChanged: (val) => _updateSettings(motion: val),
+                          onChanged: (val) {
+                            _updateSettings(motion: val);
+                            AdService.instance.showInterstitialAd(onComplete: () {});
+                          },
                         ),
                         const SizedBox(height: 32),
 
@@ -229,7 +242,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           onTap: () {
                             FeedbackService.triggerButtonTap();
                             if (widget.onOpenThemes != null) {
-                              widget.onOpenThemes!();
+                              AdService.instance.showInterstitialAd(
+                                onComplete: widget.onOpenThemes!,
+                              );
                             }
                           },
                           behavior: HitTestBehavior.opaque,
@@ -348,6 +363,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required double volume,
     required ValueChanged<bool> onToggleChanged,
     required ValueChanged<double> onVolumeChanged,
+    ValueChanged<double>? onVolumeChangeEnd,
   }) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -472,6 +488,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               }
                               onVolumeChanged(val);
                             },
+                            onChangeEnd: onVolumeChangeEnd,
                           ),
                         ),
                       ),

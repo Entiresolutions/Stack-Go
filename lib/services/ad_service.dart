@@ -11,9 +11,15 @@ class AdService {
   AdService._();
 
   /// User's AdMob Ad Unit IDs from dashboard
-  static const String adUnitId = 'ca-app-pub-3794659976212193/3368291483';
+  static const String appOpenAdUnitId =
+      'ca-app-pub-3794659976212193/3368291483';
+  static const String interstitialAdUnitId =
+      'ca-app-pub-3794659976212193/5028771792';
   static const String rewardedAdUnitId =
       'ca-app-pub-3794659976212193/9929744688';
+
+  /// Backward-compatible alias
+  static const String adUnitId = appOpenAdUnitId;
 
   /// Standard Google Test Ad Unit IDs (used as backup if new ad unit is still propagating)
   static const String testAppOpenAdUnitId =
@@ -25,6 +31,7 @@ class AdService {
 
   bool _isInitialized = false;
   bool _isLoading = false;
+  bool _isLoadingInterstitial = false;
   bool _isLoadingRewarded = false;
   bool _isShowingAd = false;
   AppOpenAd? _appOpenAd;
@@ -33,6 +40,7 @@ class AdService {
 
   bool get isMobile => !kIsWeb && (Platform.isAndroid || Platform.isIOS);
   bool get isAdReady => _appOpenAd != null || _interstitialAd != null;
+  bool get isInterstitialAdReady => _interstitialAd != null;
   bool get isRewardedAdReady => _rewardedAd != null;
 
   /// Initializes the Google Mobile Ads SDK on supported platforms
@@ -43,6 +51,7 @@ class AdService {
     try {
       await MobileAds.instance.initialize();
       preloadAd();
+      preloadInterstitialAd();
       preloadRewardedAd();
     } catch (e) {
       if (kDebugMode) {
@@ -58,7 +67,7 @@ class AdService {
 
     // First attempt to load with the user's configured Ad Unit ID
     _loadAppOpenAd(
-      unitId: adUnitId,
+      unitId: appOpenAdUnitId,
       onSuccess: (ad) {
         _appOpenAd = ad;
         _isLoading = false;
@@ -66,7 +75,7 @@ class AdService {
       onFailure: () {
         // Fallback 1: Try Interstitial with the user's unit ID
         _loadInterstitialAd(
-          unitId: adUnitId,
+          unitId: interstitialAdUnitId,
           onSuccess: (ad) {
             _interstitialAd = ad;
             _isLoading = false;
@@ -89,6 +98,36 @@ class AdService {
             }
           },
         );
+      },
+    );
+  }
+
+  /// Preloads an interstitial ad using ca-app-pub-3794659976212193/5028771792
+  void preloadInterstitialAd() {
+    if (!isMobile || isInterstitialAdReady || _isLoadingInterstitial) return;
+    _isLoadingInterstitial = true;
+
+    _loadInterstitialAd(
+      unitId: interstitialAdUnitId,
+      onSuccess: (ad) {
+        _interstitialAd = ad;
+        _isLoadingInterstitial = false;
+      },
+      onFailure: () {
+        if (kDebugMode) {
+          _loadInterstitialAd(
+            unitId: testInterstitialAdUnitId,
+            onSuccess: (ad) {
+              _interstitialAd = ad;
+              _isLoadingInterstitial = false;
+            },
+            onFailure: () {
+              _isLoadingInterstitial = false;
+            },
+          );
+        } else {
+          _isLoadingInterstitial = false;
+        }
       },
     );
   }
@@ -199,10 +238,77 @@ class AdService {
     );
   }
 
+  /// Shows interstitial ad for Settings interactions, Theme changes, and Pause menu actions.
+  /// Uses unit ID: ca-app-pub-3794659976212193/5028771792
+  /// Calls [onComplete] once the ad is closed or if no ad is available.
+  Future<void> showInterstitialAd({required VoidCallback onComplete}) async {
+    if (!isMobile) {
+      onComplete();
+      return;
+    }
+
+    if (_isShowingAd) {
+      onComplete();
+      return;
+    }
+
+    if (_interstitialAd != null) {
+      _showInterstitialAd(onComplete);
+      return;
+    }
+
+    // Quick-load attempt if not preloaded (with 2.0s safety timeout)
+    final completer = Completer<void>();
+    bool handled = false;
+
+    void finish() {
+      if (!handled) {
+        handled = true;
+        if (!completer.isCompleted) completer.complete();
+        onComplete();
+      }
+    }
+
+    final timer = Timer(const Duration(milliseconds: 2000), finish);
+
+    _loadInterstitialAd(
+      unitId: interstitialAdUnitId,
+      onSuccess: (ad) {
+        timer.cancel();
+        _interstitialAd = ad;
+        if (!handled) {
+          _showInterstitialAd(finish);
+        }
+      },
+      onFailure: () {
+        if (kDebugMode) {
+          _loadInterstitialAd(
+            unitId: testInterstitialAdUnitId,
+            onSuccess: (ad) {
+              timer.cancel();
+              _interstitialAd = ad;
+              if (!handled) {
+                _showInterstitialAd(finish);
+              }
+            },
+            onFailure: () {
+              timer.cancel();
+              finish();
+            },
+          );
+        } else {
+          timer.cancel();
+          finish();
+        }
+      },
+    );
+
+    await completer.future;
+  }
+
   /// Shows full-screen ad (e.g. before starting the game or when returning Home from Game Over).
   /// Calls [onComplete] once the ad is closed, dismissed, or if no ad is available.
   Future<void> showAd({required VoidCallback onComplete}) async {
-    // If on Desktop / Web or not mobile, immediately proceed
     if (!isMobile) {
       onComplete();
       return;
@@ -212,14 +318,15 @@ class AdService {
       return;
     }
 
-    // If ad is ready, display it
-    if (_appOpenAd != null) {
-      _showAppOpenAd(onComplete);
+    // If interstitial is ready, prefer showing interstitial
+    if (_interstitialAd != null) {
+      _showInterstitialAd(onComplete);
       return;
     }
 
-    if (_interstitialAd != null) {
-      _showInterstitialAd(onComplete);
+    // If app open is ready, display it
+    if (_appOpenAd != null) {
+      _showAppOpenAd(onComplete);
       return;
     }
 
@@ -235,21 +342,33 @@ class AdService {
       }
     }
 
-    // Max 2.5s wait so user doesn't get stuck on slow network
-    final timer = Timer(const Duration(milliseconds: 2500), finish);
+    // Max 2.0s wait so user doesn't get stuck on slow network
+    final timer = Timer(const Duration(milliseconds: 2000), finish);
 
-    _loadAppOpenAd(
-      unitId: adUnitId,
+    _loadInterstitialAd(
+      unitId: interstitialAdUnitId,
       onSuccess: (ad) {
         timer.cancel();
-        _appOpenAd = ad;
+        _interstitialAd = ad;
         if (!handled) {
-          _showAppOpenAd(finish);
+          _showInterstitialAd(finish);
         }
       },
       onFailure: () {
-        timer.cancel();
-        finish();
+        _loadAppOpenAd(
+          unitId: appOpenAdUnitId,
+          onSuccess: (ad) {
+            timer.cancel();
+            _appOpenAd = ad;
+            if (!handled) {
+              _showAppOpenAd(finish);
+            }
+          },
+          onFailure: () {
+            timer.cancel();
+            finish();
+          },
+        );
       },
     );
 
@@ -410,7 +529,7 @@ class AdService {
         MusicService.instance
             .onAppLifecycleStateChanged(AppLifecycleState.resumed);
         onDismissed();
-        preloadAd(); // preload for next time
+        preloadInterstitialAd(); // preload for next time
       },
       onAdFailedToShowFullScreenContent: (ad, error) {
         _isShowingAd = false;
@@ -418,7 +537,7 @@ class AdService {
         MusicService.instance
             .onAppLifecycleStateChanged(AppLifecycleState.resumed);
         onDismissed();
-        preloadAd();
+        preloadInterstitialAd();
       },
     );
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/game_theme.dart';
+import '../../services/ad_service.dart';
 import '../widgets/premium_button.dart';
 import '../widgets/theme_card.dart';
 
@@ -8,8 +9,7 @@ import '../widgets/theme_card.dart';
 /// Faithfully reconstructs Reference Screen 7:
 /// - Header: Circular glass back navigation button, centered 'CHOOSE YOUR VIBE' title,
 ///   and 'Make every stack your own.' subtitle.
-/// - 2x2 Gallery Grid: Four distinct theme cards (Midnight Neon, Aurora, Sunset Pulse, Arctic Glow)
-///   showcasing 3D isometric glowing previews on elevated cyber surfaces.
+/// - 2x2 Gallery Grid: Distinct theme cards showcasing 3D isometric glowing previews on elevated cyber surfaces.
 /// - Selected state: Bright illuminated electric cyan border with neon drop glow and checkmark badge.
 /// - Unlocked state: Seamless immediate tap selection with persistent save.
 /// - Locked state: Disabled styling, lock icon, and 'Unlock at Best Score X' condition.
@@ -122,7 +122,12 @@ class ThemesScreen extends StatelessWidget {
                             isSelected: isSelected,
                             isUnlocked: isUnlocked,
                             reducedMotion: reducedMotion,
-                            onSelect: () => onSelectTheme(item),
+                            onSelect: () {
+                              if (isSelected) return;
+                              AdService.instance.showInterstitialAd(
+                                onComplete: () => onSelectTheme(item),
+                              );
+                            },
                           );
                         },
                       );
