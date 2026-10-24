@@ -246,15 +246,6 @@ class HomeScreen extends StatelessWidget {
             ],
           ),
         ),
-
-        // Settings Icon Button matching Reference Screen 2
-        GlassIconButton(
-          icon: Icons.settings_rounded,
-          size: 44,
-          iconSize: 20,
-          reducedMotion: settings?.reducedMotion ?? false,
-          onTap: onSettings,
-        ),
       ],
     );
   }

@@ -15,7 +15,6 @@ import '../widgets/premium_button.dart';
 ///   2. 'RESTART' (Dark navy surface pill with restart icon).
 ///   3. 'SETTINGS' (Dark navy surface pill with settings icon).
 ///   4. 'HOME' (Dark navy surface pill with home icon).
-/// - Top-right close icon controls that cleanly trigger onResume.
 /// - Safe timestamp debouncing preventing double-taps without locking when returning from modal dialogs.
 class PauseOverlay extends StatefulWidget {
   final GameTheme theme;
@@ -166,24 +165,7 @@ class _PauseOverlayState extends State<PauseOverlay>
           ),
         ),
 
-        // 3. Screen-Level Top-Right Close Button (triggers onResume)
-        SafeArea(
-          child: Align(
-            alignment: Alignment.topRight,
-            child: Padding(
-              padding: const EdgeInsets.only(top: 14, right: 20),
-              child: GlassIconButton(
-                icon: Icons.close_rounded,
-                size: 38,
-                iconSize: 20,
-                reducedMotion: widget.reducedMotion,
-                onTap: () => _safeAction(widget.onResume),
-              ),
-            ),
-          ),
-        ),
-
-        // 4. Centered Compact Floating Glass Modal Window
+        // 3. Centered Compact Floating Glass Modal Window
         SafeArea(
           child: Center(
             child: SingleChildScrollView(
@@ -230,125 +212,106 @@ class _PauseOverlayState extends State<PauseOverlay>
                         ),
                       ],
                     ),
-                    child: Stack(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        // Subtle Corner Close Icon inside the card header
-                        Positioned(
-                          top: 0,
-                          right: 0,
-                          child: GestureDetector(
-                            onTap: () => _safeAction(widget.onResume),
-                            behavior: HitTestBehavior.opaque,
-                            child: Icon(
-                              Icons.close_rounded,
-                              color: Colors.white.withValues(alpha: 0.65),
-                              size: 18,
-                            ),
+                        const SizedBox(height: 4),
+
+                        // Heading: PAUSED
+                        const Text(
+                          'PAUSED',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 22,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 2.4,
                           ),
                         ),
+                        const SizedBox(height: 4),
 
-                        Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const SizedBox(height: 4),
-
-                            // Heading: PAUSED
-                            const Text(
-                              'PAUSED',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 22,
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: 2.4,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-
-                            // Subtitle: Your tower is waiting.
-                            const Text(
-                              'Your tower is waiting.',
-                              style: TextStyle(
-                                color: Color(0xFFA8C4E4),
-                                fontSize: 13,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            const SizedBox(height: 22),
-
-                            // 1. PRIMARY ACTION: ▶ RESUME (Cyan to Violet Gradient Pill)
-                            PremiumButton(
-                              label: 'RESUME',
-                              icon: Icons.play_arrow_rounded,
-                              isPrimary: true,
-                              theme: theme,
-                              reducedMotion: widget.reducedMotion,
-                              customGradient: theme.resumeButtonGradient,
-                              customShadows: [
-                                BoxShadow(
-                                  color: const Color(0xFF20BAFF)
-                                      .withValues(alpha: 0.40),
-                                  blurRadius: 18,
-                                  offset: const Offset(-2, 3),
-                                ),
-                                BoxShadow(
-                                  color: const Color(0xFF9B50FF)
-                                      .withValues(alpha: 0.40),
-                                  blurRadius: 20,
-                                  offset: const Offset(2, 3),
-                                ),
-                              ],
-                              height: 50,
-                              fontSize: 15,
-                              onTap: () => _safeAction(widget.onResume),
-                            ),
-                            const SizedBox(height: 10),
-
-                            // 2. SECONDARY ACTION: ↺ RESTART
-                            PremiumButton(
-                              label: 'RESTART',
-                              icon: Icons.refresh_rounded,
-                              theme: theme,
-                              reducedMotion: widget.reducedMotion,
-                              customGradient: secondaryGradient,
-                              customBorder: secondaryBorder,
-                              customShadows: secondaryShadows,
-                              height: 46,
-                              fontSize: 14,
-                              onTap: () => _safeAction(widget.onRestart),
-                            ),
-                            const SizedBox(height: 10),
-
-                            // 3. SECONDARY ACTION: ⚙ SETTINGS
-                            PremiumButton(
-                              label: 'SETTINGS',
-                              icon: Icons.settings_rounded,
-                              theme: theme,
-                              reducedMotion: widget.reducedMotion,
-                              customGradient: secondaryGradient,
-                              customBorder: secondaryBorder,
-                              customShadows: secondaryShadows,
-                              height: 46,
-                              fontSize: 14,
-                              onTap: () => _safeAction(widget.onSettings),
-                            ),
-                            const SizedBox(height: 10),
-
-                            // 4. SECONDARY ACTION: ⌂ HOME
-                            PremiumButton(
-                              label: 'HOME',
-                              icon: Icons.home_rounded,
-                              theme: theme,
-                              reducedMotion: widget.reducedMotion,
-                              customGradient: secondaryGradient,
-                              customBorder: secondaryBorder,
-                              customShadows: secondaryShadows,
-                              height: 46,
-                              fontSize: 14,
-                              onTap: () => _safeAction(widget.onHome),
-                            ),
-                            const SizedBox(height: 2),
-                          ],
+                        // Subtitle: Your tower is waiting.
+                        const Text(
+                          'Your tower is waiting.',
+                          style: TextStyle(
+                            color: Color(0xFFA8C4E4),
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
+                        const SizedBox(height: 22),
+
+                        // 1. PRIMARY ACTION: ▶ RESUME (Cyan to Violet Gradient Pill)
+                        PremiumButton(
+                          label: 'RESUME',
+                          icon: Icons.play_arrow_rounded,
+                          isPrimary: true,
+                          theme: theme,
+                          reducedMotion: widget.reducedMotion,
+                          customGradient: theme.resumeButtonGradient,
+                          customShadows: [
+                            BoxShadow(
+                              color: const Color(0xFF20BAFF)
+                                  .withValues(alpha: 0.40),
+                              blurRadius: 18,
+                              offset: const Offset(-2, 3),
+                            ),
+                            BoxShadow(
+                              color: const Color(0xFF9B50FF)
+                                  .withValues(alpha: 0.40),
+                              blurRadius: 20,
+                              offset: const Offset(2, 3),
+                            ),
+                          ],
+                          height: 50,
+                          fontSize: 15,
+                          onTap: () => _safeAction(widget.onResume),
+                        ),
+                        const SizedBox(height: 10),
+
+                        // 2. SECONDARY ACTION: ↺ RESTART
+                        PremiumButton(
+                          label: 'RESTART',
+                          icon: Icons.refresh_rounded,
+                          theme: theme,
+                          reducedMotion: widget.reducedMotion,
+                          customGradient: secondaryGradient,
+                          customBorder: secondaryBorder,
+                          customShadows: secondaryShadows,
+                          height: 46,
+                          fontSize: 14,
+                          onTap: () => _safeAction(widget.onRestart),
+                        ),
+                        const SizedBox(height: 10),
+
+                        // 3. SECONDARY ACTION: ⚙ SETTINGS
+                        PremiumButton(
+                          label: 'SETTINGS',
+                          icon: Icons.settings_rounded,
+                          theme: theme,
+                          reducedMotion: widget.reducedMotion,
+                          customGradient: secondaryGradient,
+                          customBorder: secondaryBorder,
+                          customShadows: secondaryShadows,
+                          height: 46,
+                          fontSize: 14,
+                          onTap: () => _safeAction(widget.onSettings),
+                        ),
+                        const SizedBox(height: 10),
+
+                        // 4. SECONDARY ACTION: ⌂ HOME
+                        PremiumButton(
+                          label: 'HOME',
+                          icon: Icons.home_rounded,
+                          theme: theme,
+                          reducedMotion: widget.reducedMotion,
+                          customGradient: secondaryGradient,
+                          customBorder: secondaryBorder,
+                          customShadows: secondaryShadows,
+                          height: 46,
+                          fontSize: 14,
+                          onTap: () => _safeAction(widget.onHome),
+                        ),
+                        const SizedBox(height: 2),
                       ],
                     ),
                   ),
