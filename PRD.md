@@ -1,6 +1,6 @@
 # Product Requirements Document (PRD)
 
-**Project Name:** Stack Pulse  
+**Project Name:** Stack Go  
 **Document Version:** 1.0.0  
 **Status:** Approved / In Production  
 **Platforms:** Android, Windows Desktop, Web (PWA/CanvasKit)  
@@ -11,7 +11,7 @@
 ## 1. Executive Summary & Vision
 
 ### 1.1 Product Vision
-**Stack Pulse** is a hyper-polished, premium minimalist 2D precision block-stacking arcade game built using Flutter and the Flame Engine. Designed with an ultra-clean cyber-neon aesthetic, tactile haptics, and dynamically generated procedural audio, Stack Pulse delivers an addictive, reflex-testing gaming experience with seamless monetization through non-intrusive AdMob interstitials and user-rewarded revives, paired with an offline-resilient architecture and zero input latency.
+**Stack Go** is a hyper-polished, premium minimalist 2D precision block-stacking arcade game built using Flutter and the Flame Engine. Designed with an ultra-clean cyber-neon aesthetic, tactile haptics, and dynamically generated procedural audio, Stack Go delivers an addictive, reflex-testing gaming experience with seamless monetization through non-intrusive AdMob interstitials and user-rewarded revives, paired with an offline-resilient architecture and zero input latency.
 
 ### 1.2 Core Value Proposition
 - **Pure Skill & Precision:** Clean, deterministic 1D interval slicing that rewards millisecond timing and exact alignment.

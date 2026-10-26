@@ -1,6 +1,6 @@
-# STACK PULSE — Flutter + Flame Cross-Platform Game
+# STACK GO — Flutter + Flame Cross-Platform Game
 
-**Stack Pulse** is a complete, polished, 2D minimalist precision block-stacking arcade game built with **Flutter** and the **Flame Engine**. Playable seamlessly across **Android, Windows Desktop, and Web**.
+**Stack Go** is a complete, polished, 2D minimalist precision block-stacking arcade game built with **Flutter** and the **Flame Engine**. Playable seamlessly across **Android, Windows Desktop, and Web**.
 
 ## Features
 - **Clean 2D Precision Gameplay**: Frame-rate independent horizontal interval intersection cutting without physics collider jitter.

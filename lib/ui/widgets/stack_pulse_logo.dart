@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 
-class StackPulseLogo extends StatelessWidget {
+class StackGoLogo extends StatelessWidget {
   final double scale;
   final bool showText;
   final bool stackedText;
   final bool showHalo;
 
-  const StackPulseLogo({
+  const StackGoLogo({
     super.key,
     this.scale = 1.0,
     this.showText = true,
@@ -16,60 +16,76 @@ class StackPulseLogo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final pills = Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        _buildPill(
-          width: 24 * scale,
-          height: 7.0 * scale,
-          gradient: const LinearGradient(
-            colors: [Color(0xFF55E7FF), Color(0xFF13D9FF)],
-          ),
-          shadowColor: const Color(0xFF13D9FF),
-        ),
-        SizedBox(height: 3.5 * scale),
-        _buildPill(
-          width: 34 * scale,
-          height: 7.0 * scale,
-          gradient: const LinearGradient(
-            colors: [Color(0xFF6EA8FE), Color(0xFF347BFF)],
-          ),
-          shadowColor: const Color(0xFF347BFF),
-        ),
-        SizedBox(height: 3.5 * scale),
-        _buildPill(
-          width: 44 * scale,
-          height: 7.0 * scale,
-          gradient: const LinearGradient(
-            colors: [Color(0xFFB485FF), Color(0xFF9658FF)],
-          ),
-          shadowColor: const Color(0xFF9658FF),
-        ),
-      ],
+    final logoImage = ClipRRect(
+      borderRadius: BorderRadius.circular(14 * scale),
+      child: Image.asset(
+        'assets/stack_go_logo.png',
+        width: 58 * scale,
+        height: 58 * scale,
+        fit: BoxFit.contain,
+        errorBuilder: (context, error, stackTrace) {
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildPill(
+                width: 24 * scale,
+                height: 7.0 * scale,
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF55E7FF), Color(0xFF13D9FF)],
+                ),
+                shadowColor: const Color(0xFF13D9FF),
+              ),
+              SizedBox(height: 3.5 * scale),
+              _buildPill(
+                width: 34 * scale,
+                height: 7.0 * scale,
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF6EA8FE), Color(0xFF347BFF)],
+                ),
+                shadowColor: const Color(0xFF347BFF),
+              ),
+              SizedBox(height: 3.5 * scale),
+              _buildPill(
+                width: 44 * scale,
+                height: 7.0 * scale,
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFB485FF), Color(0xFF9658FF)],
+                ),
+                shadowColor: const Color(0xFF9658FF),
+              ),
+            ],
+          );
+        },
+      ),
     );
 
     final emblem = showHalo
         ? Container(
-            width: 66 * scale,
-            height: 66 * scale,
+            width: 70 * scale,
+            height: 70 * scale,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: const Color(0xFF0C1B36).withValues(alpha: 0.65),
               border: Border.all(
-                color: const Color(0xFF13D9FF).withValues(alpha: 0.22),
+                color: const Color(0xFF13D9FF).withValues(alpha: 0.25),
                 width: 1.0,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF13D9FF).withValues(alpha: 0.18),
-                  blurRadius: 18 * scale,
-                  spreadRadius: 1,
+                  color: const Color(0xFF13D9FF).withValues(alpha: 0.28),
+                  blurRadius: 20 * scale,
+                  spreadRadius: 2,
+                ),
+                BoxShadow(
+                  color: const Color(0xFF9658FF).withValues(alpha: 0.20),
+                  blurRadius: 24 * scale,
+                  spreadRadius: 3,
                 ),
               ],
             ),
-            child: Center(child: pills),
+            child: Center(child: logoImage),
           )
-        : pills;
+        : logoImage;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -91,19 +107,19 @@ class StackPulseLogo extends StatelessWidget {
             ),
             SizedBox(height: 3 * scale),
             Text(
-              'PULSE',
+              'GO',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: Colors.white,
-                fontSize: 26 * scale,
+                color: const Color(0xFF13D9FF),
+                fontSize: 28 * scale,
                 fontWeight: FontWeight.w900,
-                letterSpacing: 4.5 * scale,
+                letterSpacing: 5.0 * scale,
                 height: 1.0,
               ),
             ),
           ] else ...[
             Text(
-              'STACK PULSE',
+              'STACK GO',
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: Colors.white,
@@ -169,3 +185,6 @@ class StackPulseLogo extends StatelessWidget {
     );
   }
 }
+
+/// Backward compatibility alias
+typedef StackPulseLogo = StackGoLogo;

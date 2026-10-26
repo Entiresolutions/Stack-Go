@@ -228,13 +228,13 @@ class _SplashScreenState extends State<SplashScreen>
                             ),
                             SizedBox(height: 2),
                             Text(
-                              'PULSE',
+                              'GO',
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 color: Color(0xFF13D9FF), // Electric Cyan
-                                fontSize: 28,
+                                fontSize: 32,
                                 fontWeight: FontWeight.w900,
-                                letterSpacing: 5.0,
+                                letterSpacing: 6.0,
                                 height: 1.05,
                               ),
                             ),
@@ -322,36 +322,66 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Widget _buildEmblem() {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        _buildPill(
-          width: 32,
-          height: 9,
-          gradient: const LinearGradient(
-            colors: [Color(0xFF55E7FF), Color(0xFF13D9FF)],
+    return Container(
+      width: 72,
+      height: 72,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF13D9FF).withValues(alpha: 0.35),
+            blurRadius: 24,
+            spreadRadius: 2,
           ),
-          shadowColor: const Color(0xFF13D9FF),
-        ),
-        const SizedBox(height: 4.5),
-        _buildPill(
-          width: 46,
-          height: 9,
-          gradient: const LinearGradient(
-            colors: [Color(0xFF6EA8FE), Color(0xFF347BFF)],
+          BoxShadow(
+            color: const Color(0xFF9658FF).withValues(alpha: 0.25),
+            blurRadius: 30,
+            spreadRadius: 4,
           ),
-          shadowColor: const Color(0xFF347BFF),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(18),
+        child: Image.asset(
+          'assets/stack_go_logo.png',
+          width: 72,
+          height: 72,
+          fit: BoxFit.contain,
+          errorBuilder: (context, error, stackTrace) {
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildPill(
+                  width: 32,
+                  height: 9,
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF55E7FF), Color(0xFF13D9FF)],
+                  ),
+                  shadowColor: const Color(0xFF13D9FF),
+                ),
+                const SizedBox(height: 4.5),
+                _buildPill(
+                  width: 46,
+                  height: 9,
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF6EA8FE), Color(0xFF347BFF)],
+                  ),
+                  shadowColor: const Color(0xFF347BFF),
+                ),
+                const SizedBox(height: 4.5),
+                _buildPill(
+                  width: 60,
+                  height: 9,
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFB485FF), Color(0xFF9658FF)],
+                  ),
+                  shadowColor: const Color(0xFF9658FF),
+                ),
+              ],
+            );
+          },
         ),
-        const SizedBox(height: 4.5),
-        _buildPill(
-          width: 60,
-          height: 9,
-          gradient: const LinearGradient(
-            colors: [Color(0xFFB485FF), Color(0xFF9658FF)],
-          ),
-          shadowColor: const Color(0xFF9658FF),
-        ),
-      ],
+      ),
     );
   }
 

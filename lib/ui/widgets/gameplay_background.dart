@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import '../../core/game_theme.dart';
 
-/// STACK PULSE — PREMIUM ANIMATED THEME ENVIRONMENTS
+/// STACK GO — PREMIUM ANIMATED THEME ENVIRONMENTS
 ///
 /// Features a 4-layer living background architecture:
 /// - Layer 1: High-fidelity static theme artwork with smooth crossfade

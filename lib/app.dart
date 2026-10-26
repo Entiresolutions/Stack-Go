@@ -164,7 +164,7 @@ class _StackPulseAppState extends State<StackPulseApp>
     final isReducedMotion = _settings.reducedMotion;
 
     return MaterialApp(
-      title: 'Stack Pulse',
+      title: 'Stack Go',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         fontFamily: 'Plus Jakarta Sans',

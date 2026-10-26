@@ -19,7 +19,7 @@ void main() {
     await tester.pumpWidget(const StackPulseApp());
     await tester.pumpAndSettle();
 
-    expect(find.text('STACK PULSE'), findsOneWidget);
+    expect(find.text('STACK GO'), findsOneWidget);
     expect(find.text('PLAY'), findsOneWidget);
     expect(find.text('THEMES'), findsOneWidget);
     expect(find.text('HOW TO PLAY'), findsOneWidget);
@@ -144,7 +144,7 @@ void main() {
 
     // Verify branding and logo exist
     expect(find.text('STACK'), findsOneWidget);
-    expect(find.text('PULSE'), findsOneWidget);
+    expect(find.text('GO'), findsOneWidget);
     expect(find.text('ONE TAP. PERFECT STACK.'), findsOneWidget);
 
     // Verify ambient CustomPaint layer is mounted
@@ -173,7 +173,7 @@ void main() {
 
     // Verify branding remains perfectly readable
     expect(find.text('STACK'), findsOneWidget);
-    expect(find.text('PULSE'), findsOneWidget);
+    expect(find.text('GO'), findsOneWidget);
 
     // Settle and verify callback triggers cleanly
     await tester.pumpAndSettle();

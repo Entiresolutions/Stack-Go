@@ -1,6 +1,6 @@
 # Technical Requirements Document (TRD)
 
-**Project Name:** Stack Pulse  
+**Project Name:** Stack Go  
 **Document Version:** 1.0.0  
 **Status:** Approved / In Production  
 **Target Architecture:** Flutter 3.x / Dart 3.x / Flame Engine 1.x  
@@ -64,7 +64,7 @@
 ## 2. Mathematical Models & Game Engine Algorithms
 
 ### 2.1 Pure Interval Slicing (`PlacementEngine`)
-Unlike traditional rigid-body physics engines where cutting causes collider jitter and clipping bugs, Stack Pulse evaluates block intersection using deterministic 1D interval projection on the X-axis:
+Unlike traditional rigid-body physics engines where cutting causes collider jitter and clipping bugs, Stack Go evaluates block intersection using deterministic 1D interval projection on the X-axis:
 
 Let the stationary target block be defined by horizontal interval $[P_{\text{left}}, P_{\text{right}}]$ with width $W_P = P_{\text{right}} - P_{\text{left}}$.  
 Let the moving block at the instant of player input be defined by $[M_{\text{left}}, M_{\text{right}}]$ with width $W_M = M_{\text{right}} - M_{\text{left}}$.

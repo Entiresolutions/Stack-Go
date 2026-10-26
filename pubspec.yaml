@@ -1,5 +1,5 @@
 name: stack_pulse
-description: "Stack Pulse - Premium Minimalist 2D Precision Stacking Game in Flutter & Flame"
+description: "Stack Go - Premium Minimalist 2D Precision Stacking Game in Flutter & Flame"
 publish_to: "none"
 version: 1.0.0+1
 
@@ -27,3 +27,4 @@ flutter:
     - assets/music/
     - assets/images/
     - assets/videos/
+    - assets/stack_go_logo.png

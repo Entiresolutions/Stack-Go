@@ -1,11 +1,11 @@
-# STACK PULSE — EXACT REFERENCE DESIGN SYSTEM SPECIFICATION
+# STACK GO — EXACT REFERENCE DESIGN SYSTEM SPECIFICATION
 ## Complete Visual Redesign | Flutter + Flame Mobile Arcade Architecture
 
 ---
 
 ## 1. Design Vision & Aesthetic Direction
 
-**Stack Pulse** embodies a **premium futuristic neon arcade aesthetic**, modeled with high fidelity after the 10-screen visual source of truth. The interface transitions away from flat, generic utility styling into a deeply atmospheric, tactile, and luminous arcade experience:
+**Stack Go** embodies a **premium futuristic neon arcade aesthetic**, modeled with high fidelity after the 10-screen visual source of truth. The interface transitions away from flat, generic utility styling into a deeply atmospheric, tactile, and luminous arcade experience:
 
 - **Ultra-Dark Cyber Environments**: Deepest midnight navy base canvas (`#061225`) paired with secondary oceanic navy (`#0B1B38`) and elevated cyber surfaces (`#14284A`).
 - **Electric Accent Hierarchy**: Vibrant electric cyan (`#13D9FF`) and neon blue (`#347BFF`) counter-balanced by electric purple (`#9658FF`) and neon magenta (`#F34BEA`). Accentuation is strictly intentional—reserved for actionable controls, streak feedback, and milestone rewards.
@@ -68,7 +68,7 @@ Every visual element in the application directly corresponds to one of the 10 sc
 
 ### 4.2 Complete 10-Theme Specifications & Block Palettes
 
-Stack Pulse organizes its 10 interactive themes into 3 distinct priority progression tiers. Each theme supplies 6 cycling gradient colors for gameplay blocks alongside dedicated ambient and reactive visual environments:
+Stack Go organizes its 10 interactive themes into 3 distinct priority progression tiers. Each theme supplies 6 cycling gradient colors for gameplay blocks alongside dedicated ambient and reactive visual environments:
 
 #### Priority 1 — Core Environments (Themes 1–4)
 - **1. Midnight Neon (Cyber Dimension)**
@@ -222,7 +222,7 @@ The central gameplay stacking region strictly avoids flat, dead black vertical r
 
 ### 4.5 Living Animated Environments & Layered Motion Specifications
 
-Stack Pulse features an interactive living environmental animation system across all 10 gameplay themes. Rather than simply zooming or scaling a static canvas, the architecture separates environmental presentation into 4 GPU-optimized decoupled layers:
+Stack Go features an interactive living environmental animation system across all 10 gameplay themes. Rather than simply zooming or scaling a static canvas, the architecture separates environmental presentation into 4 GPU-optimized decoupled layers:
 
 #### Layer 1: Static High-Fidelity Thematic Artwork
 - High-resolution 9:16 portrait environments rendered via `Image.asset(fit: BoxFit.cover)` with smooth crossfade `AnimatedSwitcher`.
@@ -416,7 +416,7 @@ The typography scale utilizes `Plus Jakarta Sans` (with system sans-serif fallba
   - Right: 44×44px circular glass Settings button with gear icon (`Icons.settings_rounded`).
 - **Brand Hero Stack**:
   - **Emblem Halo**: 3 rounded stacked pills (Cyan `#13D9FF`, Blue `#347BFF`, Purple `#9658FF`) enclosed inside a circular dark glass halo (`Color(0xFF0C1B36)` at `alpha: 0.65`, cyan border `alpha: 0.22`, and soft drop glow).
-  - **Game Title**: `STACK PULSE` in bold uppercase with letter spacing +4.0.
+  - **Game Title**: `STACK GO` in bold uppercase with letter spacing +4.0.
   - **Subtitle**: `ONE TAP. PERFECT STACK.` with letter spacing +1.5 in `#A8C4E4`.
   - **Hero Tower**: 4 stacked blocks rendered directly on the cyber pedestal:
     - Layer 1 (bottom): Deep Cobalt/Cyan block (`#1E60D0` to `#13D9FF`), 114px width, 20px height, 26px depth.
@@ -447,7 +447,7 @@ The typography scale utilizes `Plus Jakarta Sans` (with system sans-serif fallba
 
 ### 9.2 Dynamic Theme-Based Gameplay Environments & 10 Animated Video Backgrounds (`ThemeGameplayBackground`)
 - **Complete 10-Theme Living Video Architecture**:
-  - Every theme in Stack Pulse possesses its own high-resolution (9:16 portrait) animated video background sampled directly from its approved artwork and encoded into seamless, mobile-optimized H.264 MP4 assets in `assets/videos/`:
+  - Every theme in Stack Go possesses its own high-resolution (9:16 portrait) animated video background sampled directly from its approved artwork and encoded into seamless, mobile-optimized H.264 MP4 assets in `assets/videos/`:
     1. **Midnight Neon**: `assets/videos/gameplay_bg_midnight.mp4` (733.5 KB) — Rapidly coursing vertical neon building energy pulses (+65V), sweeping volumetric holographic sky searchlights, wet reflective street ripple waves, and floating digital cyber glyphs.
     2. **Aurora**: `assets/videos/gameplay_bg_aurora.mp4` (445.1 KB) — Undulating northern lights ribbon flow, breathing emerald/turquoise illumination shifts, and drifting valley mist.
     3. **Sunset Pulse**: `assets/videos/gameplay_bg_sunset.mp4` (582.7 KB) — Rock-solid cyber monoliths & spires, radiant golden-amber sunset horizon breathing, flowing twilight magenta/violet atmospheric sky vistas, neon energy runners racing along architectural edges, solar rim sparkle glints, drifting floor mist, and 45 floating twilight embers.

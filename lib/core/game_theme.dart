@@ -52,7 +52,7 @@ class ThemeAnimationConfig {
   });
 }
 
-/// Centralized Single Source of Truth for all Stack Pulse styling, palettes,
+/// Centralized Single Source of Truth for all Stack Go styling, palettes,
 /// semantic tokens, and visual effects across Flutter UI and Flame rendering.
 class GameTheme {
   final ThemeType type;
