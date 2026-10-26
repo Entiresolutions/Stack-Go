@@ -165,7 +165,7 @@ class _ThemeGameplayBackgroundState extends State<ThemeGameplayBackground>
           ),
 
           // -----------------------------------------------------------
-          // ATMOSPHERIC CONTRAST SCRIM (Guarantees Block Legibility)
+          // ATMOSPHERIC CONTRAST SCRIM (Theme-Aware Legibility Layer)
           // -----------------------------------------------------------
           Container(
             decoration: BoxDecoration(
@@ -173,10 +173,10 @@ class _ThemeGameplayBackgroundState extends State<ThemeGameplayBackground>
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  const Color(0xFF061225).withValues(alpha: 0.50),
+                  widget.theme.corridorBaseColor.withValues(alpha: 0.40),
                   Colors.transparent,
                   Colors.transparent,
-                  const Color(0xFF061225).withValues(alpha: 0.40),
+                  widget.theme.corridorBaseColor.withValues(alpha: 0.35),
                 ],
                 stops: const [0.0, 0.16, 0.84, 1.0],
               ),
@@ -1250,11 +1250,402 @@ class _ThemeEnvironmentPainter extends CustomPainter {
         isDiamond: true),
   ];
 
+  // -------------------------------------------------------------------------
+  // RESTRAINED CORRIDOR PARTICLES (Soft Ambient Life inside Gameplay Corridor)
+  // -------------------------------------------------------------------------
+  static const List<_EnvParticle> _midnightCorridorParticles = [
+    _EnvParticle(
+        x: 0.35,
+        y: 0.28,
+        speedX: 0.01,
+        speedY: -0.04,
+        size: 1.4,
+        maxAlpha: 0.18,
+        phase: 0.4),
+    _EnvParticle(
+        x: 0.46,
+        y: 0.52,
+        speedX: -0.01,
+        speedY: -0.05,
+        size: 1.6,
+        maxAlpha: 0.20,
+        phase: 1.2),
+    _EnvParticle(
+        x: 0.58,
+        y: 0.38,
+        speedX: 0.01,
+        speedY: -0.04,
+        size: 1.3,
+        maxAlpha: 0.16,
+        phase: 2.1),
+    _EnvParticle(
+        x: 0.65,
+        y: 0.72,
+        speedX: -0.01,
+        speedY: -0.05,
+        size: 1.5,
+        maxAlpha: 0.18,
+        phase: 0.8),
+  ];
+
+  static const List<_EnvParticle> _auroraCorridorParticles = [
+    _EnvParticle(
+        x: 0.38,
+        y: 0.25,
+        speedX: 0.01,
+        speedY: -0.03,
+        size: 1.5,
+        maxAlpha: 0.18,
+        phase: 0.6),
+    _EnvParticle(
+        x: 0.48,
+        y: 0.45,
+        speedX: -0.01,
+        speedY: -0.04,
+        size: 1.7,
+        maxAlpha: 0.20,
+        phase: 1.5),
+    _EnvParticle(
+        x: 0.56,
+        y: 0.68,
+        speedX: 0.01,
+        speedY: -0.03,
+        size: 1.4,
+        maxAlpha: 0.16,
+        phase: 2.3),
+    _EnvParticle(
+        x: 0.64,
+        y: 0.35,
+        speedX: -0.01,
+        speedY: -0.04,
+        size: 1.6,
+        maxAlpha: 0.18,
+        phase: 0.9),
+  ];
+
+  static const List<_EnvParticle> _sunsetCorridorParticles = [
+    _EnvParticle(
+        x: 0.36,
+        y: 0.30,
+        speedX: 0.01,
+        speedY: -0.04,
+        size: 1.5,
+        maxAlpha: 0.20,
+        phase: 0.3),
+    _EnvParticle(
+        x: 0.47,
+        y: 0.58,
+        speedX: -0.01,
+        speedY: -0.05,
+        size: 1.8,
+        maxAlpha: 0.22,
+        phase: 1.4),
+    _EnvParticle(
+        x: 0.55,
+        y: 0.40,
+        speedX: 0.01,
+        speedY: -0.04,
+        size: 1.4,
+        maxAlpha: 0.18,
+        phase: 2.2),
+    _EnvParticle(
+        x: 0.66,
+        y: 0.65,
+        speedX: -0.01,
+        speedY: -0.05,
+        size: 1.6,
+        maxAlpha: 0.20,
+        phase: 1.0),
+  ];
+
+  static const List<_EnvParticle> _arcticCorridorParticles = [
+    _EnvParticle(
+        x: 0.34,
+        y: 0.22,
+        speedX: 0.01,
+        speedY: 0.05,
+        size: 1.3,
+        maxAlpha: 0.18,
+        phase: 0.5,
+        isDiamond: true),
+    _EnvParticle(
+        x: 0.45,
+        y: 0.48,
+        speedX: -0.01,
+        speedY: 0.06,
+        size: 1.6,
+        maxAlpha: 0.20,
+        phase: 1.6),
+    _EnvParticle(
+        x: 0.57,
+        y: 0.32,
+        speedX: 0.01,
+        speedY: 0.05,
+        size: 1.4,
+        maxAlpha: 0.16,
+        phase: 2.4,
+        isDiamond: true),
+    _EnvParticle(
+        x: 0.65,
+        y: 0.62,
+        speedX: -0.01,
+        speedY: 0.06,
+        size: 1.5,
+        maxAlpha: 0.18,
+        phase: 0.7),
+  ];
+
+  static const List<_EnvParticle> _sakuraCorridorParticles = [
+    _EnvParticle(
+        x: 0.37,
+        y: 0.25,
+        speedX: -0.03,
+        speedY: 0.05,
+        size: 1.6,
+        maxAlpha: 0.20,
+        phase: 0.4),
+    _EnvParticle(
+        x: 0.48,
+        y: 0.50,
+        speedX: -0.02,
+        speedY: 0.04,
+        size: 1.8,
+        maxAlpha: 0.22,
+        phase: 1.7),
+    _EnvParticle(
+        x: 0.59,
+        y: 0.35,
+        speedX: -0.03,
+        speedY: 0.05,
+        size: 1.4,
+        maxAlpha: 0.18,
+        phase: 2.5),
+    _EnvParticle(
+        x: 0.63,
+        y: 0.70,
+        speedX: -0.02,
+        speedY: 0.04,
+        size: 1.7,
+        maxAlpha: 0.20,
+        phase: 0.8),
+  ];
+
+  static const List<_EnvParticle> _abyssalCorridorParticles = [
+    _EnvParticle(
+        x: 0.36,
+        y: 0.75,
+        speedX: 0.01,
+        speedY: -0.04,
+        size: 1.6,
+        maxAlpha: 0.18,
+        phase: 0.5),
+    _EnvParticle(
+        x: 0.46,
+        y: 0.55,
+        speedX: -0.01,
+        speedY: -0.05,
+        size: 1.9,
+        maxAlpha: 0.20,
+        phase: 1.8),
+    _EnvParticle(
+        x: 0.58,
+        y: 0.40,
+        speedX: 0.01,
+        speedY: -0.04,
+        size: 1.5,
+        maxAlpha: 0.16,
+        phase: 2.2),
+    _EnvParticle(
+        x: 0.64,
+        y: 0.65,
+        speedX: -0.01,
+        speedY: -0.05,
+        size: 1.8,
+        maxAlpha: 0.18,
+        phase: 1.1),
+  ];
+
+  static const List<_EnvParticle> _retroCorridorParticles = [
+    _EnvParticle(
+        x: 0.35,
+        y: 0.32,
+        speedX: 0.01,
+        speedY: -0.04,
+        size: 1.4,
+        maxAlpha: 0.18,
+        phase: 0.3,
+        isDiamond: true),
+    _EnvParticle(
+        x: 0.45,
+        y: 0.55,
+        speedX: -0.01,
+        speedY: -0.05,
+        size: 1.6,
+        maxAlpha: 0.20,
+        phase: 1.4),
+    _EnvParticle(
+        x: 0.57,
+        y: 0.42,
+        speedX: 0.01,
+        speedY: -0.04,
+        size: 1.3,
+        maxAlpha: 0.16,
+        phase: 2.6,
+        isDiamond: true),
+    _EnvParticle(
+        x: 0.66,
+        y: 0.68,
+        speedX: -0.01,
+        speedY: -0.05,
+        size: 1.5,
+        maxAlpha: 0.18,
+        phase: 0.9),
+  ];
+
+  static const List<_EnvParticle> _emberCorridorParticles = [
+    _EnvParticle(
+        x: 0.36,
+        y: 0.80,
+        speedX: 0.01,
+        speedY: -0.06,
+        size: 1.5,
+        maxAlpha: 0.20,
+        phase: 0.4),
+    _EnvParticle(
+        x: 0.47,
+        y: 0.60,
+        speedX: -0.01,
+        speedY: -0.07,
+        size: 1.8,
+        maxAlpha: 0.22,
+        phase: 1.5),
+    _EnvParticle(
+        x: 0.56,
+        y: 0.45,
+        speedX: 0.01,
+        speedY: -0.06,
+        size: 1.4,
+        maxAlpha: 0.18,
+        phase: 2.3),
+    _EnvParticle(
+        x: 0.65,
+        y: 0.70,
+        speedX: -0.01,
+        speedY: -0.07,
+        size: 1.6,
+        maxAlpha: 0.20,
+        phase: 0.7),
+  ];
+
+  static const List<_EnvParticle> _celestialCorridorParticles = [
+    _EnvParticle(
+        x: 0.38,
+        y: 0.26,
+        speedX: 0.01,
+        speedY: -0.02,
+        size: 1.3,
+        maxAlpha: 0.22,
+        phase: 0.5,
+        isDiamond: true),
+    _EnvParticle(
+        x: 0.48,
+        y: 0.45,
+        speedX: -0.01,
+        speedY: -0.02,
+        size: 1.6,
+        maxAlpha: 0.24,
+        phase: 1.3),
+    _EnvParticle(
+        x: 0.55,
+        y: 0.35,
+        speedX: 0.01,
+        speedY: -0.02,
+        size: 1.4,
+        maxAlpha: 0.20,
+        phase: 2.4,
+        isDiamond: true),
+    _EnvParticle(
+        x: 0.64,
+        y: 0.58,
+        speedX: -0.01,
+        speedY: -0.02,
+        size: 1.5,
+        maxAlpha: 0.22,
+        phase: 0.8),
+  ];
+
+  static const List<_EnvParticle> _prismCorridorParticles = [
+    _EnvParticle(
+        x: 0.35,
+        y: 0.30,
+        speedX: 0.01,
+        speedY: -0.03,
+        size: 1.5,
+        maxAlpha: 0.20,
+        phase: 0.4,
+        isDiamond: true),
+    _EnvParticle(
+        x: 0.46,
+        y: 0.52,
+        speedX: -0.01,
+        speedY: -0.04,
+        size: 1.7,
+        maxAlpha: 0.22,
+        phase: 1.6,
+        isDiamond: true),
+    _EnvParticle(
+        x: 0.58,
+        y: 0.38,
+        speedX: 0.01,
+        speedY: -0.03,
+        size: 1.4,
+        maxAlpha: 0.18,
+        phase: 2.2,
+        isDiamond: true),
+    _EnvParticle(
+        x: 0.65,
+        y: 0.65,
+        speedX: -0.01,
+        speedY: -0.04,
+        size: 1.6,
+        maxAlpha: 0.20,
+        phase: 1.0,
+        isDiamond: true),
+  ];
+
+  static List<_EnvParticle> _getCorridorParticles(ThemeType type) {
+    switch (type) {
+      case ThemeType.midnightNeon:
+        return _midnightCorridorParticles;
+      case ThemeType.aurora:
+        return _auroraCorridorParticles;
+      case ThemeType.sunsetPulse:
+        return _sunsetCorridorParticles;
+      case ThemeType.arcticGlow:
+        return _arcticCorridorParticles;
+      case ThemeType.sakuraDrift:
+        return _sakuraCorridorParticles;
+      case ThemeType.abyssalDepths:
+        return _abyssalCorridorParticles;
+      case ThemeType.retroGrid:
+        return _retroCorridorParticles;
+      case ThemeType.emberCore:
+        return _emberCorridorParticles;
+      case ThemeType.celestialObservatory:
+        return _celestialCorridorParticles;
+      case ThemeType.prismRift:
+        return _prismCorridorParticles;
+    }
+  }
+
   @override
   void paint(Canvas canvas, Size size) {
     final t = ambientAnimation.value;
     final r = reactiveAnimation.value;
     final streakMultiplier = (1.0 + (streak * 0.07)).clamp(1.0, 1.35);
+
+    // 0. THEME-AWARE GAMEPLAY-SAFE CORRIDOR BLEND
+    _paintThemeCorridor(canvas, size, t, r, streakMultiplier);
 
     switch (theme.type) {
       case ThemeType.midnightNeon:
@@ -1287,6 +1678,108 @@ class _ThemeEnvironmentPainter extends CustomPainter {
       case ThemeType.prismRift:
         _paintPrismRift(canvas, size, t, r, streakMultiplier);
         break;
+    }
+  }
+
+  // =========================================================================
+  // THEME-AWARE GAMEPLAY-SAFE CORRIDOR
+  // =========================================================================
+  void _paintThemeCorridor(
+      Canvas canvas, Size size, double t, double r, double streakMultiplier) {
+    final waveTime = t * 2.0 * math.pi;
+
+    // 1. HORIZONTAL SOFT FEATHER BLEND (Theme-Aware Gameplay Corridor)
+    // Left edge (0.0–0.18) and Right edge (0.82–1.0) remain transparent.
+    // Center (0.32–0.68) smoothly darkens into the theme's own atmospheric palette.
+    final corridorPaint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.centerLeft,
+        end: Alignment.centerRight,
+        colors: [
+          theme.corridorBaseColor.withValues(alpha: 0.0),
+          theme.corridorBaseColor.withValues(alpha: 0.12),
+          theme.corridorBaseColor.withValues(alpha: 0.58),
+          theme.corridorCenterColor.withValues(alpha: 0.78),
+          theme.corridorBaseColor.withValues(alpha: 0.58),
+          theme.corridorBaseColor.withValues(alpha: 0.12),
+          theme.corridorBaseColor.withValues(alpha: 0.0),
+        ],
+        stops: const [0.0, 0.18, 0.32, 0.50, 0.68, 0.82, 1.0],
+      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
+    canvas.drawRect(
+        Rect.fromLTWH(0, 0, size.width, size.height), corridorPaint);
+
+    // 2. VERTICAL ATMOSPHERIC CONTINUATION (Sky-to-Dusk Diffusion)
+    final verticalAtmospherePaint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          theme.corridorBaseColor.withValues(alpha: 0.38),
+          theme.corridorHazeColor.withValues(alpha: 0.10),
+          theme.corridorCenterColor.withValues(alpha: 0.14),
+          theme.corridorBaseColor.withValues(alpha: 0.32),
+        ],
+        stops: const [0.0, 0.22, 0.75, 1.0],
+      ).createShader(
+          Rect.fromLTWH(size.width * 0.18, 0, size.width * 0.64, size.height));
+    canvas.drawRect(
+        Rect.fromLTWH(size.width * 0.18, 0, size.width * 0.64, size.height),
+        verticalAtmospherePaint);
+
+    // 3. SUBTLE LOWER FOG / ATMOSPHERIC CONTINUATION (Floor Mist near Pedestal)
+    final fogY = size.height * 0.62;
+    final fogHeight = size.height - fogY;
+    final fogPulse = 0.11 + 0.04 * math.sin(waveTime * 1.2);
+    final lowerFogPaint = Paint()
+      ..shader = RadialGradient(
+        center: const Alignment(0.0, 0.90),
+        radius: 0.85,
+        colors: [
+          theme.corridorLowerFogColor.withValues(
+              alpha: (fogPulse * streakMultiplier).clamp(0.0, 0.26)),
+          theme.corridorHazeColor.withValues(alpha: fogPulse * 0.5),
+          Colors.transparent,
+        ],
+        stops: const [0.0, 0.55, 1.0],
+      ).createShader(
+          Rect.fromLTWH(size.width * 0.10, fogY, size.width * 0.80, fogHeight));
+    canvas.drawRect(
+        Rect.fromLTWH(size.width * 0.10, fogY, size.width * 0.80, fogHeight),
+        lowerFogPaint);
+
+    // 4. VERY RESTRAINED AMBIENT PARTICLES IN THE CORRIDOR
+    final corridorParticles = _getCorridorParticles(theme.type);
+    _paintParticlesList(
+      canvas,
+      size,
+      corridorParticles,
+      t,
+      streakMultiplier,
+      theme.corridorLowerFogColor,
+      theme.secondaryAccent,
+    );
+
+    // 5. THEME-SPECIFIC REACTIVE VISUAL ACCENTS (Gentle Corridor Illumination on Perfect Stacks)
+    if (r > 0.001 && r < 1.0) {
+      final corridorBloomAlpha = (0.15 * (1.0 - r)).clamp(0.0, 0.25);
+      final corridorBloomPaint = Paint()
+        ..shader = RadialGradient(
+          center: const Alignment(0.0, 0.30),
+          radius: 0.70,
+          colors: [
+            theme.reactivePulseColor.withValues(alpha: corridorBloomAlpha),
+            theme.reactiveSecondaryPulseColor
+                .withValues(alpha: corridorBloomAlpha * 0.4),
+            Colors.transparent,
+          ],
+          stops: const [0.0, 0.48, 1.0],
+        ).createShader(Rect.fromLTWH(size.width * 0.18, size.height * 0.25,
+            size.width * 0.64, size.height * 0.55));
+      canvas.drawRect(
+          Rect.fromLTWH(size.width * 0.18, size.height * 0.25,
+              size.width * 0.64, size.height * 0.55),
+          corridorBloomPaint);
     }
   }
 

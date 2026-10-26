@@ -751,6 +751,110 @@ class GameTheme {
     }
   }
 
+  /// Deep foundation tone for the theme-aware central corridor
+  Color get corridorBaseColor {
+    switch (type) {
+      case ThemeType.midnightNeon:
+        return const Color(0xFF061226);
+      case ThemeType.aurora:
+        return const Color(0xFF041917);
+      case ThemeType.sunsetPulse:
+        return const Color(0xFF1C091B);
+      case ThemeType.arcticGlow:
+        return const Color(0xFF061628);
+      case ThemeType.sakuraDrift:
+        return const Color(0xFF110B22);
+      case ThemeType.abyssalDepths:
+        return const Color(0xFF031220);
+      case ThemeType.retroGrid:
+        return const Color(0xFF130826);
+      case ThemeType.emberCore:
+        return const Color(0xFF180A06);
+      case ThemeType.celestialObservatory:
+        return const Color(0xFF070E24);
+      case ThemeType.prismRift:
+        return const Color(0xFF100720);
+    }
+  }
+
+  /// Dark atmospheric center tone of the central corridor
+  Color get corridorCenterColor {
+    switch (type) {
+      case ThemeType.midnightNeon:
+        return const Color(0xFF091934);
+      case ThemeType.aurora:
+        return const Color(0xFF062320);
+      case ThemeType.sunsetPulse:
+        return const Color(0xFF280E27);
+      case ThemeType.arcticGlow:
+        return const Color(0xFF0A2038);
+      case ThemeType.sakuraDrift:
+        return const Color(0xFF1A1032);
+      case ThemeType.abyssalDepths:
+        return const Color(0xFF051B2E);
+      case ThemeType.retroGrid:
+        return const Color(0xFF1D0D38);
+      case ThemeType.emberCore:
+        return const Color(0xFF240E08);
+      case ThemeType.celestialObservatory:
+        return const Color(0xFF0B1736);
+      case ThemeType.prismRift:
+        return const Color(0xFF180B30);
+    }
+  }
+
+  /// Ambient atmospheric haze tone for central corridor continuation
+  Color get corridorHazeColor {
+    switch (type) {
+      case ThemeType.midnightNeon:
+        return const Color(0xFF0D254C);
+      case ThemeType.aurora:
+        return const Color(0xFF0A332E);
+      case ThemeType.sunsetPulse:
+        return const Color(0xFF381436);
+      case ThemeType.arcticGlow:
+        return const Color(0xFF0F2E4F);
+      case ThemeType.sakuraDrift:
+        return const Color(0xFF281648);
+      case ThemeType.abyssalDepths:
+        return const Color(0xFF082740);
+      case ThemeType.retroGrid:
+        return const Color(0xFF2C1252);
+      case ThemeType.emberCore:
+        return const Color(0xFF35150C);
+      case ThemeType.celestialObservatory:
+        return const Color(0xFF10214C);
+      case ThemeType.prismRift:
+        return const Color(0xFF261048);
+    }
+  }
+
+  /// Subtle lower fog continuation color near base pedestal
+  Color get corridorLowerFogColor {
+    switch (type) {
+      case ThemeType.midnightNeon:
+        return primaryAccent; // Electric Cyan
+      case ThemeType.aurora:
+        return mintAccent; // Turquoise/Mint
+      case ThemeType.sunsetPulse:
+        return orangeAccent; // Warm Sunset Orange
+      case ThemeType.arcticGlow:
+        return const Color(0xFFBBEFFF); // Icy Cyan Frost
+      case ThemeType.sakuraDrift:
+        return const Color(0xFFFF85A2); // Blossom Pink Haze
+      case ThemeType.abyssalDepths:
+        return primaryAccent; // Bioluminescent Aqua
+      case ThemeType.retroGrid:
+        return primaryAccent; // Synthwave Magenta
+      case ThemeType.emberCore:
+        return primaryAccent; // Molten Ember Orange
+      case ThemeType.celestialObservatory:
+        return primaryAccent; // Celestial Gold
+      case ThemeType.prismRift:
+        return primaryAccent; // Prismatic Cyan
+    }
+  }
+
   /// Verifies unlock status using either best score or cumulative lifetime placements
   bool isUnlocked({required int bestScore, required int totalPlacements}) {
     if (unlockScore > 0) {

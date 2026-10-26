@@ -185,6 +185,41 @@ Stack Pulse organizes its 10 interactive themes into 3 distinct priority progres
 
 ---
 
+### 4.4 Theme-Specific Center Corridor Blend Specification
+
+The central gameplay stacking region strictly avoids flat, dead black vertical rectangles. Instead, each theme features an **organic, theme-aware gameplay-safe corridor**:
+
+1. **Dark Central Gradient**:
+   - Rather than pitch black, the center employs a deep, rich atmospheric extension of the active theme (`theme.corridorBaseColor` and `theme.corridorCenterColor`).
+   - Maintains ideal contrast for 2.5D stacking blocks while feeling intrinsically connected to the surrounding environment.
+2. **Soft Feather Blending from Both Side Environments**:
+   - Multi-stop horizontal gradient (`stops: [0.0, 0.18, 0.32, 0.50, 0.68, 0.82, 1.0]`).
+   - Outer edges (0.0–0.18 and 0.82–1.0) are completely transparent, allowing environmental scenery, spires, and trees to be admired unimpeded.
+   - Transitions feather smoothly between 0.18 and 0.32, avoiding any visible seams, borders, or cuts.
+3. **Subtle Lower Fog / Atmospheric Continuation**:
+   - A breathing atmospheric mist (`RadialGradient` centered at bottom) using `theme.corridorLowerFogColor` with gentle ambient wave oscillation (`math.sin(waveTime * 1.2)`).
+   - Visually links the left environment, base pedestal, and right environment across the bottom floor.
+4. **Very Restrained Ambient Particles**:
+   - Dedicated subtle motes (1.3–1.8px radius, low 0.16–0.22 alpha) drifting quietly through the central corridor (`x: 0.34 .. 0.66`).
+   - Adds life and spatial depth to the corridor without distracting the player during precision block alignment.
+5. **Theme-Specific Reactive Visual Accents**:
+   - Landing a perfect placement triggers a soft, delicate corridor bloom (`RadialGradient` with `theme.reactivePulseColor` at 0.15 alpha) that illuminates the central corridor mist.
+   - High streak milestones boost corridor fog luminescence.
+
+#### Theme Corridor Color Palette Mapping:
+- **Midnight Neon**: Deep navy (`#061226` / `#091934`) with cyan/violet atmospheric diffusion (`#0D254C`).
+- **Aurora**: Dark emerald/teal atmospheric blend (`#041917` / `#062320` / `#0A332E`) with polar mint mist.
+- **Sunset Pulse**: Deep plum / magenta-shadow blend (`#1C091B` / `#280E27` / `#381436`) with warm sunset orange glow.
+- **Arctic Glow**: Icy deep blue / cyan-shadow blend (`#061628` / `#0A2038` / `#0F2E4F`) with frosty cyan glints.
+- **Sakura Drift**: Dark indigo / blossom-pink haze (`#110B22` / `#1A1032` / `#281648`) with soft sakura haze.
+- **Abyssal Depths**: Deep ocean abyss / aqua haze (`#031220` / `#051B2E` / `#082740`) with bioluminescent marine mist.
+- **Retro Grid**: Dark synth purple / magenta-cyan blend (`#130826` / `#1D0D38` / `#2C1252`) with neon magenta dusk.
+- **Ember Core**: Deep obsidian / ember-orange shadow glow (`#180A06` / `#240E08` / `#35150C`) with volcanic floor warmth.
+- **Celestial Observatory**: Midnight blue / elegant gold haze (`#070E24` / `#0B1736` / `#10214C`) with astral starlight diffusion.
+- **Prism Rift**: Dark violet / prismatic atmosphere (`#100720` / `#180B30` / `#261048`) with multi-spectral cyan-magenta dispersion.
+
+---
+
 ## 5. Typography Hierarchy
 
 The typography scale utilizes `Plus Jakarta Sans` (with system sans-serif fallback) with tabular figures enabled for all numerical score meters:
