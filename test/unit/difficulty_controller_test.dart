@@ -4,19 +4,30 @@ import 'package:stack_pulse/game/systems/difficulty_controller.dart';
 
 void main() {
   group('DifficultyController Tests', () {
-    test('Initial speed at score 0 equals initialSpeed', () {
+    test('Initial speed at score 0 equals initialSpeed (170)', () {
       final speed = DifficultyController.calculateSpeed(0);
       expect(speed, equals(GameConfig.initialSpeed));
+      expect(speed, equals(170.0));
     });
 
-    test('Speed scales with score linearly', () {
-      final speed = DifficultyController.calculateSpeed(10);
-      expect(speed, equals(GameConfig.initialSpeed + 10 * 5.0));
+    test('Speed remains 170 for scores under 5', () {
+      expect(DifficultyController.calculateSpeed(1), equals(170.0));
+      expect(DifficultyController.calculateSpeed(4), equals(170.0));
     });
 
-    test('Speed is capped at maxSpeed for high scores', () {
-      final speed = DifficultyController.calculateSpeed(200);
-      expect(speed, equals(GameConfig.maxSpeed));
+    test('Speed increases by 15px every 5 score increments', () {
+      expect(DifficultyController.calculateSpeed(5), equals(185.0));
+      expect(DifficultyController.calculateSpeed(9), equals(185.0));
+      expect(DifficultyController.calculateSpeed(10), equals(200.0));
+      expect(DifficultyController.calculateSpeed(15), equals(215.0));
+      expect(DifficultyController.calculateSpeed(20), equals(230.0));
+    });
+
+    test('Speed is capped at maxSpeed (320) and never increases beyond it', () {
+      expect(DifficultyController.calculateSpeed(50), equals(320.0));
+      expect(DifficultyController.calculateSpeed(55), equals(320.0));
+      expect(DifficultyController.calculateSpeed(100), equals(320.0));
+      expect(DifficultyController.calculateSpeed(200), equals(320.0));
     });
 
     test('Streak badges match milestone progression', () {

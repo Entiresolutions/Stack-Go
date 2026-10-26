@@ -3,8 +3,10 @@ import '../../core/game_config.dart';
 
 class DifficultyController {
   static double calculateSpeed(int score) {
-    final rawSpeed =
-        GameConfig.initialSpeed + (score * GameConfig.speedIncrementPerPoint);
+    if (score <= 0) return GameConfig.initialSpeed;
+    final int tiers = score ~/ GameConfig.speedStepInterval;
+    final double rawSpeed =
+        GameConfig.initialSpeed + (tiers * GameConfig.speedIncrementPerStep);
     return min(GameConfig.maxSpeed, rawSpeed);
   }
 
