@@ -11,13 +11,13 @@
 ## 1. Executive Summary & Vision
 
 ### 1.1 Product Vision
-**Stack Pulse** is a hyper-polished, premium minimalist 2D precision block-stacking arcade game built using Flutter and the Flame Engine. Designed with an ultra-clean cyber-neon aesthetic, tactile haptics, and dynamically generated procedural audio, Stack Pulse delivers an addictive, reflex-testing gaming experience with zero ads, zero internet dependencies, and zero latency.
+**Stack Pulse** is a hyper-polished, premium minimalist 2D precision block-stacking arcade game built using Flutter and the Flame Engine. Designed with an ultra-clean cyber-neon aesthetic, tactile haptics, and dynamically generated procedural audio, Stack Pulse delivers an addictive, reflex-testing gaming experience with seamless monetization through non-intrusive AdMob interstitials and user-rewarded revives, paired with an offline-resilient architecture and zero input latency.
 
 ### 1.2 Core Value Proposition
 - **Pure Skill & Precision:** Clean, deterministic 1D interval slicing that rewards millisecond timing and exact alignment.
 - **Hypnotic Audio-Visual Synergy:** Ascending pentatonic scales and harmonic overtones synthesized algorithmically on the fly, paired with streak-driven neon particle fireworks.
 - **Instantaneous Playability:** Lightweight cross-platform footprint (<15MB APK, instant Web load), zero load screens, and offline-first architecture.
-- **Distraction-Free Experience:** No pay-to-win mechanics, no intrusive banner/interstitial advertisements, and no user tracking.
+- **Fair & Player-Centric Monetization:** Reward-based gameplay revives ("Watch and Get a Chance"), contextual interstitial placements with background preloading, automatic audio muting/resumption, and zero banner clutter during active gameplay.
 
 ---
 
@@ -160,17 +160,115 @@ Using `shared_preferences`, the application records and updates:
   * Mobile: Single finger touch anywhere on screen.
   * Desktop: Mouse left-click, `Spacebar`, or `Enter` keys.
 
-### 4.8 Google Mobile Ads (AdMob) Integration
-* **App ID**: `ca-app-pub-3794659976212193~9107617603`
-* **Interstitials / App Open Ad Unit ID**: `ca-app-pub-3794659976212193/3368291483`
-* **Rewarded Ad Unit ID (Watch & Get a Chance)**: `ca-app-pub-3794659976212193/9929744688`
-* **Monetization & Engagement Flows**:
-  * **Play-to-Ad**: Tapping 'PLAY' on the Home screen displays an ad before the run starts.
-  * **Home-to-Ad**: Tapping 'HOME' on the Game Over screen plays an ad before transitioning back to the Home screen.
-  * **Watch & Get a Chance (Revive)**: Located directly below the 'HOME' button on the Game Over screen. Tapping 'WATCH AND GET A CHANCE' launches a Rewarded Ad (`ca-app-pub-3794659976212193/9929744688`). Upon completion, the player's current run is revived—clearing missed debris, maintaining their existing score, and spawning a new block on top of their stack.
-* **Intelligent Preloading**: Both interstitial and rewarded ads are preloaded in the background on app launch and upon entering the Game Over state for instant playback without loading lags.
-* **Background Music Coordination**: Background audio is paused while the ad plays and automatically resumed upon returning to gameplay.
-* **Strict Reward Policy & Availability Notifications**: If the device is offline, internet is lost, or an ad cannot be loaded, NO revive chance is granted under any circumstances. The player is immediately informed via a clean UI alert and floating notification in proper English: *"Ad not available. Please check your internet connection and try again."* A chance is awarded strictly and only when the rewarded ad has been fully watched.
+### 4.8 Google Mobile Ads (AdMob) Integration & Monetization Specifications
+
+#### 4.8.1 Production AdMob Identifiers
+The application utilizes Google Mobile Ads SDK across Android (and iOS) platforms with dedicated ad units for optimal revenue and non-intrusive player progression:
+
+| Identifier Type | Value | Target Format | Implementation Purpose |
+|---|---|---|---|
+| **AdMob App ID** | `ca-app-pub-3794659976212193~9107617603` | Application Manifest | SDK Initialization & App Verification |
+| **App Open / Interstitial** | `ca-app-pub-3794659976212193/3368291483` | Full-Screen Interstitial / App Open | Game Session Entry & Game Over Exit to Home |
+| **Action Interstitial** | `ca-app-pub-3794659976212193/5028771792` | Full-Screen Interstitial | Settings Controls, Theme Selection, Pause Actions |
+| **Rewarded Video** | `ca-app-pub-3794659976212193/9929744688` | Rewarded Video Ad | "Watch and Get a Chance" Run Revival |
+
+> [!NOTE]
+> During development / propagation windows, official Google test ad unit IDs (`ca-app-pub-3940256099942544/...`) act as automated debug fallbacks to guarantee tests and staging builds do not violate AdMob policies or fail silently.
+
+---
+
+#### 4.8.2 Comprehensive Ad Placement Matrix
+Ads are systematically placed across navigation gates, user preferences, and failure recovery states:
+
+| Screen / Overlay | Triggering UI Element / Event | Ad Format & Unit ID | Playback Condition & Action |
+|---|---|---|---|
+| **Home Screen** | `PLAY` Button Tap | Interstitial (`3368291483`) | Displays full-screen ad prior to initializing and launching the 3D game arena. |
+| **Game Over Overlay** | `HOME` Button Tap | Interstitial (`3368291483`) | Plays full-screen ad before transitioning the user from the game session back to the Main Menu. |
+| **Game Over Overlay** | `WATCH AND GET A CHANCE` Button Tap | Rewarded Video (`9929744688`) | Plays a full rewarded video. If watched to completion, revives the current run, preserves the existing score, clears missed blocks, and spawns the next block. |
+| **Pause Menu Overlay** | `RESUME` Button Tap | Interstitial (`5028771792`) | Plays interstitial before resuming active block oscillation and game timer. |
+| **Pause Menu Overlay** | `RESTART` Button Tap | Interstitial (`5028771792`) | Plays interstitial before wiping the stack and re-centering the camera for a fresh run. |
+| **Pause Menu Overlay** | `SETTINGS` Button Tap | Interstitial (`5028771792`) | Plays interstitial before navigating from the pause overlay to the Settings screen. |
+| **Pause Menu Overlay** | `HOME` Button Tap | Interstitial (`5028771792`) | Plays interstitial before leaving the paused session and returning to Home. |
+| **Settings Screen** | `Sound Effects` Switch (Toggle ON/OFF) | Interstitial (`5028771792`) | Plays interstitial when the user flips the SFX enable toggle. |
+| **Settings Screen** | `Sound Effects` Volume Slider (`onChangeEnd`) | Interstitial (`5028771792`) | Plays interstitial when the user finishes dragging and releases the SFX volume slider. |
+| **Settings Screen** | `Background Music` Switch (Toggle ON/OFF) | Interstitial (`5028771792`) | Plays interstitial when the user flips the BGM enable toggle. |
+| **Settings Screen** | `Background Music` Volume Slider (`onChangeEnd`) | Interstitial (`5028771792`) | Plays interstitial when the user finishes dragging and releases the BGM volume slider. |
+| **Settings Screen** | `Haptic Feedback` Switch (Toggle ON/OFF) | Interstitial (`5028771792`) | Plays interstitial when the user toggles tactile vibration feedback. |
+| **Settings Screen** | `Reduced Motion` Switch (Toggle ON/OFF) | Interstitial (`5028771792`) | Plays interstitial when the user toggles camera shake & particle reduction. |
+| **Settings Screen** | `Current Theme` Card Tap | Interstitial (`5028771792`) | Plays interstitial before navigating from Settings to the Theme Selection Screen. |
+| **Themes Screen** | Selecting Any Unlocked Theme Tile | Interstitial (`5028771792`) | Plays interstitial upon applying an unlocked aesthetic theme. |
+
+---
+
+#### 4.8.3 Ad Playback Mechanics & Technical Execution Flow
+To guarantee smooth 60 FPS gameplay, prevent frame hitching, and avoid black-screen hangs, `AdService` executes ads according to the following lifecycle architecture:
+
+```
++-----------------------------------------------------------------------------------+
+|                            1. BACKGROUND PRELOADING                               |
+| - App Launch (main.dart): preloadAd(), preloadInterstitialAd(), preloadRewardedAd()|
+| - Game Over Trigger: Preloads next run ads in background                          |
+| - Post-Ad Dismissal: Automatically caches replacement ad in background            |
++-----------------------------------------------------------------------------------+
+                                       |
+                                       v
++-----------------------------------------------------------------------------------+
+|                             2. RUNTIME AD TRIGGER                                 |
+| Player triggers an action (e.g. Button tap, Slider release, Revive tap)           |
++--------------------------------------+--------------------------------------------+
+                                       |
+               +-----------------------+-----------------------+
+               |                                               |
+        [Ad In Memory]                                 [Ad Not Cached]
+               |                                               |
+               v                                               v
++-----------------------------+              +-------------------------------------+
+|      3. INSTANT PLAY        |              |       4. QUICK-FETCH TIMEOUT        |
+| - MusicService PAUSED       |              | - Interstitial: Max 2.0s timeout    |
+| - Full-screen ad presented  |              | - Rewarded Ad: Max 4.0s timeout     |
++--------------+--------------+              +------------------+------------------+
+               |                                                |
+               |                            +-------------------+-------------------+
+               |                            |                                       |
+               |                     [Fetch Succeeded]                      [Timeout / Error]
+               |                            |                                       |
+               |                            v                                       v
+               |              +-----------------------------+         +----------------------------+
+               +------------> |      5. AD PRESENTATION     |         |  6. SAFE FALLBACK (NO AD)  |
+                              | - Audio muted / paused      |         | - Interstitial: Proceed    |
+                              | - User views / interacts    |         |   without freezing UI      |
+                              +--------------+--------------+         | - Rewarded: STRICT NO REVIVE|
+                                             |                        |   Shows English error alert|
+                                             v                        +----------------------------+
+                              +-----------------------------+
+                              |      7. DISMISSAL & RESUME  |
+                              | - MusicService RESUMED      |
+                              | - Ad disposed from memory   |
+                              | - Background preload next ad|
+                              | - Execute navigation/reward |
+                              +-----------------------------+
+```
+
+1. **Intelligent Background Preloading**:
+   - Ads are never loaded synchronously on the UI thread when a button is pressed.
+   - Upon app startup (`AdService.instance.initialize()`), three distinct background load pipelines run concurrently: `preloadAd()` (App Open/Interstitial), `preloadInterstitialAd()` (Action Interstitial), and `preloadRewardedAd()` (Revive Rewarded).
+   - Whenever an ad is closed (`onAdDismissedFullScreenContent`) or fails to show (`onAdFailedToShowFullScreenContent`), the respective preload pipeline is immediately re-invoked so the cache stays hot.
+   - Upon encountering a Game Over state, `game_screen.dart` proactively re-checks and warms both interstitial and rewarded caches.
+
+2. **Zero-Lag Cache Hits & Safety Timeouts**:
+   - If an ad is ready in memory, playback begins instantly with zero frame drop or buffering lag.
+   - If the player taps an action before an ad has finished loading (e.g. during rapid navigation or unstable connectivity):
+     - **Interstitials**: A safety timer of **2.0 seconds** is enforced. If the ad cannot load within 2 seconds, the action completes anyway (e.g. game starts or settings toggle completes) to prevent the user from being trapped in an unresponsive black screen.
+     - **Rewarded Ads**: A safety timer of **4.0 seconds** is enforced. If the ad cannot load within 4 seconds, the attempt is aborted, NO revive chance is granted, and user feedback is presented.
+
+3. **Background Music & Audio Coordination**:
+   - Before any ad is shown (`_showAppOpenAd`, `_showInterstitialAd`, `_displayRewardedAd`), `MusicService.instance.onAppLifecycleStateChanged(AppLifecycleState.paused)` is invoked to cleanly pause background music playback.
+   - Once the ad is closed or fails to show, `MusicService.instance.onAppLifecycleStateChanged(AppLifecycleState.resumed)` is immediately invoked to restore background music without requiring manual toggle manipulation.
+
+4. **Strict Rewarded Revive Verification & Offline Safeguards**:
+   - **No Watch, No Reward**: Rewarded revives are gated strictly behind the AdMob `onUserEarnedReward` callback.
+   - **Premature Close Detection**: If a player dismisses or skips the rewarded ad prior to completion, the reward boolean remains `false`. The game remains in the Game Over state and displays an advisory: *"You closed the ad before earning the chance. Watch the full ad to continue."*
+   - **Offline / Failure Handling**: If the device has no internet connection or AdMob returns an error, the game remains on Game Over and surfaces a clear notification in proper English: *"Ad not available. Please check your internet connection and try again."* Under no circumstances can a player bypass ads or obtain an unearned revive chance while offline.
 
 ---
 
@@ -179,23 +277,32 @@ Using `shared_preferences`, the application records and updates:
 ```
 [ App Launch / Splash ]
          |
+         | (Initialize AdService, Preload All Ads)
          v
-  [ Home Screen ] <-----------------------------+
-   |-- Play Button                              |
-   |-- Best Score & Best Streak Pills           |
-   |-- Stats Modal (Lifetime Metrics)           |
-   |-- Themes Screen (Select/Unlock)            |
-   |-- Settings Screen (Toggles & Reset)        |
-   |-- Tutorial Screen                          |
-         |                                      |
-         v                                      |
-  [ Game Screen ]                               |
-   |-- In-Game Heads-Up Display (Score, Streak) |
-   |-- Pause Button -> [ Pause Modal ] ---------+
-   |-- Game Over Event -> [ Game Over Modal ] --+
-                            |-- Restart Button
-                            |-- Home Button
-                            |-- Share / Best Banner
+  [ Home Screen ] <------------------------------------+
+   |-- Play Button ----------------------------------> [ Full-Screen Ad: 3368291483 ]
+   |                                                                |
+   |-- Best Score & Best Streak Pills                               v
+   |-- Stats Modal (Lifetime Metrics)                     [ Active Game Screen ]
+   |-- Themes Screen (Select/Unlock) <-------+             |-- Heads-Up Display (Score, Streak)
+   |-- Settings Screen -----------------+    |             |-- Pause Button
+   |    |-- SFX Switch & Slider (Ad)     |    |                  |
+   |    |-- BGM Switch & Slider (Ad)     |    |                  v
+   |    |-- Haptics & Reduced Motion (Ad)|    |            [ Pause Overlay ]
+   |    +-- Theme Shortcut Card (Ad) ----+    |             |-- Resume (Ad: 5028771792)
+   |-- Tutorial Screen                        |             |-- Restart (Ad: 5028771792)
+                                              |             |-- Settings (Ad: 5028771792)
+                                              |             |-- Home (Ad: 5028771792) ------+
+                                              |                                             |
+                                              |            [ Game Over Overlay ]            |
+                                              |             |-- Retry (Instant Restart)     |
+                                              |             |-- Home (Ad: 3368291483) ------+
+                                              |             +-- Watch & Get a Chance        |
+                                              |                  (Rewarded Ad: 9929744688)  |
+                                              |                       |                     |
+                                              |                  [ Revive Run ]             |
+                                              |                  (Continue with score)      |
+                                              +---------------------------------------------+
 ```
 
 ---
