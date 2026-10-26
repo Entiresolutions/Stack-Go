@@ -22,26 +22,24 @@ class FeedbackService {
   }) async {
     if (!hapticsEnabled) return;
 
+    bool nativeSuccess = false;
     if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
       try {
         final success = await _hapticChannel.invokeMethod<bool>('vibrate', {
           'duration': duration,
           'amplitude': amplitude,
         });
-        if (success == true) return;
+        nativeSuccess = (success == true);
       } catch (_) {}
     }
 
-    // Fallback for iOS, Web, or Android platforms without custom channel response
-    try {
-      if (duration >= 70) {
-        HapticFeedback.heavyImpact();
-      } else if (duration >= 30) {
-        HapticFeedback.mediumImpact();
-      } else {
-        HapticFeedback.lightImpact();
-      }
-    } catch (_) {}
+    // Direct hardware motor fallback (guarantees physical vibration even if native channel is not yet built)
+    if (!nativeSuccess) {
+      try {
+        await HapticFeedback.heavyImpact();
+        await HapticFeedback.vibrate();
+      } catch (_) {}
+    }
   }
 
   static void triggerNormalPlacement({
@@ -53,7 +51,7 @@ class FeedbackService {
     final useSound = sound ?? soundEnabled;
 
     if (useHaptics) {
-      _vibrate(duration: 25, amplitude: 160);
+      _vibrate(duration: 75, amplitude: 255);
     }
     if (useSound) {
       try {
@@ -75,11 +73,11 @@ class FeedbackService {
 
     if (useHaptics) {
       if (streak >= 7) {
-        _vibrate(duration: 55, amplitude: 255);
+        _vibrate(duration: 180, amplitude: 255);
       } else if (streak >= 4) {
-        _vibrate(duration: 45, amplitude: 230);
+        _vibrate(duration: 130, amplitude: 255);
       } else {
-        _vibrate(duration: 35, amplitude: 190);
+        _vibrate(duration: 90, amplitude: 255);
       }
     }
     if (useSound) {
@@ -99,7 +97,7 @@ class FeedbackService {
     final useSound = sound ?? soundEnabled;
 
     if (useHaptics) {
-      _vibrate(duration: 80, amplitude: 255);
+      _vibrate(duration: 260, amplitude: 255);
     }
     if (useSound) {
       try {
@@ -118,7 +116,10 @@ class FeedbackService {
     final useSound = sound ?? soundEnabled;
 
     if (useHaptics) {
-      _vibrate(duration: 15, amplitude: 120);
+      _vibrate(duration: 45, amplitude: 255);
+      try {
+        HapticFeedback.selectionClick();
+      } catch (_) {}
     }
     if (useSound) {
       try {
@@ -129,7 +130,7 @@ class FeedbackService {
 
   static void triggerSliderTick() {
     if (hapticsEnabled) {
-      _vibrate(duration: 12, amplitude: 90);
+      _vibrate(duration: 35, amplitude: 255);
     }
   }
 }

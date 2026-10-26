@@ -1,6 +1,7 @@
 package com.example.stack_pulse
 
 import android.content.Context
+import android.media.AudioAttributes
 import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
@@ -17,8 +18,8 @@ class MainActivity : FlutterActivity() {
 
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
             if (call.method == "vibrate") {
-                val duration = (call.argument<Number>("duration") ?: 30).toLong()
-                val amplitude = (call.argument<Number>("amplitude") ?: -1).toInt()
+                val duration = (call.argument<Number>("duration") ?: 75).toLong()
+                val amplitude = (call.argument<Number>("amplitude") ?: 255).toInt()
 
                 try {
                     val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -30,19 +31,23 @@ class MainActivity : FlutterActivity() {
                     }
 
                     if (vibrator != null && vibrator.hasVibrator()) {
+                        val audioAttributes = AudioAttributes.Builder()
+                            .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                            .setUsage(AudioAttributes.USAGE_GAME)
+                            .build()
+
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                            val effect = if (amplitude in 1..255 && vibrator.hasAmplitudeControl()) {
-                                VibrationEffect.createOneShot(duration, amplitude)
-                            } else {
-                                VibrationEffect.createOneShot(duration, VibrationEffect.DEFAULT_AMPLITUDE)
-                            }
-                            vibrator.vibrate(effect)
+                            val amp = if (amplitude in 1..255) amplitude else 255
+                            val effect = VibrationEffect.createOneShot(duration, amp)
+                            vibrator.vibrate(effect, audioAttributes)
                         } else {
                             @Suppress("DEPRECATION")
                             vibrator.vibrate(duration)
                         }
+                        result.success(true)
+                    } else {
+                        result.success(false)
                     }
-                    result.success(true)
                 } catch (e: Exception) {
                     result.success(false)
                 }
