@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../core/game_theme.dart';
-import '../../services/ad_service.dart';
 import '../widgets/premium_button.dart';
 import '../widgets/theme_card.dart';
 
@@ -124,9 +123,7 @@ class ThemesScreen extends StatelessWidget {
                             reducedMotion: reducedMotion,
                             onSelect: () {
                               if (isSelected) return;
-                              AdService.instance.showInterstitialAd(
-                                onComplete: () => onSelectTheme(item),
-                              );
+                              onSelectTheme(item);
                             },
                           );
                         },

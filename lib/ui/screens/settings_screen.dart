@@ -4,7 +4,6 @@ import '../../models/game_settings.dart';
 import '../../services/feedback_service.dart';
 import '../../services/music_service.dart';
 import '../../services/sound_synthesizer.dart';
-import '../../services/ad_service.dart';
 import '../widgets/premium_button.dart';
 
 /// Phase 6: Production Settings Screen
@@ -68,6 +67,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     double? musicVolume,
     bool? haptics,
     bool? motion,
+    bool persist = true,
   }) {
     setState(() {
       if (sound != null) _sound = sound;
@@ -86,11 +86,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
       hapticsEnabled: _haptics,
       reducedMotion: _reducedMotion,
     );
-    widget.onSave(updated);
+
     FeedbackService.updateSettings(updated);
-    MusicService.instance.setMusicEnabled(_music);
-    MusicService.instance.setVolume(_musicVolume);
-    SoundSynthesizer.instance.setVolume(_soundVolume);
+    if (music != null) {
+      MusicService.instance.setMusicEnabled(_music);
+    }
+    if (musicVolume != null) {
+      MusicService.instance.setVolume(_musicVolume);
+    }
+    if (soundVolume != null) {
+      SoundSynthesizer.instance.setVolume(_soundVolume);
+    }
+
+    if (persist) {
+      widget.onSave(updated);
+    }
   }
 
   @override
@@ -165,7 +175,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             }
                           },
                           onVolumeChanged: (val) {
-                            _updateSettings(soundVolume: val);
+                            _updateSettings(soundVolume: val, persist: false);
+                          },
+                          onVolumeChangeEnd: (val) {
+                            _updateSettings(soundVolume: val, persist: true);
+                            if (_sound) {
+                              SoundSynthesizer.instance.playNormalPlacement(3);
+                            }
                           },
                         ),
                         const SizedBox(height: 12),
@@ -180,7 +196,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             _updateSettings(music: val);
                           },
                           onVolumeChanged: (val) {
-                            _updateSettings(musicVolume: val);
+                            _updateSettings(musicVolume: val, persist: false);
+                          },
+                          onVolumeChangeEnd: (val) {
+                            _updateSettings(musicVolume: val, persist: true);
                           },
                         ),
                         const SizedBox(height: 12),
@@ -198,8 +217,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 sound: false,
                               );
                             }
-                            AdService.instance
-                                .showInterstitialAd(onComplete: () {});
                           },
                         ),
                         const SizedBox(height: 12),
@@ -211,8 +228,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           value: _reducedMotion,
                           onChanged: (val) {
                             _updateSettings(motion: val);
-                            AdService.instance
-                                .showInterstitialAd(onComplete: () {});
                           },
                         ),
                         const SizedBox(height: 32),
@@ -236,9 +251,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           onTap: () {
                             FeedbackService.triggerButtonTap();
                             if (widget.onOpenThemes != null) {
-                              AdService.instance.showInterstitialAd(
-                                onComplete: widget.onOpenThemes!,
-                              );
+                              widget.onOpenThemes!();
                             }
                           },
                           behavior: HitTestBehavior.opaque,

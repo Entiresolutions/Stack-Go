@@ -1,8 +1,12 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import '../models/game_settings.dart';
 import 'sound_synthesizer.dart';
 
 class FeedbackService {
+  static const MethodChannel _hapticChannel =
+      MethodChannel('com.stackpulse.game/haptics');
+
   static bool hapticsEnabled = true;
   static bool soundEnabled = true;
 
@@ -10,6 +14,32 @@ class FeedbackService {
     hapticsEnabled = settings.hapticsEnabled;
     soundEnabled = settings.soundEnabled;
     SoundSynthesizer.instance.setVolume(settings.soundVolume);
+  }
+
+  static Future<void> _vibrate({
+    required int duration,
+    required int amplitude,
+  }) async {
+    if (!hapticsEnabled) return;
+
+    bool nativeSuccess = false;
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+      try {
+        final success = await _hapticChannel.invokeMethod<bool>('vibrate', {
+          'duration': duration,
+          'amplitude': amplitude,
+        });
+        nativeSuccess = (success == true);
+      } catch (_) {}
+    }
+
+    // Direct hardware motor fallback (guarantees physical vibration even if native channel is not yet built)
+    if (!nativeSuccess) {
+      try {
+        await HapticFeedback.heavyImpact();
+        await HapticFeedback.vibrate();
+      } catch (_) {}
+    }
   }
 
   static void triggerNormalPlacement({
@@ -21,12 +51,7 @@ class FeedbackService {
     final useSound = sound ?? soundEnabled;
 
     if (useHaptics) {
-      try {
-        // Medium impact provides a distinct, noticeable tactile impulse on all Android devices
-        HapticFeedback.mediumImpact();
-      } catch (_) {
-        HapticFeedback.vibrate();
-      }
+      _vibrate(duration: 75, amplitude: 255);
     }
     if (useSound) {
       try {
@@ -47,16 +72,12 @@ class FeedbackService {
     final useSound = sound ?? soundEnabled;
 
     if (useHaptics) {
-      try {
-        if (streak >= 5) {
-          HapticFeedback.heavyImpact();
-        } else if (streak >= 3) {
-          HapticFeedback.heavyImpact();
-        } else {
-          HapticFeedback.mediumImpact();
-        }
-      } catch (_) {
-        HapticFeedback.vibrate();
+      if (streak >= 7) {
+        _vibrate(duration: 180, amplitude: 255);
+      } else if (streak >= 4) {
+        _vibrate(duration: 130, amplitude: 255);
+      } else {
+        _vibrate(duration: 90, amplitude: 255);
       }
     }
     if (useSound) {
@@ -76,12 +97,7 @@ class FeedbackService {
     final useSound = sound ?? soundEnabled;
 
     if (useHaptics) {
-      try {
-        HapticFeedback.heavyImpact();
-        HapticFeedback.vibrate();
-      } catch (_) {
-        HapticFeedback.vibrate();
-      }
+      _vibrate(duration: 260, amplitude: 255);
     }
     if (useSound) {
       try {
@@ -100,6 +116,7 @@ class FeedbackService {
     final useSound = sound ?? soundEnabled;
 
     if (useHaptics) {
+      _vibrate(duration: 45, amplitude: 255);
       try {
         HapticFeedback.selectionClick();
       } catch (_) {}
@@ -113,9 +130,7 @@ class FeedbackService {
 
   static void triggerSliderTick() {
     if (hapticsEnabled) {
-      try {
-        HapticFeedback.selectionClick();
-      } catch (_) {}
+      _vibrate(duration: 35, amplitude: 255);
     }
   }
 }
