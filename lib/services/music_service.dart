@@ -11,6 +11,7 @@ class MusicService {
   bool _isInitialized = false;
   bool _isMusicEnabled = true;
   bool _isAppInForeground = true;
+  bool _pausedForAd = false;
   double _volume = 0.5;
 
   static const String musicAsset = 'music/stackpulse_background_music.mp3';
@@ -33,11 +34,49 @@ class MusicService {
     _isInitialized = true;
 
     try {
+      if (!kIsWeb) {
+        try {
+          final musicContext = AudioContext(
+            android: const AudioContextAndroid(
+              isSpeakerphoneOn: false,
+              stayAwake: false,
+              contentType: AndroidContentType.music,
+              usageType: AndroidUsageType.media,
+              audioFocus: AndroidAudioFocus.none,
+            ),
+            iOS: AudioContextIOS(
+              category: AVAudioSessionCategory.playback,
+              options: const {
+                AVAudioSessionOptions.mixWithOthers,
+              },
+            ),
+          );
+          await _player.setAudioContext(musicContext);
+        } catch (_) {}
+      }
+
+      _player.onPlayerStateChanged.listen((state) {
+        // Automatically recover if Android pauses BGM unexpectedly while enabled
+        if (state == PlayerState.paused &&
+            _isMusicEnabled &&
+            _isAppInForeground &&
+            !_pausedForAd &&
+            _volume > 0.0) {
+          _player.resume();
+        }
+      });
+
+      _player.onPlayerComplete.listen((_) {
+        if (_isMusicEnabled && _isAppInForeground && !_pausedForAd) {
+          _ensurePlaying();
+        }
+      });
+
       await _player.setReleaseMode(ReleaseMode.loop);
       await _player.setVolume(_volume);
 
-      if (_isMusicEnabled && _isAppInForeground) {
-        await _start();
+      if (_isMusicEnabled && _isAppInForeground && _volume > 0.0) {
+        await _ensurePlaying();
       }
     } catch (e) {
       if (kDebugMode) {
@@ -46,10 +85,35 @@ class MusicService {
     }
   }
 
+  Future<void> _ensurePlaying() async {
+    if (!_isMusicEnabled || !_isAppInForeground || _pausedForAd || _volume <= 0.0) {
+      return;
+    }
+    try {
+      await _player.setVolume(_volume);
+      if (_player.state == PlayerState.paused) {
+        try {
+          await _player.resume();
+        } catch (_) {
+          await _start();
+        }
+      } else if (_player.state != PlayerState.playing) {
+        await _start();
+      }
+    } catch (_) {
+      await _start();
+    }
+  }
+
   Future<void> setVolume(double volume) async {
     _volume = volume.clamp(0.0, 1.0);
     try {
       await _player.setVolume(_volume);
+      if (_volume > 0.0 && _isMusicEnabled && _isAppInForeground && !_pausedForAd) {
+        await _ensurePlaying();
+      } else if (_volume <= 0.0 && _player.state == PlayerState.playing) {
+        await _player.pause();
+      }
     } catch (e) {
       if (kDebugMode) {
         print('MusicService setVolume error: $e');
@@ -78,18 +142,11 @@ class MusicService {
 
     try {
       if (_isMusicEnabled) {
-        if (_isAppInForeground) {
-          if (_player.state == PlayerState.paused) {
-            await _player.setVolume(_volume);
-            await _player.resume();
-          } else if (_player.state != PlayerState.playing) {
-            await _start();
-          }
-        }
+        _isAppInForeground = true;
+        _pausedForAd = false;
+        await _ensurePlaying();
       } else {
-        if (_player.state == PlayerState.playing) {
-          await _player.pause();
-        }
+        await _player.pause();
       }
     } catch (e) {
       if (kDebugMode) {
@@ -98,30 +155,37 @@ class MusicService {
     }
   }
 
+  /// Pauses background music specifically for ad playback without corrupting app state
+  Future<void> pauseForAd() async {
+    if (!_isMusicEnabled) return;
+    _pausedForAd = true;
+    try {
+      if (_player.state == PlayerState.playing) {
+        await _player.pause();
+      }
+    } catch (_) {}
+  }
+
+  /// Resumes background music after ad dismissal if previously playing
+  Future<void> resumeAfterAd() async {
+    _pausedForAd = false;
+    if (!_isMusicEnabled || !_isAppInForeground) return;
+    await _ensurePlaying();
+  }
+
   Future<void> onAppLifecycleStateChanged(AppLifecycleState state) async {
     switch (state) {
       case AppLifecycleState.resumed:
         _isAppInForeground = true;
+        _pausedForAd = false;
         if (_isMusicEnabled) {
-          try {
-            if (_player.state == PlayerState.paused) {
-              await _player.setVolume(_volume);
-              await _player.resume();
-            } else if (_player.state != PlayerState.playing) {
-              await _start();
-            }
-          } catch (e) {
-            if (kDebugMode) {
-              print('MusicService resume error: $e');
-            }
-          }
+          await _ensurePlaying();
         }
         break;
 
-      case AppLifecycleState.inactive:
       case AppLifecycleState.paused:
+      case AppLifecycleState.inactive:
       case AppLifecycleState.hidden:
-      case AppLifecycleState.detached:
         _isAppInForeground = false;
         try {
           if (_player.state == PlayerState.playing) {
@@ -133,13 +197,17 @@ class MusicService {
           }
         }
         break;
+
+      case AppLifecycleState.detached:
+        _isAppInForeground = false;
+        try {
+          await _player.stop();
+        } catch (_) {}
+        break;
     }
   }
 
-  Future<void> dispose() async {
-    try {
-      await _player.stop();
-      await _player.dispose();
-    } catch (_) {}
+  void dispose() {
+    _player.dispose();
   }
 }

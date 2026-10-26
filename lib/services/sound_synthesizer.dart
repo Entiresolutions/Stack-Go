@@ -11,23 +11,32 @@ class SoundSynthesizer {
   }
 
   static const List<double> _pentatonicFrequencies = [
-    261.63, 293.66, 329.63, 392.00, 440.00, // C4, D4, E4, G4, A4
-    523.25, 587.33, 659.25, 783.99, 880.00, // C5, D5, E5, G5, A5
-    1046.50, 1174.66, 1318.51, 1567.98, 1760.00, // C6, D6, E6, G6, A6
-    2093.00, 2349.32, 2637.02, 3135.96, 3520.00, // C7, D7, E7, G7, A7
+    261.63, // C4
+    293.66, // D4
+    329.63, // E4
+    392.00, // G4
+    440.00, // A4
+    523.25, // C5
+    587.33, // D5
+    659.25, // E5
+    783.99, // G5
+    880.00, // A5
+    1046.50, // C6
+    1174.66, // D6
+    1318.51, // E6
+    1567.98, // G6
+    1760.00, // A6
   ];
 
   static const List<double> _streakScale = [
-    523.25, // Streak 1: C5
-    587.33, // Streak 2: D5
-    659.25, // Streak 3: E5
-    783.99, // Streak 4: G5
-    880.00, // Streak 5: A5
-    1046.50, // Streak 6: C6
-    1174.66, // Streak 7: D6
-    1318.51, // Streak 8: E6
-    1567.98, // Streak 9: G6
-    2093.00, // Streak 10+: C7
+    523.25, // C5
+    587.33, // D5
+    659.25, // E5
+    698.46, // F5
+    783.99, // G5
+    880.00, // A5
+    987.77, // B5
+    1046.50, // C6
   ];
 
   final Map<int, Uint8List> _normalSoundCache = {};
@@ -55,6 +64,11 @@ class SoundSynthesizer {
       setVolume(_volume);
       return;
     }
+    await _initAudio();
+  }
+
+  Future<void> _initAudio() async {
+    if (_initialized) return;
     _initialized = true;
 
     try {
@@ -68,12 +82,32 @@ class SoundSynthesizer {
         } catch (_) {}
       }
 
-      // Round robin pool of 4 players for overlapping polyphonic effects
-      for (int i = 0; i < 4; i++) {
+      // Audio context explicitly specifying AndroidAudioFocus.none to prevent pausing BGM
+      final sfxContext = AudioContext(
+        android: const AudioContextAndroid(
+          isSpeakerphoneOn: false,
+          stayAwake: false,
+          contentType: AndroidContentType.sonification,
+          usageType: AndroidUsageType.game,
+          audioFocus: AndroidAudioFocus.none,
+        ),
+        iOS: AudioContextIOS(
+          category: AVAudioSessionCategory.playback,
+          options: const {
+            AVAudioSessionOptions.mixWithOthers,
+          },
+        ),
+      );
+
+      // Pool of 6 lowLatency SoundPool players for instant, polyphonic playback
+      for (int i = 0; i < 6; i++) {
         final player = AudioPlayer();
         if (!kIsWeb) {
           try {
             await player.setPlayerMode(PlayerMode.lowLatency);
+          } catch (_) {}
+          try {
+            await player.setAudioContext(sfxContext);
           } catch (_) {}
         }
         try {
@@ -82,13 +116,13 @@ class SoundSynthesizer {
         _players.add(player);
       }
 
-      // Pre-synthesize normal notes
+      // Pre-synthesize normal notes with full, resonant amplitude
       for (int i = 0; i < _pentatonicFrequencies.length; i++) {
         final wav = _generateWav(
           frequency: _pentatonicFrequencies[i],
-          durationSeconds: 0.18,
-          decay: 14.0,
-          volume: 0.35,
+          durationSeconds: 0.22,
+          decay: 11.0,
+          volume: 0.85,
         );
         _normalSoundCache[i] = wav;
 
@@ -110,10 +144,10 @@ class SoundSynthesizer {
         final wav = _generateWav(
           frequency: baseFreq,
           durationSeconds: 0.35,
-          decay: 9.0,
-          volume: 0.40,
+          decay: 8.0,
+          volume: 0.90,
           harmonicFrequency: harmonicFreq,
-          harmonicVolume: 0.20,
+          harmonicVolume: 0.40,
         );
         _streakSoundCache[i] = wav;
 
@@ -128,7 +162,7 @@ class SoundSynthesizer {
         }
       }
 
-      // Game over thud
+      // Game over thud (140Hz down to 55Hz)
       _gameOverSound = _generateGameOverWav();
       if (sfxDir != null && _gameOverSound != null) {
         try {
@@ -142,10 +176,10 @@ class SoundSynthesizer {
 
       // UI button click
       _buttonSound = _generateWav(
-        frequency: 800.0,
+        frequency: 880.0,
         durationSeconds: 0.05,
-        decay: 35.0,
-        volume: 0.30,
+        decay: 30.0,
+        volume: 0.80,
       );
       if (sfxDir != null && _buttonSound != null) {
         try {
@@ -158,7 +192,7 @@ class SoundSynthesizer {
       }
     } catch (e) {
       if (kDebugMode) {
-        print('Error initializing SoundSynthesizer: $e');
+        print('Error pre-rendering synthesized audio: $e');
       }
     }
   }
@@ -176,7 +210,7 @@ class SoundSynthesizer {
     if (_volume <= 0.0) return;
     final idx = score % _pentatonicFrequencies.length;
     _play(
-      source: _normalSourceCache[idx],
+      fileSource: _normalSourceCache[idx],
       fallbackBytes: _normalSoundCache[idx],
     );
   }
@@ -185,7 +219,7 @@ class SoundSynthesizer {
     if (_volume <= 0.0) return;
     final streakIndex = (streak - 1).clamp(0, _streakScale.length - 1);
     _play(
-      source: _streakSourceCache[streakIndex],
+      fileSource: _streakSourceCache[streakIndex],
       fallbackBytes: _streakSoundCache[streakIndex],
     );
   }
@@ -193,7 +227,7 @@ class SoundSynthesizer {
   void playGameOver() {
     if (_volume <= 0.0) return;
     _play(
-      source: _gameOverSource,
+      fileSource: _gameOverSource,
       fallbackBytes: _gameOverSound,
     );
   }
@@ -201,19 +235,19 @@ class SoundSynthesizer {
   void playButton() {
     if (_volume <= 0.0) return;
     _play(
-      source: _buttonSource,
+      fileSource: _buttonSource,
       fallbackBytes: _buttonSound,
     );
   }
 
-  void _play({Source? source, Uint8List? fallbackBytes}) {
-    if (_players.isEmpty) return;
+  void _play({required Source? fileSource, required Uint8List? fallbackBytes}) {
+    if (_volume <= 0.0 || _players.isEmpty) return;
     try {
       final player = _players[_playerIndex];
       _playerIndex = (_playerIndex + 1) % _players.length;
 
-      if (source != null) {
-        player.play(source, volume: _volume);
+      if (fileSource != null) {
+        player.play(fileSource, volume: _volume);
       } else if (fallbackBytes != null) {
         player.play(BytesSource(fallbackBytes), volume: _volume);
       }
@@ -224,8 +258,7 @@ class SoundSynthesizer {
     }
   }
 
-  /// Generates a valid 16-bit mono 22.05kHz PCM WAV audio file in-memory
-  static Uint8List _generateWav({
+  Uint8List _generateWav({
     required double frequency,
     required double durationSeconds,
     required double decay,
@@ -234,95 +267,96 @@ class SoundSynthesizer {
     double harmonicVolume = 0.0,
   }) {
     const int sampleRate = 22050;
-    final int totalSamples = (durationSeconds * sampleRate).toInt();
+    final int totalSamples = (sampleRate * durationSeconds).round();
     const int numChannels = 1;
     const int bitsPerSample = 16;
     const int byteRate = sampleRate * numChannels * (bitsPerSample ~/ 8);
     const int blockAlign = numChannels * (bitsPerSample ~/ 8);
-    final int dataSize = totalSamples * (bitsPerSample ~/ 8);
-    final int chunkSize = 36 + dataSize;
+    final int subChunk2Size = totalSamples * blockAlign;
+    final int chunkSize = 36 + subChunk2Size;
 
-    final ByteData byteData = ByteData(44 + dataSize);
+    final ByteData byteData = ByteData(44 + subChunk2Size);
 
-    // RIFF Chunk
+    // RIFF header
     byteData.setUint8(0, 0x52); // 'R'
     byteData.setUint8(1, 0x49); // 'I'
     byteData.setUint8(2, 0x46); // 'F'
     byteData.setUint8(3, 0x46); // 'F'
     byteData.setUint32(4, chunkSize, Endian.little);
-    byteData.setUint8(8, 0x57); // 'W'
-    byteData.setUint8(9, 0x41); // 'A'
+    byteData.setUint8(8, 0x57);  // 'W'
+    byteData.setUint8(9, 0x41);  // 'A'
     byteData.setUint8(10, 0x56); // 'V'
     byteData.setUint8(11, 0x45); // 'E'
 
-    // fmt Subchunk
+    // fmt subchunk
     byteData.setUint8(12, 0x66); // 'f'
     byteData.setUint8(13, 0x6D); // 'm'
     byteData.setUint8(14, 0x74); // 't'
     byteData.setUint8(15, 0x20); // ' '
-    byteData.setUint32(16, 16, Endian.little); // 16 for PCM
-    byteData.setUint16(20, 1, Endian.little); // AudioFormat: 1 = PCM
+    byteData.setUint32(16, 16, Endian.little); // SubChunk1Size (16 for PCM)
+    byteData.setUint16(20, 1, Endian.little);  // AudioFormat (1 for PCM)
     byteData.setUint16(22, numChannels, Endian.little);
     byteData.setUint32(24, sampleRate, Endian.little);
     byteData.setUint32(28, byteRate, Endian.little);
     byteData.setUint16(32, blockAlign, Endian.little);
     byteData.setUint16(34, bitsPerSample, Endian.little);
 
-    // data Subchunk
+    // data subchunk
     byteData.setUint8(36, 0x64); // 'd'
     byteData.setUint8(37, 0x61); // 'a'
     byteData.setUint8(38, 0x74); // 't'
     byteData.setUint8(39, 0x61); // 'a'
-    byteData.setUint32(40, dataSize, Endian.little);
+    byteData.setUint32(40, subChunk2Size, Endian.little);
 
-    int byteOffset = 44;
+    // Write samples
+    int offset = 44;
     for (int i = 0; i < totalSamples; i++) {
       final double t = i / sampleRate;
       final double envelope = exp(-decay * t);
-      double sample = sin(2 * pi * frequency * t) * envelope * volume;
 
+      double sample = sin(2 * pi * frequency * t) * volume;
       if (harmonicFrequency != null && harmonicVolume > 0.0) {
-        sample +=
-            sin(2 * pi * harmonicFrequency * t) * envelope * harmonicVolume;
+        sample += sin(2 * pi * harmonicFrequency * t) * harmonicVolume;
       }
+      sample *= envelope;
 
-      final int intSample = (sample.clamp(-1.0, 1.0) * 32767).toInt();
-      byteData.setInt16(byteOffset, intSample, Endian.little);
-      byteOffset += 2;
+      final int sampleInt16 = (sample.clamp(-1.0, 1.0) * 32767).round();
+      byteData.setInt16(offset, sampleInt16, Endian.little);
+      offset += 2;
     }
 
     return byteData.buffer.asUint8List();
   }
 
-  static Uint8List _generateGameOverWav() {
+  Uint8List _generateGameOverWav() {
     const int sampleRate = 22050;
-    const double durationSeconds = 0.45;
-    final int totalSamples = (durationSeconds * sampleRate).toInt();
+    const double durationSeconds = 0.40;
+    final int totalSamples = (sampleRate * durationSeconds).round();
     const int numChannels = 1;
     const int bitsPerSample = 16;
     const int byteRate = sampleRate * numChannels * (bitsPerSample ~/ 8);
     const int blockAlign = numChannels * (bitsPerSample ~/ 8);
-    final int dataSize = totalSamples * (bitsPerSample ~/ 8);
-    final int chunkSize = 36 + dataSize;
+    final int subChunk2Size = totalSamples * blockAlign;
+    final int chunkSize = 36 + subChunk2Size;
 
-    final ByteData byteData = ByteData(44 + dataSize);
+    final ByteData byteData = ByteData(44 + subChunk2Size);
 
-    // RIFF Chunk
-    byteData.setUint8(0, 0x52);
-    byteData.setUint8(1, 0x49);
-    byteData.setUint8(2, 0x46);
-    byteData.setUint8(3, 0x46);
+    // RIFF header
+    byteData.setUint8(0, 0x52); // 'R'
+    byteData.setUint8(1, 0x49); // 'I'
+    byteData.setUint8(2, 0x46); // 'F'
+    byteData.setUint8(3, 0x46); // 'F'
     byteData.setUint32(4, chunkSize, Endian.little);
-    byteData.setUint8(8, 0x57);
-    byteData.setUint8(9, 0x41);
-    byteData.setUint8(10, 0x56);
-    byteData.setUint8(11, 0x45);
+    byteData.setUint8(8, 0x57);  // 'W'
+    byteData.setUint8(9, 0x41);  // 'A'
+    byteData.setUint8(10, 0x56); // 'V'
+    byteData.setUint8(11, 0x45); // 'E'
 
-    // fmt Subchunk
-    byteData.setUint8(12, 0x66);
-    byteData.setUint8(13, 0x6D);
-    byteData.setUint8(14, 0x74);
-    byteData.setUint8(15, 0x20);
+    // fmt subchunk
+    byteData.setUint8(12, 0x66); // 'f'
+    byteData.setUint8(13, 0x6D); // 'm'
+    byteData.setUint8(14, 0x74); // 't'
+    byteData.setUint8(15, 0x20); // ' '
     byteData.setUint32(16, 16, Endian.little);
     byteData.setUint16(20, 1, Endian.little);
     byteData.setUint16(22, numChannels, Endian.little);
@@ -331,25 +365,33 @@ class SoundSynthesizer {
     byteData.setUint16(32, blockAlign, Endian.little);
     byteData.setUint16(34, bitsPerSample, Endian.little);
 
-    // data Subchunk
-    byteData.setUint8(36, 0x64);
-    byteData.setUint8(37, 0x61);
-    byteData.setUint8(38, 0x74);
-    byteData.setUint8(39, 0x61);
-    byteData.setUint32(40, dataSize, Endian.little);
+    // data subchunk
+    byteData.setUint8(36, 0x64); // 'd'
+    byteData.setUint8(37, 0x61); // 'a'
+    byteData.setUint8(38, 0x74); // 't'
+    byteData.setUint8(39, 0x61); // 'a'
+    byteData.setUint32(40, subChunk2Size, Endian.little);
 
-    int byteOffset = 44;
+    int offset = 44;
     for (int i = 0; i < totalSamples; i++) {
       final double t = i / sampleRate;
       final double envelope = exp(-6.0 * t);
+      // Pitch drops from 140Hz down to 55Hz
       final double freq = 140.0 - 85.0 * (t / durationSeconds);
-      final double sample = sin(2 * pi * freq * t) * envelope * 0.4;
+      final double sample = sin(2 * pi * freq * t) * envelope * 0.75;
 
-      final int intSample = (sample.clamp(-1.0, 1.0) * 32767).toInt();
-      byteData.setInt16(byteOffset, intSample, Endian.little);
-      byteOffset += 2;
+      final int sampleInt16 = (sample.clamp(-1.0, 1.0) * 32767).round();
+      byteData.setInt16(offset, sampleInt16, Endian.little);
+      offset += 2;
     }
 
     return byteData.buffer.asUint8List();
+  }
+
+  void dispose() {
+    for (final player in _players) {
+      player.dispose();
+    }
+    _players.clear();
   }
 }

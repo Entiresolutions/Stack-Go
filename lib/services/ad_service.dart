@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/widgets.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'music_service.dart';
 
@@ -385,8 +384,8 @@ class AdService {
   }) async {
     // 1. If not on mobile device (e.g. Windows desktop/web test), notify
     if (!isMobile) {
-      onAdUnavailable?.call(
-          "Rewarded ads are only available on Android and iOS devices.");
+      onAdUnavailable
+          ?.call("Rewarded ads are only available on Android and iOS devices.");
       return false;
     }
 
@@ -484,22 +483,20 @@ class AdService {
     _isShowingAd = true;
 
     // Pause game music while ad is playing
-    MusicService.instance.onAppLifecycleStateChanged(AppLifecycleState.paused);
+    MusicService.instance.pauseForAd();
 
     ad.fullScreenContentCallback = FullScreenContentCallback(
       onAdDismissedFullScreenContent: (ad) {
         _isShowingAd = false;
         ad.dispose();
-        MusicService.instance
-            .onAppLifecycleStateChanged(AppLifecycleState.resumed);
+        MusicService.instance.resumeAfterAd();
         onDismissed();
         preloadAd(); // preload for next time
       },
       onAdFailedToShowFullScreenContent: (ad, error) {
         _isShowingAd = false;
         ad.dispose();
-        MusicService.instance
-            .onAppLifecycleStateChanged(AppLifecycleState.resumed);
+        MusicService.instance.resumeAfterAd();
         onDismissed();
         preloadAd();
       },
@@ -520,22 +517,20 @@ class AdService {
     _isShowingAd = true;
 
     // Pause game music while ad is playing
-    MusicService.instance.onAppLifecycleStateChanged(AppLifecycleState.paused);
+    MusicService.instance.pauseForAd();
 
     ad.fullScreenContentCallback = FullScreenContentCallback(
       onAdDismissedFullScreenContent: (ad) {
         _isShowingAd = false;
         ad.dispose();
-        MusicService.instance
-            .onAppLifecycleStateChanged(AppLifecycleState.resumed);
+        MusicService.instance.resumeAfterAd();
         onDismissed();
         preloadInterstitialAd(); // preload for next time
       },
       onAdFailedToShowFullScreenContent: (ad, error) {
         _isShowingAd = false;
         ad.dispose();
-        MusicService.instance
-            .onAppLifecycleStateChanged(AppLifecycleState.resumed);
+        MusicService.instance.resumeAfterAd();
         onDismissed();
         preloadInterstitialAd();
       },
@@ -562,14 +557,13 @@ class AdService {
     bool rewardEarned = false;
 
     // Pause music during ad
-    MusicService.instance.onAppLifecycleStateChanged(AppLifecycleState.paused);
+    MusicService.instance.pauseForAd();
 
     ad.fullScreenContentCallback = FullScreenContentCallback(
       onAdDismissedFullScreenContent: (ad) {
         _isShowingAd = false;
         ad.dispose();
-        MusicService.instance
-            .onAppLifecycleStateChanged(AppLifecycleState.resumed);
+        MusicService.instance.resumeAfterAd();
 
         if (rewardEarned) {
           onRewardEarned();
@@ -585,8 +579,7 @@ class AdService {
       onAdFailedToShowFullScreenContent: (ad, error) {
         _isShowingAd = false;
         ad.dispose();
-        MusicService.instance
-            .onAppLifecycleStateChanged(AppLifecycleState.resumed);
+        MusicService.instance.resumeAfterAd();
 
         // Strict: failed to show -> NO chance awarded!
         onAdUnavailable?.call(

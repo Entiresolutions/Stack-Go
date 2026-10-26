@@ -1,7 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../../core/game_theme.dart';
-import '../../services/ad_service.dart';
 import '../widgets/premium_button.dart';
 
 /// Phase 4: Production Pause Menu Overlay
@@ -265,11 +264,7 @@ class _PauseOverlayState extends State<PauseOverlay>
                           ],
                           height: 50,
                           fontSize: 15,
-                          onTap: () => _safeAction(
-                            () => AdService.instance.showInterstitialAd(
-                              onComplete: widget.onResume,
-                            ),
-                          ),
+                          onTap: () => _safeAction(widget.onResume),
                         ),
                         const SizedBox(height: 10),
 
@@ -284,11 +279,7 @@ class _PauseOverlayState extends State<PauseOverlay>
                           customShadows: secondaryShadows,
                           height: 46,
                           fontSize: 14,
-                          onTap: () => _safeAction(
-                            () => AdService.instance.showInterstitialAd(
-                              onComplete: widget.onRestart,
-                            ),
-                          ),
+                          onTap: () => _safeAction(widget.onRestart),
                         ),
                         const SizedBox(height: 10),
 
@@ -303,11 +294,7 @@ class _PauseOverlayState extends State<PauseOverlay>
                           customShadows: secondaryShadows,
                           height: 46,
                           fontSize: 14,
-                          onTap: () => _safeAction(
-                            () => AdService.instance.showInterstitialAd(
-                              onComplete: widget.onSettings,
-                            ),
-                          ),
+                          onTap: () => _safeAction(widget.onSettings),
                         ),
                         const SizedBox(height: 10),
 
@@ -322,11 +309,7 @@ class _PauseOverlayState extends State<PauseOverlay>
                           customShadows: secondaryShadows,
                           height: 46,
                           fontSize: 14,
-                          onTap: () => _safeAction(
-                            () => AdService.instance.showInterstitialAd(
-                              onComplete: widget.onHome,
-                            ),
-                          ),
+                          onTap: () => _safeAction(widget.onHome),
                         ),
                         const SizedBox(height: 2),
                       ],

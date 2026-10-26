@@ -122,12 +122,21 @@ class _StackPulseAppState extends State<StackPulseApp>
   }
 
   void _updateSettings(GameSettings updated) {
+    final musicToggled = updated.musicEnabled != _settings.musicEnabled;
+    final musicVolChanged = updated.musicVolume != _settings.musicVolume;
+    final soundVolChanged = updated.soundVolume != _settings.soundVolume;
     setState(() => _settings = updated);
     _storage.saveSettings(updated);
     FeedbackService.updateSettings(updated);
-    MusicService.instance.setMusicEnabled(updated.musicEnabled);
-    MusicService.instance.setVolume(updated.musicVolume);
-    SoundSynthesizer.instance.setVolume(updated.soundVolume);
+    if (musicToggled) {
+      MusicService.instance.setMusicEnabled(updated.musicEnabled);
+    }
+    if (musicVolChanged) {
+      MusicService.instance.setVolume(updated.musicVolume);
+    }
+    if (soundVolChanged) {
+      SoundSynthesizer.instance.setVolume(updated.soundVolume);
+    }
   }
 
   void _updateStatistics(GameStatistics updated) {
