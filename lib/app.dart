@@ -136,13 +136,7 @@ class _StackPulseAppState extends State<StackPulseApp>
   }
 
   void _handleStartGame() {
-    AdService.instance.showPlayAd(
-      onComplete: () {
-        if (mounted) {
-          _switchView(AppView.game);
-        }
-      },
-    );
+    _switchView(AppView.game);
   }
 
   void _handleGoHome() {

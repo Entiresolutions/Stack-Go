@@ -220,6 +220,93 @@ The central gameplay stacking region strictly avoids flat, dead black vertical r
 
 ---
 
+### 4.5 Living Animated Environments & Layered Motion Specifications
+
+Stack Pulse features an interactive living environmental animation system across all 10 gameplay themes. Rather than simply zooming or scaling a static canvas, the architecture separates environmental presentation into 4 GPU-optimized decoupled layers:
+
+#### Layer 1: Static High-Fidelity Thematic Artwork
+- High-resolution 9:16 portrait environments rendered via `Image.asset(fit: BoxFit.cover)` with smooth crossfade `AnimatedSwitcher`.
+
+#### Layer 2: Theme-Specific Animated Environmental Elements (Multi-Depth & Parallax)
+Each theme executes its own dedicated procedural rendering engine with independent velocity, trigonometric oscillation, and depth layers:
+
+1. **Midnight Neon (Cyber Dimension)**:
+   - **Holographic Light Beams**: Smoothly swaying vertical light columns in outer margins with soft linear falloff.
+   - **Architectural Neon Conduits**: Angled travelling neon pulses running vertically along outer silhouettes.
+   - **Cyber Dust & Data Glyphs**: Multi-layer geometric diamond particles and micro-pixels ascending with sinusoidal sway.
+   - **Reactive**: Electric cyan shockwave expanding on perfect hits; 5x/10x streaks intensify conduit pulse frequency and beam luminance.
+
+2. **Aurora (Living Lights)**:
+   - **Multi-Curtain Aurora Ribbons**: 3 smoothly flowing, undulating ribbon curtains driven by multi-frequency harmonic sine waves (`sin(x * 3.2 + t * 1.5) + cos(x * 6.5 + t * 0.9)`).
+   - **Curtain Striations**: Vertical radiant light bands hanging beneath the crests with shifting alpha.
+   - **Luminous Spirit Motes**: Glowing emerald and turquoise motes drifting upwards with shimmering halos.
+   - **Reactive**: Horizontal aurora shimmer wave sweeping across the northern lights on perfect placement; streaks swell ribbon height and wave amplitude.
+
+3. **Sunset Pulse (Golden Horizon)**:
+   - **Layered Drifting Clouds**: High-altitude thin wisps (`speed = 0.015`) and midground cumulus lobes with warm gradient shading moving with organic parallax.
+   - **Crepuscular Sunlight Rays**: Radial sunlight beams originating from the horizon sun point, shifting angle slowly over time.
+   - **Horizon Warm Glow**: Breathing amber/coral gradient along the bottom horizon with glowing boundary line.
+   - **Floating Warm Dust**: Golden dust motes caught in the sunlight.
+   - **Reactive**: Golden sweep radiating along horizon on perfect placement; streaks expand sun ray reach and sky warmth.
+
+4. **Arctic Glow (Frozen Dimension)**:
+   - **3-Depth Parallax Snowfall**:
+     - *Layer 0 (Deep Background)*: Dense micro-snow dust (`r = 1.4-1.6px`) with slow descent (`speedY = 0.04`).
+     - *Layer 1 (Midground)*: Medium flakes (`r = 2.4-2.8px`) with gentle sinusoidal wind sway.
+     - *Layer 2 (Foreground)*: Faceted crystalline flakes (`r = 3.8-4.5px`) with faster descent (`speedY = 0.11`) and specular glints.
+   - **Ground Frost Mist**: Breathing cold cyan fog creeping along the base pedestal.
+   - **Crystalline Spire Glints**: Distant ice peaks twinkling with sharp 4-pointed sparkle stars.
+   - **Reactive**: Sharp icy sparkle flash with radial frost shockwave ring; streaks illuminate ice spires.
+
+5. **Sakura Drift (Cherry Blossom Sanctuary)**:
+   - **Tumbling 3D Cherry Blossom Petals**: Diagonally fluttering petals with simulated 3D tumbling (modulating 2D rotation angle alongside orthogonal aspect ratio `scaleX = cos(flutterPhase)`).
+   - **Natural Wind Gusts**: Periodic wind acceleration waves carrying petals horizontally across the screen margins.
+   - **Swaying Hanging Lanterns**: Outer lower lanterns swaying like pendulums (`sin(t * 1.2) * 0.08`) with flickering warm radial light pools.
+   - **Reactive**: Blossom burst radiating 8 fluttering petals outward on perfect placement; streaks induce a gentle blossom wind gust.
+
+6. **Abyssal Depths (Bioluminescent Ocean)**:
+   - **Multi-Speed Rising Bubbles**: Bubbles rising with organic sinusoidal horizontal wobble, translucent aqua bodies, and specular highlight dots.
+   - **Swaying Aquatic Kelp Silhouettes**: Organic fronds rising from bottom-left and bottom-right edges with multi-joint quadratic bezier kinematics.
+   - **Volumetric Caustic Shafts**: Shimmering angled light shafts projecting downward from the surface.
+   - **Reactive**: Concentric circular sonar ripple expanding outward on perfect placement; streaks brighten bioluminescent shafts.
+
+7. **Retro Grid (Digital Synthwave)**:
+   - **Continuous 3D Perspective Grid**: Infinite scrolling horizontal lines with quadratic depth compression (`((i + frac) / N)^2.2`) converging at the horizon vanishing point.
+   - **Segmented Synthwave Sun**: Half-disc neon sun with horizontal scanline blinds pulsing at the horizon.
+   - **Digital Laser Scanline**: Horizontal laser beam sweeping smoothly up and down the upper screen with gradient trail.
+   - **Reactive**: High-energy synthwave pulse shockwave radiating from the vanishing point; streaks accelerate grid scroll and brighten wireframes.
+
+8. **Ember Core (Volcanic Chamber)**:
+   - **Boiling Magma Reservoir**: Viscous lava pool at bottom pulsing with deep crimson and blazing gold.
+   - **Buoyant Turbulent Embers**: Thermal upward acceleration with turbulent horizontal currents; incandescent color shift from white/gold core to orange body and cooling red crust.
+   - **Heat Shimmer Waves**: Rising atmospheric convection bands along the outer walls.
+   - **Reactive**: Molten magma shockwave ring with central exploding ember spark on perfect placement; streaks flare lateral volcanic fissures.
+
+9. **Celestial Observatory (Golden Constellations)**:
+   - **Multi-Phase Twinkling Star Dust**: Multi-frequency twinkling stars (`sin(t * rate + phase)^4`) with 4-point diamond sparkle stars.
+   - **Revolving Constellation Geometry**: Geometric starlight lines connecting star nodes, slowly revolving around celestial poles in the sky margins.
+   - **Periodic Shooting Stars**: Incandescent shooting stars streaking diagonally across the upper heavens with fading gradient tails.
+   - **Reactive**: Golden starburst constellation flash on perfect placement; streaks trigger golden starfall.
+
+10. **Prism Rift (Dimensional Fracture)**:
+    - **Drifting 3D Faceted Crystal Shards**: Drifting polygonal shards with slow rotation, planar facet shading, and specular edge gleams.
+    - **Refractive Chromatic Dispersion Beams**: Angled light beams radiating from the rift with split cyan and magenta color fringes.
+    - **Reactive**: Chromatic dispersion ripple (dual cyan and magenta concentric shockwave rings expanding with slight radius offset) on perfect placement; streaks illuminate distant crystalline dimensional fractures.
+
+#### Layer 3: Theme-Aware Gameplay-Safe Corridor Blend
+- Central column (30% to 70% width) is strictly protected with a horizontal feather gradient (`stops: [0.0, 0.22, 0.50, 0.78, 1.0]`).
+- Dark theme-aware atmospheric tone ensures 2.5D stacking blocks and perfect alignment calculations are 100% visible and distraction-free.
+- Lower fog continuation seamlessly bridges the left and right scenery across the base pedestal.
+
+#### Layer 4: Cosmetic Gameplay-Reactive Feedback
+- **Normal Placement**: Gentle subtle atmospheric breathe (`normalReactiveAnimation`, 320ms `easeOutQuad`).
+- **Perfect Placement**: Theme-specific visual shockwave / burst (`reactiveAnimation`, 700ms `easeOutCubic`).
+- **Streak Milestones (5x, 10x)**: Smooth multiplier boosts particle velocity, illumination intensity, and atmospheric depth.
+- **Game Paused**: Ambient AnimationController freezes cleanly without abrupt jumps.
+- **Reduced Motion**: Disables CustomPaint layer entirely, preserving battery and honoring accessibility settings.
+
+---
+
 ## 5. Typography Hierarchy
 
 The typography scale utilizes `Plus Jakarta Sans` (with system sans-serif fallback) with tabular figures enabled for all numerical score meters:
@@ -358,25 +445,41 @@ The typography scale utilizes `Plus Jakarta Sans` (with system sans-serif fallba
   - Dimensions, speeds, collision tolerances, spawn coordinates, and trimming math are 100% preserved.
   - Block rendering styles, bevels, and palette assignments remain authoritative and decoupled from HUD/background presentation.
 
-### 9.2 Dynamic Theme-Based Gameplay Environments (`ThemeGameplayBackground`)
-- **Multi-Environment Architecture**:
-  - Replaced the single background image and flat color tint with 4 authentic, high-resolution (9:16 portrait) Nano Banana-generated environment assets:
-    1. **Midnight Neon (Cyber Dimension)**: `assets/images/gameplay_bg.jpg` — Deep navy cybernetic void, futuristic skyscraper monoliths on outer margins, cyan/purple lighting, subtle cyber light pillars, 12 drifting cyber motes, and floor mist.
-    2. **Aurora (Living Lights)**: `assets/images/gameplay_bg_aurora.jpg` — Deep emerald night atmosphere, glowing turquoise and mint northern lights flowing in the upper sky, jagged obsidian peaks framing outer edges, 12 floating spirit motes, and soft emerald ground mist.
-    3. **Sunset Pulse (Golden Horizon)**: `assets/images/gameplay_bg_sunset.jpg` — Vibrant twilight sky (deep violet to radiant amber), futuristic cyber city spires, glowing low horizon line with warm ambient breathing, 12 rising golden embers, and coral floor mist.
-    4. **Arctic Glow (Frozen Dimension)**: `assets/images/gameplay_bg_arctic.jpg` — Sub-zero polar sapphire void, majestic crystalline glacial spires and obsidian obelisks framing outer margins, 11 crystalline snowflakes gently drifting downward, and glacial floor frost.
-- **Three-Tier Environmental Stack**:
-  - **Layer 1 — Static Artwork with Crossfade**: Decoded once, cached locally, and smoothly crossfaded across theme switches via `AnimatedSwitcher(380ms, Curves.easeOut)`.
-  - **Layer 2 — Procedural Ambient Motion**: Lightweight `CustomPainter` rendering theme-specific light beams, procedural aurora wave ribbons, horizon warmth oscillation, crystalline sparkle glints, and persistent particles.
-  - **Layer 3 — Reactive Interactive Feedback**:
-    - *Perfect Placement*: Instantaneous themed shockwave/pulse (Electric Cyan pulse in Midnight Neon, Mint/Turquoise aurora shimmer wave in Aurora, Golden Horizon amber sweep in Sunset Pulse, sharp Icy Glacial sparkle in Arctic Glow).
-    - *Streak Escalation*: Higher placement streaks dynamically scale environmental luminescence and particle breathing (+8% to +35%).
-    - *Game Over*: Smooth, calming ambient settling and vignette dimming (`0.28` alpha over 600ms).
-- **Readability & Block Protection**:
-  - Central 56% vertical column (`x: 0.22` to `0.78`) is strictly guaranteed dark, clean, and particle-free.
-  - Transparent center atmospheric gradient scrim provides WCAG AAA contrast for moving blocks, placed blocks, and score display.
-  - Zero interference with Flame physics, block rendering, collision math, scoring, or input handling (`IgnorePointer`).
-  - Supports `reducedMotion`: displays static theme artwork without procedural particles or motion.
+### 9.2 Dynamic Theme-Based Gameplay Environments & 10 Animated Video Backgrounds (`ThemeGameplayBackground`)
+- **Complete 10-Theme Living Video Architecture**:
+  - Every theme in Stack Pulse possesses its own high-resolution (9:16 portrait) animated video background sampled directly from its approved artwork and encoded into seamless, mobile-optimized H.264 MP4 assets in `assets/videos/`:
+    1. **Midnight Neon**: `assets/videos/gameplay_bg_midnight.mp4` (733.5 KB) — Rapidly coursing vertical neon building energy pulses (+65V), sweeping volumetric holographic sky searchlights, wet reflective street ripple waves, and floating digital cyber glyphs.
+    2. **Aurora**: `assets/videos/gameplay_bg_aurora.mp4` (445.1 KB) — Undulating northern lights ribbon flow, breathing emerald/turquoise illumination shifts, and drifting valley mist.
+    3. **Sunset Pulse**: `assets/videos/gameplay_bg_sunset.mp4` (582.7 KB) — Rock-solid cyber monoliths & spires, radiant golden-amber sunset horizon breathing, flowing twilight magenta/violet atmospheric sky vistas, neon energy runners racing along architectural edges, solar rim sparkle glints, drifting floor mist, and 45 floating twilight embers.
+    4. **Arctic Glow**: `assets/videos/gameplay_bg_arctic.mp4` (608.4 KB) — Shifting crystal reflections across frozen glacial spires, icy valley mist, and 60 naturally falling polar snowflakes with periodic loop wrap.
+    5. **Sakura Drift**: `assets/videos/gameplay_bg_sakura.mp4` (580.7 KB) — Gentle atmospheric tree canopy swaying, soft lantern illumination breathing, and 45 drifting cherry blossom petals.
+    6. **Abyssal Depths**: `assets/videos/gameplay_bg_abyssal.mp4` (1,264.6 KB) — Fluid underwater refractive wave distortion, moving oceanic caustic light shafts, 35 rising bubbles, and pulsing bioluminescence.
+    7. **Retro Grid**: `assets/videos/gameplay_bg_retro.mp4` (649.7 KB) — Active forward-moving perspective wireframe grid streaming toward player, concentric synthwave sun pulse rings, and horizon laser scanline.
+    8. **Ember Core**: `assets/videos/gameplay_bg_ember.mp4` (876.3 KB) — Molten lava fluid flow displacement, glowing volcanic magma breathing, heat haze, and 40 rising volcanic sparks/embers.
+    9. **Celestial Observatory**: `assets/videos/gameplay_bg_celestial.mp4` (1,379.0 KB) — Rock-solid stationary observatory architecture (zero camera wobble), rich flowing cosmic nebula currents, volumetric starlight god rays streaming from dome, traveling golden armillary ring gleams, 75 sparkling constellation star cross-flares, two shooting stars/meteors, and 50+ floating golden stardust motes.
+    10. **Prism Rift**: `assets/videos/gameplay_bg_prism.mp4` (1,851.1 KB) — Floating crystal shard levitation, vivid spectral rainbow chromatic refraction cycling through facets, and dimensional fracture gleams.
+  - **Total Bundle Footprint**: Just **8.81 MB** for all 10 high-fidelity video environments combined.
+  - **Video Encoding Standards**: Portrait 9:16, 720 × 1280 resolution, 24 FPS, 144 frames (6.0s duration), H.264 video codec (`libx264`, `yuv420p`), MP4 container with `+faststart` moov atom header, and zero audio tracks.
+  - **Seamless Loop Precision**: Every temporal function is parameterized on pure harmonic terms of $\theta = 2\pi t / 144$, yielding near-zero boundary pixel difference with zero visible frame jumps or motion resets.
+- **Four-Tier Environmental Layering**:
+  - **Layer 1 — Static Artwork Fallback**: The original static image (`assets/images/gameplay_bg_*.jpg`) is decoded and rendered underneath with `AnimatedSwitcher(380ms, Curves.easeOut)`, guaranteeing zero black flash during theme switching and instantaneous fallback if video decoding is unavailable.
+  - **Layer 1B — Video Player Layer**: Single active `VideoPlayerController.asset` rendered via `FittedBox(fit: BoxFit.cover, clipBehavior: Clip.hardEdge)` across all device aspect ratios. Bypassed when `reducedMotion` is enabled.
+  - **Layer 2 — Living Environmental Accents & Reactive Feedback**:
+    - *Corridor Safety*: Theme-aware central gradient (`corridorBaseColor` and `corridorCenterColor`) ensures the center 56% column remains quiet and high-contrast for block tracking.
+    - *Reactive Placement*: Themed pulse/shimmer sweeps across the background on perfect placement (`r > 0.0`); streak multipliers scale environmental luminescence.
+    - *Adaptive Blending*: Procedural ambient curves are dynamically softened when video is active, letting the authentic video scenery shine as the focal environment while retaining reactive placement feedback.
+  - **Layer 3 — Atmospheric Contrast Scrim**: Upper/lower vertical gradient guaranteeing WCAG AAA contrast for HUD indicators and stacked blocks.
+- **Audio Protection & Zero Audio Interference**:
+  - All video files contain strictly zero audio streams.
+  - `_videoController.setVolume(0.0)` is explicitly invoked upon controller initialization.
+  - Flutter/Flame audio players for Background Music (`BGM`) and Sound Effects (`SFX`) remain 100% independent and undisturbed, with zero audio focus disruption.
+- **Lifecycle & Resource Management**:
+  - Single active controller: Only the currently selected theme consumes video decoding and memory resources.
+  - `WidgetsBindingObserver` automatically pauses video playback during app backgrounding (`AppLifecycleState.paused`/`inactive`/`hidden`) and resumes on `resumed`.
+  - Game pause immediately pauses the video controller; resume restores playback.
+  - Controllers are cleanly disposed when switching themes or leaving the screen to prevent memory leaks.
+  - `reducedMotion` completely disables video playback and procedural particles, displaying the rock-solid static artwork.
+  - Video surfaces are wrapped in `IgnorePointer(ignoring: true)` to prevent any touch event interception.
 
 ### 9.3 Screen-Fixed HUD Layout
 - **Top-Left (Best Score Pill)**:

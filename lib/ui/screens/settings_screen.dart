@@ -163,13 +163,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 haptics: false,
                               );
                             }
-                            AdService.instance.showInterstitialAd(onComplete: () {});
                           },
                           onVolumeChanged: (val) {
                             _updateSettings(soundVolume: val);
-                          },
-                          onVolumeChangeEnd: (val) {
-                            AdService.instance.showInterstitialAd(onComplete: () {});
                           },
                         ),
                         const SizedBox(height: 12),
@@ -182,13 +178,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           volume: _musicVolume,
                           onToggleChanged: (val) {
                             _updateSettings(music: val);
-                            AdService.instance.showInterstitialAd(onComplete: () {});
                           },
                           onVolumeChanged: (val) {
                             _updateSettings(musicVolume: val);
-                          },
-                          onVolumeChangeEnd: (val) {
-                            AdService.instance.showInterstitialAd(onComplete: () {});
                           },
                         ),
                         const SizedBox(height: 12),
@@ -206,7 +198,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 sound: false,
                               );
                             }
-                            AdService.instance.showInterstitialAd(onComplete: () {});
+                            AdService.instance
+                                .showInterstitialAd(onComplete: () {});
                           },
                         ),
                         const SizedBox(height: 12),
@@ -218,7 +211,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           value: _reducedMotion,
                           onChanged: (val) {
                             _updateSettings(motion: val);
-                            AdService.instance.showInterstitialAd(onComplete: () {});
+                            AdService.instance
+                                .showInterstitialAd(onComplete: () {});
                           },
                         ),
                         const SizedBox(height: 32),
@@ -408,7 +402,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               ),
               const SizedBox(width: 14),
-
               Expanded(
                 child: Text(
                   title,
@@ -420,7 +413,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 ),
               ),
-
               _NeonPillSwitch(
                 value: enabled,
                 activeColor: const Color(0xFF13D9FF),

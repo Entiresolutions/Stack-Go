@@ -168,8 +168,8 @@ The application utilizes Google Mobile Ads SDK across Android (and iOS) platform
 | Identifier Type | Value | Target Format | Implementation Purpose |
 |---|---|---|---|
 | **AdMob App ID** | `ca-app-pub-3794659976212193~9107617603` | Application Manifest | SDK Initialization & App Verification |
-| **App Open / Interstitial** | `ca-app-pub-3794659976212193/3368291483` | Full-Screen Interstitial / App Open | Game Session Entry & Game Over Exit to Home |
-| **Action Interstitial** | `ca-app-pub-3794659976212193/5028771792` | Full-Screen Interstitial | Settings Controls, Theme Selection, Pause Actions |
+| **App Open / Interstitial** | `ca-app-pub-3794659976212193/3368291483` | Full-Screen Interstitial / App Open | Game Over Exit to Home |
+| **Action Interstitial** | `ca-app-pub-3794659976212193/5028771792` | Full-Screen Interstitial | Accessibility Settings Controls, Theme Selection, Pause Actions |
 | **Rewarded Video** | `ca-app-pub-3794659976212193/9929744688` | Rewarded Video Ad | "Watch and Get a Chance" Run Revival |
 
 > [!NOTE]
@@ -177,26 +177,30 @@ The application utilizes Google Mobile Ads SDK across Android (and iOS) platform
 
 ---
 
-#### 4.8.2 Comprehensive Ad Placement Matrix
-Ads are systematically placed across navigation gates, user preferences, and failure recovery states:
+#### 4.8.2 Comprehensive Active Ad Placement Matrix
+Ads are systematically placed across strategic navigation gates, user preferences, and failure recovery states, while keeping core gameplay triggers 100% ad-free:
 
-| Screen / Overlay | Triggering UI Element / Event | Ad Format & Unit ID | Playback Condition & Action |
-|---|---|---|---|
-| **Home Screen** | `PLAY` Button Tap | Interstitial (`3368291483`) | Displays full-screen ad prior to initializing and launching the 3D game arena. |
-| **Game Over Overlay** | `HOME` Button Tap | Interstitial (`3368291483`) | Plays full-screen ad before transitioning the user from the game session back to the Main Menu. |
-| **Game Over Overlay** | `WATCH AND GET A CHANCE` Button Tap | Rewarded Video (`9929744688`) | Plays a full rewarded video. If watched to completion, revives the current run, preserves the existing score, clears missed blocks, and spawns the next block. |
-| **Pause Menu Overlay** | `RESUME` Button Tap | Interstitial (`5028771792`) | Plays interstitial before resuming active block oscillation and game timer. |
-| **Pause Menu Overlay** | `RESTART` Button Tap | Interstitial (`5028771792`) | Plays interstitial before wiping the stack and re-centering the camera for a fresh run. |
-| **Pause Menu Overlay** | `SETTINGS` Button Tap | Interstitial (`5028771792`) | Plays interstitial before navigating from the pause overlay to the Settings screen. |
-| **Pause Menu Overlay** | `HOME` Button Tap | Interstitial (`5028771792`) | Plays interstitial before leaving the paused session and returning to Home. |
-| **Settings Screen** | `Sound Effects` Switch (Toggle ON/OFF) | Interstitial (`5028771792`) | Plays interstitial when the user flips the SFX enable toggle. |
-| **Settings Screen** | `Sound Effects` Volume Slider (`onChangeEnd`) | Interstitial (`5028771792`) | Plays interstitial when the user finishes dragging and releases the SFX volume slider. |
-| **Settings Screen** | `Background Music` Switch (Toggle ON/OFF) | Interstitial (`5028771792`) | Plays interstitial when the user flips the BGM enable toggle. |
-| **Settings Screen** | `Background Music` Volume Slider (`onChangeEnd`) | Interstitial (`5028771792`) | Plays interstitial when the user finishes dragging and releases the BGM volume slider. |
-| **Settings Screen** | `Haptic Feedback` Switch (Toggle ON/OFF) | Interstitial (`5028771792`) | Plays interstitial when the user toggles tactile vibration feedback. |
-| **Settings Screen** | `Reduced Motion` Switch (Toggle ON/OFF) | Interstitial (`5028771792`) | Plays interstitial when the user toggles camera shake & particle reduction. |
-| **Settings Screen** | `Current Theme` Card Tap | Interstitial (`5028771792`) | Plays interstitial before navigating from Settings to the Theme Selection Screen. |
-| **Themes Screen** | Selecting Any Unlocked Theme Tile | Interstitial (`5028771792`) | Plays interstitial upon applying an unlocked aesthetic theme. |
+| Screen / Overlay | Triggering UI Element / Event | Ad Format & Production Unit ID | Source File & Implementation | Playback Condition & Action |
+|---|---|---|---|---|
+| **Game Session (Game Over)** | Block Miss / Run Loss Event | Interstitial (`5028771792`) | `lib/ui/screens/game_screen.dart` | Allows 350ms for miss drop animation and audio FX to play, then presents full-screen interstitial ad before transitioning to the final Score Card overlay. |
+| **Game Over Overlay** | `HOME` Button Tap | App Open / Interstitial (`3368291483`) | `lib/app.dart` (`_handleGoHome`) | Plays full-screen ad before transitioning the user from the game session back to the Main Menu. |
+| **Game Over Overlay** | `WATCH AND GET A CHANCE` Button Tap | Rewarded Video (`9929744688`) | `lib/ui/screens/game_screen.dart` (`_onRevive`) | Plays full-screen rewarded video. Upon verified completion, revives the current run, preserves existing score, clears missed blocks, and spawns the next block. |
+| **Pause Menu Overlay** | `RESTART` Button Tap | Interstitial (`5028771792`) | `lib/ui/overlays/pause_overlay.dart` | Plays interstitial before wiping the stack and re-centering the camera for a fresh run. |
+| **Pause Menu Overlay** | `SETTINGS` Button Tap | Interstitial (`5028771792`) | `lib/ui/overlays/pause_overlay.dart` | Plays interstitial before navigating from the pause overlay to the Settings screen. |
+| **Pause Menu Overlay** | `HOME` Button Tap | Interstitial (`5028771792`) | `lib/ui/overlays/pause_overlay.dart` | Plays interstitial before leaving the paused session and returning to Home. |
+| **Settings Screen** | `Haptic Feedback` Switch (Toggle ON/OFF) | Interstitial (`5028771792`) | `lib/ui/screens/settings_screen.dart` | Plays interstitial when the user toggles tactile vibration feedback. |
+| **Settings Screen** | `Reduced Motion` Switch (Toggle ON/OFF) | Interstitial (`5028771792`) | `lib/ui/screens/settings_screen.dart` | Plays interstitial when the user toggles camera shake & particle reduction. |
+| **Settings Screen** | `Current Theme` Card Tap | Interstitial (`5028771792`) | `lib/ui/screens/settings_screen.dart` | Plays interstitial before navigating from Settings to the Theme Selection Screen. |
+| **Themes Screen** | Selecting Any Unlocked Theme Tile | Interstitial (`5028771792`) | `lib/ui/screens/themes_screen.dart` | Plays interstitial upon selecting and applying any unlocked aesthetic theme. |
+
+> [!TIP]
+> **Ad-Free Core Experience Policy (Strictly Enforced)**:
+> To guarantee zero friction during game entry, mid-session resumes, instant replays, and essential audio adjustments, ads are **strictly removed** from:
+> - **Home Screen `PLAY` Button**: Immediate entry into the 3D game arena with zero latency or ad barriers (`_handleStartGame`).
+> - **Pause Menu Overlay `RESUME` Button**: Immediate resumption of active gameplay and block oscillation (`onResume`).
+> - **Game Over Overlay `RETRY` Button**: Instant restart into a fresh stack run with zero interstitial barrier or interruption (`onRetry`).
+> - **Settings Screen `Sound Effects` Switch & Slider**: Immediate toggling and smooth real-time volume adjustment.
+> - **Settings Screen `Background Music` Switch & Slider**: Immediate toggling and smooth real-time music level adjustment.
 
 ---
 
@@ -238,7 +242,7 @@ To guarantee smooth 60 FPS gameplay, prevent frame hitching, and avoid black-scr
                               | - Audio muted / paused      |         | - Interstitial: Proceed    |
                               | - User views / interacts    |         |   without freezing UI      |
                               +--------------+--------------+         | - Rewarded: STRICT NO REVIVE|
-                                             |                        |   Shows English error alert|
+                                              |                        |   Shows English error alert|
                                              v                        +----------------------------+
                               +-----------------------------+
                               |      7. DISMISSAL & RESUME  |
@@ -280,29 +284,32 @@ To guarantee smooth 60 FPS gameplay, prevent frame hitching, and avoid black-scr
          | (Initialize AdService, Preload All Ads)
          v
   [ Home Screen ] <------------------------------------+
-   |-- Play Button ----------------------------------> [ Full-Screen Ad: 3368291483 ]
-   |                                                                |
-   |-- Best Score & Best Streak Pills                               v
-   |-- Stats Modal (Lifetime Metrics)                     [ Active Game Screen ]
-   |-- Themes Screen (Select/Unlock) <-------+             |-- Heads-Up Display (Score, Streak)
-   |-- Settings Screen -----------------+    |             |-- Pause Button
-   |    |-- SFX Switch & Slider (Ad)     |    |                  |
-   |    |-- BGM Switch & Slider (Ad)     |    |                  v
-   |    |-- Haptics & Reduced Motion (Ad)|    |            [ Pause Overlay ]
-   |    +-- Theme Shortcut Card (Ad) ----+    |             |-- Resume (Ad: 5028771792)
-   |-- Tutorial Screen                        |             |-- Restart (Ad: 5028771792)
-                                              |             |-- Settings (Ad: 5028771792)
-                                              |             |-- Home (Ad: 5028771792) ------+
-                                              |                                             |
-                                              |            [ Game Over Overlay ]            |
-                                              |             |-- Retry (Instant Restart)     |
-                                              |             |-- Home (Ad: 3368291483) ------+
-                                              |             +-- Watch & Get a Chance        |
-                                              |                  (Rewarded Ad: 9929744688)  |
-                                              |                       |                     |
-                                              |                  [ Revive Run ]             |
-                                              |                  (Continue with score)      |
-                                              +---------------------------------------------+
+   |-- Play Button (Direct / Ad-Free) -----------------+---> [ Active Game Screen ]
+   |                                                   |      |-- Heads-Up Display (Score, Streak)
+   |-- Best Score & Best Streak Pills                  |      |-- Pause Button
+   |-- Stats Modal (Lifetime Metrics)                  |      |     |
+   |-- Themes Screen (Select/Unlock) <-------+         |      |     v
+   |-- Settings Screen -----------------+    |         |      | [ Pause Overlay ]
+   |    |-- SFX Switch & Slider (Ad-Free)|   |         |      |  |-- Resume (Direct / Ad-Free)
+   |    |-- BGM Switch & Slider (Ad-Free)|   |         |      |  |-- Restart (Ad: 5028771792)
+   |    |-- Haptics & Motion (Ad)        |   |         |      |  |-- Settings (Ad: 5028771792)
+   |    +-- Theme Shortcut Card (Ad) ----+   |         |      |  |-- Home (Ad: 5028771792) ------+
+   |-- Tutorial Screen                       |         |      |                                   |
+                                             |         |      |-- Block Miss / Game Over          |
+                                             |         |            |                             |
+                                             |         |            v                             |
+                                             |         |       [ Interstitial Ad: 5028771792 ]    |
+                                             |         |            |                             |
+                                             |         |            v                             |
+                                             |         |     [ Game Over Overlay (Score Card) ]   |
+                                             |         |      |-- Retry (Instant / Ad-Free)       |
+                                             |         |      |-- Home (Ad: 3368291483) ----------+
+                                             |         |      +-- Watch & Get a Chance            |
+                                             |         |           (Rewarded Ad: 9929744688)      |
+                                             |         |                |                         |
+                                             |         +---------- [ Revive Run ]                 |
+                                             |                     (Continue with score)          |
+                                             +----------------------------------------------------+
 ```
 
 ---

@@ -19,6 +19,39 @@ enum ThemeTier {
   prestige, // Themes 8–10
 }
 
+/// Dedicated animation engine types for the 10 living gameplay environments
+enum AmbientAnimationType {
+  cyberBeams, // Midnight Neon
+  auroraCurtains, // Aurora
+  sunsetClouds, // Sunset Pulse
+  arcticSnowfall, // Arctic Glow
+  sakuraWind, // Sakura Drift
+  abyssalCaustics, // Abyssal Depths
+  synthwaveGrid, // Retro Grid
+  moltenEmbers, // Ember Core
+  celestialConstellations, // Celestial Observatory
+  prismaticRefractions, // Prism Rift
+}
+
+/// Data-driven configuration defining theme-specific environmental animation parameters
+class ThemeAnimationConfig {
+  final AmbientAnimationType type;
+  final double baseSpeed;
+  final double particleDensity;
+  final double reactiveIntensity;
+  final List<Color> ambientPalette;
+  final String effectDescription;
+
+  const ThemeAnimationConfig({
+    required this.type,
+    this.baseSpeed = 1.0,
+    this.particleDensity = 1.0,
+    this.reactiveIntensity = 1.0,
+    required this.ambientPalette,
+    required this.effectDescription,
+  });
+}
+
 /// Centralized Single Source of Truth for all Stack Pulse styling, palettes,
 /// semantic tokens, and visual effects across Flutter UI and Flame rendering.
 class GameTheme {
@@ -673,6 +706,32 @@ class GameTheme {
     }
   }
 
+  /// High-fidelity animated video background asset for all 10 living environments
+  String get gameplayBackgroundVideoAsset {
+    switch (type) {
+      case ThemeType.midnightNeon:
+        return 'assets/videos/gameplay_bg_midnight.mp4';
+      case ThemeType.aurora:
+        return 'assets/videos/gameplay_bg_aurora.mp4';
+      case ThemeType.sunsetPulse:
+        return 'assets/videos/gameplay_bg_sunset.mp4';
+      case ThemeType.arcticGlow:
+        return 'assets/videos/gameplay_bg_arctic.mp4';
+      case ThemeType.sakuraDrift:
+        return 'assets/videos/gameplay_bg_sakura.mp4';
+      case ThemeType.abyssalDepths:
+        return 'assets/videos/gameplay_bg_abyssal.mp4';
+      case ThemeType.retroGrid:
+        return 'assets/videos/gameplay_bg_retro.mp4';
+      case ThemeType.emberCore:
+        return 'assets/videos/gameplay_bg_ember.mp4';
+      case ThemeType.celestialObservatory:
+        return 'assets/videos/gameplay_bg_celestial.mp4';
+      case ThemeType.prismRift:
+        return 'assets/videos/gameplay_bg_prism.mp4';
+    }
+  }
+
   /// Thematic environment designation
   String get environmentName {
     switch (type) {
@@ -852,6 +911,128 @@ class GameTheme {
         return primaryAccent; // Celestial Gold
       case ThemeType.prismRift:
         return primaryAccent; // Prismatic Cyan
+    }
+  }
+
+  /// Centralized environmental animation parameters for the active living background
+  ThemeAnimationConfig get animationConfig {
+    switch (type) {
+      case ThemeType.midnightNeon:
+        return ThemeAnimationConfig(
+          type: AmbientAnimationType.cyberBeams,
+          baseSpeed: 1.0,
+          particleDensity: 1.0,
+          reactiveIntensity: 1.0,
+          ambientPalette: [primaryAccent, secondaryAccent, neonBlue],
+          effectDescription:
+              'Holographic light beams, cyber conduits, and neon pulses',
+        );
+      case ThemeType.aurora:
+        return ThemeAnimationConfig(
+          type: AmbientAnimationType.auroraCurtains,
+          baseSpeed: 0.85,
+          particleDensity: 1.1,
+          reactiveIntensity: 1.15,
+          ambientPalette: [
+            mintAccent,
+            const Color(0xFF10B981),
+            const Color(0xFF06B6D4)
+          ],
+          effectDescription:
+              'Flowing multi-harmonic aurora ribbons with polar motes',
+        );
+      case ThemeType.sunsetPulse:
+        return ThemeAnimationConfig(
+          type: AmbientAnimationType.sunsetClouds,
+          baseSpeed: 0.75,
+          particleDensity: 0.9,
+          reactiveIntensity: 1.0,
+          ambientPalette: [goldAccent, orangeAccent, neonMagenta],
+          effectDescription:
+              'Drifting cloud strata, shifting crepuscular rays, and warm dust',
+        );
+      case ThemeType.arcticGlow:
+        return ThemeAnimationConfig(
+          type: AmbientAnimationType.arcticSnowfall,
+          baseSpeed: 1.1,
+          particleDensity: 1.3,
+          reactiveIntensity: 1.1,
+          ambientPalette: [
+            const Color(0xFFBBEFFF),
+            primaryAccent,
+            Colors.white
+          ],
+          effectDescription:
+              'Multi-depth parallax snowfall, ice spires, and ground frost mist',
+        );
+      case ThemeType.sakuraDrift:
+        return ThemeAnimationConfig(
+          type: AmbientAnimationType.sakuraWind,
+          baseSpeed: 0.95,
+          particleDensity: 1.1,
+          reactiveIntensity: 1.1,
+          ambientPalette: [
+            primaryAccent,
+            secondaryAccent,
+            const Color(0xFFFFB3C6)
+          ],
+          effectDescription:
+              'Tumbling 3D cherry blossom petals, wind gusts, and swaying lanterns',
+        );
+      case ThemeType.abyssalDepths:
+        return ThemeAnimationConfig(
+          type: AmbientAnimationType.abyssalCaustics,
+          baseSpeed: 0.8,
+          particleDensity: 1.0,
+          reactiveIntensity: 1.1,
+          ambientPalette: [primaryAccent, mintAccent, neonBlue],
+          effectDescription:
+              'Rising wobbling bubbles, swaying kelp silhouettes, and oceanic caustics',
+        );
+      case ThemeType.retroGrid:
+        return ThemeAnimationConfig(
+          type: AmbientAnimationType.synthwaveGrid,
+          baseSpeed: 1.25,
+          particleDensity: 0.85,
+          reactiveIntensity: 1.2,
+          ambientPalette: [primaryAccent, secondaryAccent, neonBlue],
+          effectDescription:
+              'Continuous 3D perspective grid, laser scanline, and segmented synth sun',
+        );
+      case ThemeType.emberCore:
+        return ThemeAnimationConfig(
+          type: AmbientAnimationType.moltenEmbers,
+          baseSpeed: 1.15,
+          particleDensity: 1.2,
+          reactiveIntensity: 1.25,
+          ambientPalette: [
+            primaryAccent,
+            secondaryAccent,
+            const Color(0xFFFF3D00)
+          ],
+          effectDescription:
+              'Buoyant turbulent embers, boiling magma pool, and thermal heat waves',
+        );
+      case ThemeType.celestialObservatory:
+        return ThemeAnimationConfig(
+          type: AmbientAnimationType.celestialConstellations,
+          baseSpeed: 0.7,
+          particleDensity: 1.1,
+          reactiveIntensity: 1.05,
+          ambientPalette: [primaryAccent, neonBlue, Colors.white],
+          effectDescription:
+              'Twinkling starry spheres, revolving constellation geometry, and shooting stars',
+        );
+      case ThemeType.prismRift:
+        return ThemeAnimationConfig(
+          type: AmbientAnimationType.prismaticRefractions,
+          baseSpeed: 0.9,
+          particleDensity: 1.05,
+          reactiveIntensity: 1.2,
+          ambientPalette: [primaryAccent, secondaryAccent, neonBlue],
+          effectDescription:
+              'Faceted rotating crystal shards, chromatic dispersion beams, and spectral ripple',
+        );
     }
   }
 

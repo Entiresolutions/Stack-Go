@@ -265,11 +265,7 @@ class _PauseOverlayState extends State<PauseOverlay>
                           ],
                           height: 50,
                           fontSize: 15,
-                          onTap: () => _safeAction(
-                            () => AdService.instance.showInterstitialAd(
-                              onComplete: widget.onResume,
-                            ),
-                          ),
+                          onTap: () => _safeAction(widget.onResume),
                         ),
                         const SizedBox(height: 10),
 
