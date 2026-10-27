@@ -1,4 +1,4 @@
-package com.example.stack_pulse
+package com.entiresolutions.stackgo
 
 import android.content.Context
 import android.media.AudioAttributes
@@ -57,3 +57,4 @@ class MainActivity : FlutterActivity() {
         }
     }
 }
+

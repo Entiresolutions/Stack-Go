@@ -93,18 +93,18 @@ class HomeScreen extends StatelessWidget {
                           // TOP BAR: Best Score Pill (Left) & Settings Button (Right)
                           _buildTopBar(),
 
-                          SizedBox(height: isCompact ? 6 : 14),
+                          SizedBox(height: isCompact ? 10 : 34),
 
                           // BRANDING: 3-Pill Glowing Emblem inside Circular Halo + Title
                           StackPulseLogo(
                             scale:
-                                isVeryCompact ? 0.85 : (isCompact ? 0.95 : 1.1),
+                                isVeryCompact ? 0.80 : (isCompact ? 0.90 : 1.0),
                             showHalo: true,
                             showText: true,
                             stackedText: false,
                           ),
 
-                          SizedBox(height: isCompact ? 6 : 12),
+                          SizedBox(height: isCompact ? 4 : 8),
 
                           // HERO: 3D Stacking Blocks on Cyber Pedestal
                           Center(

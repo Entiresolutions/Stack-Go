@@ -30,6 +30,13 @@ class _SplashScreenState extends State<SplashScreen>
   bool _hasNavigated = false;
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    precacheImage(const AssetImage('assets/stack_go_logo.png'), context);
+    precacheImage(const AssetImage('assets/images/splash_bg.jpg'), context);
+  }
+
+  @override
   void initState() {
     super.initState();
     _controller = AnimationController(
@@ -37,36 +44,38 @@ class _SplashScreenState extends State<SplashScreen>
       duration: const Duration(milliseconds: 7000),
     );
 
-    // Stage A: Logo Staggered Entrance (0.00 -> 0.22, first ~1.5s)
-    _logoFade = CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0.00, 0.22, curve: Curves.easeOut),
+    // Stage A: Instant Logo Reveal (immediate frame-1 presence with smooth settling)
+    _logoFade = Tween<double>(begin: 0.65, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.00, 0.06, curve: Curves.easeOut),
+      ),
     );
     _logoSlide = Tween<Offset>(
-      begin: const Offset(0, 0.20),
+      begin: const Offset(0, 0.05),
       end: Offset.zero,
     ).animate(CurvedAnimation(
       parent: _controller,
-      curve: const Interval(0.00, 0.22, curve: Curves.easeOutCubic),
+      curve: const Interval(0.00, 0.06, curve: Curves.easeOutCubic),
     ));
 
-    // Stage B: Title Reveal (0.20 -> 0.42, ~1.4s - 3.0s)
+    // Stage B: Title Reveal (~280ms)
     _titleFade = CurvedAnimation(
       parent: _controller,
-      curve: const Interval(0.20, 0.42, curve: Curves.easeOut),
+      curve: const Interval(0.03, 0.12, curve: Curves.easeOut),
     );
     _titleSlide = Tween<Offset>(
-      begin: const Offset(0, 0.15),
+      begin: const Offset(0, 0.08),
       end: Offset.zero,
     ).animate(CurvedAnimation(
       parent: _controller,
-      curve: const Interval(0.20, 0.42, curve: Curves.easeOutCubic),
+      curve: const Interval(0.03, 0.12, curve: Curves.easeOutCubic),
     ));
 
-    // Subtitle Fade (0.38 -> 0.58, ~2.6s - 4.0s)
+    // Subtitle Fade
     _subtitleFade = CurvedAnimation(
       parent: _controller,
-      curve: const Interval(0.38, 0.58, curve: Curves.easeOut),
+      curve: const Interval(0.08, 0.18, curve: Curves.easeOut),
     );
 
     // Progress Bar Progression across the full 7 seconds (0.02 -> 1.00)
@@ -340,13 +349,26 @@ class _SplashScreenState extends State<SplashScreen>
           ),
         ],
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(18),
+      child: ShaderMask(
+        shaderCallback: (Rect bounds) {
+          return const RadialGradient(
+            center: Alignment.center,
+            radius: 0.50,
+            colors: [
+              Colors.white,
+              Colors.white,
+              Color(0x80FFFFFF),
+              Colors.transparent,
+            ],
+            stops: [0.0, 0.52, 0.78, 1.0],
+          ).createShader(bounds);
+        },
+        blendMode: BlendMode.dstIn,
         child: Image.asset(
           'assets/stack_go_logo.png',
           width: 72,
           height: 72,
-          fit: BoxFit.contain,
+          fit: BoxFit.cover,
           errorBuilder: (context, error, stackTrace) {
             return Column(
               mainAxisSize: MainAxisSize.min,
