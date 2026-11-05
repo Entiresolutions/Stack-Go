@@ -1,7 +1,14 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <uses-permission android:name="android.permission.VIBRATE" />
+    <!-- Permissions for Online Ad Delivery and Network Status -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <!-- Permission for Game Haptics / Vibrations -->
+    <uses-permission android:name="android.permission.VIBRATE" />
+
+    <!-- Google Play Advertising ID permission for Android 13+ (AdMob) -->
+    <uses-permission android:name="com.google.android.gms.permission.AD_ID" />
 
     <application
         android:label="Stack Go"
@@ -34,4 +41,3 @@
             android:value="2" />
     </application>
 </manifest>
-

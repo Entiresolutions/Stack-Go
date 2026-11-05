@@ -14,8 +14,8 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    namespace = "com.entiresolutions.stackgo"
-    compileSdk = flutter.compileSdkVersion
+    namespace = "com.entiresolutions.tictacgo"
+    compileSdk = 35
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
@@ -24,9 +24,9 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.entiresolutions.stackgo"
+        applicationId = "com.entiresolutions.tictacgo"
         minSdk = flutter.minSdkVersion
-        targetSdk = flutter.targetSdkVersion
+        targetSdk = 35
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
@@ -35,7 +35,10 @@ android {
         create("release") {
             keyAlias = keystoreProperties["keyAlias"] as String?
             keyPassword = keystoreProperties["keyPassword"] as String?
-            storeFile = keystoreProperties["storeFile"]?.let { file(it) }
+            storeFile = keystoreProperties["storeFile"]?.let {
+                val f = file(it)
+                if (f.exists()) f else rootProject.file(it)
+            }
             storePassword = keystoreProperties["storePassword"] as String?
         }
     }
