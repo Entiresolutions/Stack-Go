@@ -14,7 +14,7 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    namespace = "com.entiresolutions.tictacgo"
+    namespace = "com.entiresolutions.stackgo"
     compileSdk = 35
     ndkVersion = flutter.ndkVersion
 
@@ -24,7 +24,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.entiresolutions.tictacgo"
+        applicationId = "com.entiresolutions.stackgo"
         minSdk = flutter.minSdkVersion
         targetSdk = 35
         versionCode = flutter.versionCode

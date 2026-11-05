@@ -1,4 +1,4 @@
-package com.entiresolutions.tictacgo
+package com.entiresolutions.stackgo
 
 import android.content.Context
 import android.media.AudioAttributes
