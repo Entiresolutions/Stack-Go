@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:stack_pulse/app.dart';
 import 'package:stack_pulse/core/game_theme.dart';
+import 'package:stack_pulse/ui/screens/intro_video_screen.dart';
 import 'package:stack_pulse/ui/screens/splash_screen.dart';
 import 'package:stack_pulse/ui/screens/themes_screen.dart';
 import 'package:stack_pulse/ui/widgets/gameplay_background.dart';
@@ -274,5 +275,28 @@ void main() {
       scrollable: find.byType(Scrollable).first,
     );
     expect(find.text('Prism Rift'), findsOneWidget);
+  });
+
+  testWidgets(
+      'IntroVideoScreen renders responsive layout and completes gracefully',
+      (WidgetTester tester) async {
+    bool completed = false;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: IntroVideoScreen(
+          theme: GameTheme.midnightNeon,
+          reducedMotion: false,
+          onComplete: () => completed = true,
+        ),
+      ),
+    );
+
+    // Initial pump mounts IntroVideoScreen
+    await tester.pump();
+    expect(find.byType(IntroVideoScreen), findsOneWidget);
+
+    // Settle (test callback triggers completion)
+    await tester.pumpAndSettle();
+    expect(completed, isTrue);
   });
 }

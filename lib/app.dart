@@ -7,6 +7,7 @@ import 'services/music_service.dart';
 import 'services/feedback_service.dart';
 import 'services/sound_synthesizer.dart';
 import 'services/ad_service.dart';
+import 'ui/screens/intro_video_screen.dart';
 import 'ui/screens/splash_screen.dart';
 import 'ui/screens/home_screen.dart';
 import 'ui/screens/game_screen.dart';
@@ -15,6 +16,7 @@ import 'ui/screens/settings_screen.dart';
 import 'ui/screens/tutorial_screen.dart';
 
 enum AppView {
+  introVideo,
   splash,
   home,
   game,
@@ -35,9 +37,10 @@ class _StackPulseAppState extends State<StackPulseApp>
   final LocalStorageService _storage = LocalStorageService();
   GameSettings _settings = const GameSettings();
   GameStatistics _statistics = const GameStatistics();
-  AppView _currentView = AppView.splash;
+  AppView _currentView = AppView.introVideo;
   bool _isStateLoaded = false;
   bool _splashFinished = false;
+  bool _audioInitialized = false;
 
   @override
   void initState() {
@@ -73,10 +76,6 @@ class _StackPulseAppState extends State<StackPulseApp>
         });
       }
       FeedbackService.updateSettings(settings);
-      await MusicService.instance.initialize(
-        musicEnabled: settings.musicEnabled,
-        musicVolume: settings.musicVolume,
-      );
       await SoundSynthesizer.instance.initialize(
         volume: settings.soundVolume,
       );
@@ -92,8 +91,27 @@ class _StackPulseAppState extends State<StackPulseApp>
     }
   }
 
+  Future<void> _ensureAudioStarted() async {
+    if (_audioInitialized) return;
+    _audioInitialized = true;
+    try {
+      await MusicService.instance.initialize(
+        musicEnabled: _settings.musicEnabled,
+        musicVolume: _settings.musicVolume,
+      );
+    } catch (_) {}
+  }
+
+  void _onIntroVideoComplete() {
+    _ensureAudioStarted();
+    if (mounted) {
+      _switchView(AppView.splash);
+    }
+  }
+
   void _onSplashComplete() {
     _splashFinished = true;
+    _ensureAudioStarted();
     if (_isStateLoaded && mounted) {
       _switchView(AppView.home);
     }
@@ -207,6 +225,12 @@ class _StackPulseAppState extends State<StackPulseApp>
 
   Widget _buildCurrentView(GameTheme theme) {
     switch (_currentView) {
+      case AppView.introVideo:
+        return IntroVideoScreen(
+          theme: theme,
+          reducedMotion: _settings.reducedMotion,
+          onComplete: _onIntroVideoComplete,
+        );
       case AppView.splash:
         return SplashScreen(
           theme: theme,
